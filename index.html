@@ -3,31 +3,37 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="RHO Seguridad Industrial: equipo de protección personal, señalización y suministro especializado en Ciudad de México.">
+  <meta name="description" content="RHO Seguridad Industrial: venta de equipo de seguridad industrial y protección personal.">
   <title>RHO Seguridad Industrial</title>
-  <meta name="version" content="sin-panel-2026-08-17">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <style>.hero-single{grid-template-columns:1fr;max-width:900px;margin:auto}</style>
+  <style>
+    .hero-banner{padding:0;background:#fff}
+    .hero-banner img{display:block;width:100%;height:auto}
+    @media(max-width:700px){
+      .hero-banner{overflow:hidden}
+      .hero-banner img{width:100%;min-height:240px;object-fit:cover;object-position:center}
+    }
+  </style>
 </head>
 <body>
 <header class="site-header">
   <div class="container nav-wrap">
     <a class="brand" href="#inicio"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"></a>
     <button class="menu-btn" aria-label="Abrir menú" aria-expanded="false">☰</button>
-    <nav class="nav"><a href="#inicio">Inicio</a><a href="#productos">Productos</a><a href="#contacto">Contacto</a></nav>
+    <nav class="nav">
+      <a href="#inicio">Inicio</a>
+      <a href="#productos">Productos</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
   </div>
 </header>
+
 <main>
-  <section id="inicio" class="hero">
-    <div class="container hero-grid hero-single">
-      <div>
-        <div class="actions"><a class="btn primary" href="https://wa.me/525569090204?text=Hola%20RHO%20Seguridad%20Industrial,%20quiero%20solicitar%20una%20cotizaci%C3%B3n" target="_blank" rel="noopener">Cotizar por WhatsApp</a><a class="btn secondary" href="#productos">Ver soluciones</a></div>
-        <div class="trust"><span>✓ Asesoría personalizada</span><span>✓ Productos certificados</span><span>✓ Entregas en CDMX</span></div>
-      </div>
-    </div>
+  <section id="inicio" class="hero-banner">
+    <img src="26CDC467-7E5A-491E-81C9-6473B9EA88D5.png" alt="RHO Seguridad Industrial — Venta de equipo de seguridad industrial">
   </section>
 
   <section id="productos" class="section">
@@ -47,8 +53,30 @@
     </div>
   </section>
 
-  <section id="contacto" class="section light"><div class="container contact-grid"><div><span class="eyebrow">Contacto</span><h2>Solicita una cotización</h2><p><strong>Teléfono:</strong> 55 6909 0204<br><strong>Cobertura:</strong> Ciudad de México</p></div><form id="quoteForm" class="form"><label>Nombre<input required name="nombre" autocomplete="name"></label><label>Empresa<input name="empresa" autocomplete="organization"></label><label>Producto o necesidad<textarea required name="mensaje" rows="4"></textarea></label><button class="btn primary" type="submit">Enviar por WhatsApp</button></form></div></section>
+  <section id="contacto" class="section light">
+    <div class="container contact-grid">
+      <div>
+        <span class="eyebrow">Contacto</span>
+        <h2>Solicita una cotización</h2>
+        <p><strong>Teléfono:</strong> 55 6909 0204<br><strong>Cobertura:</strong> Ciudad de México</p>
+      </div>
+      <form id="quoteForm" class="form">
+        <label>Nombre<input required name="nombre" autocomplete="name"></label>
+        <label>Empresa<input name="empresa" autocomplete="organization"></label>
+        <label>Producto o necesidad<textarea required name="mensaje" rows="4"></textarea></label>
+        <button class="btn primary" type="submit">Enviar por WhatsApp</button>
+      </form>
+    </div>
+  </section>
 </main>
-<footer><div class="container footer-wrap"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"><p>© <span id="year"></span> RHO Seguridad Industrial. Todos los derechos reservados.</p></div></footer>
+
+<footer>
+  <div class="container footer-wrap">
+    <img src="logo-rho.jpeg" alt="RHO Seguridad Industrial">
+    <p>© <span id="year"></span> RHO Seguridad Industrial. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
 <script src="script.js"></script>
-</body></html>
+</body>
+</html>
