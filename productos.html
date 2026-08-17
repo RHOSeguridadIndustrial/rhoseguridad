@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Productos de RHO Seguridad Industrial">
+  <title>Productos | RHO Seguridad Industrial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .brand img{visibility:hidden}
+    .products-banner{
+      background:#071a35;
+      color:#fff;
+      padding:55px 20px;
+      text-align:center;
+    }
+    .products-banner h1{
+      margin:0 0 12px;
+      font-size:clamp(2rem,7vw,4rem);
+    }
+    .products-banner p{
+      margin:0;
+      color:#c8d2de;
+      font-size:1.05rem;
+    }
+  </style>
+</head>
+
+<body>
+<header class="site-header">
+  <div class="container nav-wrap">
+    <a class="brand" href="index.html">
+      <img src="logo-rho.jpeg" alt="RHO Seguridad Industrial">
+    </a>
+
+    <button class="menu-btn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+
+    <nav class="nav">
+      <a href="index.html">Inicio</a>
+      <a href="productos.html">Productos</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="products-banner">
+    <h1>Nuestros productos</h1>
+    <p>Equipo de seguridad industrial para proteger a tu personal.</p>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="category-grid">
+
+        <article class="category">
+          <span>⛑️</span>
+          <h3>Protección de cabeza</h3>
+          <p>Cascos, barbiquejos y accesorios.</p>
+        </article>
+
+        <article class="category">
+          <span>🥽</span>
+          <h3>Protección visual y facial</h3>
+          <p>Lentes, goggles y caretas.</p>
+        </article>
+
+        <article class="category">
+          <span>🦺</span>
+          <h3>Ropa y alta visibilidad</h3>
+          <p>Chalecos, uniformes e impermeables.</p>
+        </article>
+
+        <article class="category">
+          <span>🧤</span>
+          <h3>Protección de manos</h3>
+          <p>Guantes según riesgo y actividad.</p>
+        </article>
+
+        <article class="category">
+          <span>🥾</span>
+          <h3>Protección de pies</h3>
+          <p>Calzado industrial y antiderrapante.</p>
+        </article>
+
+        <article class="category">
+          <span>😷</span>
+          <h3>Protección respiratoria</h3>
+          <p>Mascarillas, filtros y respiradores.</p>
+        </article>
+
+        <article class="category">
+          <span>🎧</span>
+          <h3>Protección auditiva</h3>
+          <p>Tapones y orejeras industriales.</p>
+        </article>
+
+        <article class="category">
+          <span>🪢</span>
+          <h3>Trabajo en alturas</h3>
+          <p>Arneses, líneas de vida y anclajes.</p>
+        </article>
+
+        <article class="category">
+          <span>🚧</span>
+          <h3>Señalización y obra</h3>
+          <p>Conos, cintas, barreras y señales.</p>
+        </article>
+
+        <article class="category">
+          <span>🧰</span>
+          <h3>Suministro especializado</h3>
+          <p>Búsqueda, volumen y entregas programadas.</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container footer-wrap">
+    <img src="logo-rho.jpeg" alt="RHO Seguridad Industrial">
+    <p>© <span id="year"></span> RHO Seguridad Industrial. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+<script>
+  const menuBtn=document.querySelector('.menu-btn');
+  const nav=document.querySelector('.nav');
+
+  menuBtn.addEventListener('click',()=>{
+    nav.classList.toggle('open');
+    menuBtn.setAttribute('aria-expanded',nav.classList.contains('open'));
+  });
+
+  document.querySelectorAll('.nav a').forEach(a=>{
+    a.addEventListener('click',()=>nav.classList.remove('open'));
+  });
+
+  document.getElementById('year').textContent=new Date().getFullYear();
+</script>
+</body>
+</html>
