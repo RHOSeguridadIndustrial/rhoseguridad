@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=75e87b46">
   <style>
     .brand img{visibility:hidden}
     .products-banner{
@@ -30,6 +30,54 @@
 .products-banner img{display:block;width:100%;height:auto}
 .products-banner h1,.products-banner p{display:none}
   </style>
+
+  <style id="mobile-nav-reference">
+    @media (max-width:800px){
+      .site-header .nav-wrap{
+        width:100% !important;
+        min-height:84px !important;
+        padding:8px clamp(28px,8vw,58px) !important;
+        justify-content:space-between !important;
+      }
+      .site-header .brand{display:none !important}
+      .site-header .nav-actions{
+        display:flex !important;
+        width:100% !important;
+        margin:0 !important;
+        align-items:center !important;
+        justify-content:space-between !important;
+      }
+      .site-header .home-btn,
+      .site-header .menu-btn{
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:3px !important;
+        width:54px !important;
+        min-width:54px !important;
+        height:62px !important;
+        padding:0 !important;
+        border:0 !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        background:transparent !important;
+        color:#071a35 !important;
+        font:700 13px Inter,Arial,sans-serif !important;
+        text-decoration:none !important;
+      }
+      .site-header .nav-icon-svg{
+        width:28px !important;
+        height:28px !important;
+        fill:none;
+        stroke:currentColor;
+        stroke-width:2.1;
+        stroke-linecap:round;
+        stroke-linejoin:round;
+      }
+      .site-header .nav{top:84px !important}
+    }
+  </style>
 </head>
 
 <body>
@@ -39,7 +87,16 @@
       <img src="logo-rho.jpeg" alt="RHO Seguridad Industrial">
     </a>
 
-    <button class="menu-btn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+    <div class="nav-actions">
+      <a class="home-btn" href="index.html" aria-label="Ir a inicio">
+        <svg class="nav-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v10h13V10"></path><path d="M9.5 20v-6h5v6"></path></svg>
+        <span>Inicio</span>
+      </a>
+      <button class="menu-btn" type="button" aria-label="Abrir menú" aria-expanded="false">
+        <svg class="nav-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        <span>Menú</span>
+      </button>
+    </div>
 
     <nav class="nav">
       <a href="index.html">Inicio</a>
