@@ -30,6 +30,54 @@
 .products-banner img{display:block;width:100%;height:auto}
 .products-banner h1,.products-banner p{display:none}
   </style>
+
+  <style id="mobile-nav-reference">
+    @media (max-width:800px){
+      .site-header .nav-wrap{
+        width:100% !important;
+        min-height:132px !important;
+        padding:16px clamp(34px,10vw,72px) !important;
+        justify-content:space-between !important;
+      }
+      .site-header .brand{display:none !important}
+      .site-header .nav-actions{
+        display:flex !important;
+        width:100% !important;
+        margin:0 !important;
+        align-items:center !important;
+        justify-content:space-between !important;
+      }
+      .site-header .home-btn,
+      .site-header .menu-btn{
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:8px !important;
+        width:76px !important;
+        min-width:76px !important;
+        height:100px !important;
+        padding:0 !important;
+        border:0 !important;
+        border-radius:0 !important;
+        box-shadow:none !important;
+        background:transparent !important;
+        color:#071a35 !important;
+        font:700 17px Inter,Arial,sans-serif !important;
+        text-decoration:none !important;
+      }
+      .site-header .nav-icon-svg{
+        width:52px !important;
+        height:52px !important;
+        fill:none;
+        stroke:currentColor;
+        stroke-width:2.4;
+        stroke-linecap:round;
+        stroke-linejoin:round;
+      }
+      .site-header .nav{top:132px !important}
+    }
+  </style>
 </head>
 
 <body>
@@ -41,11 +89,11 @@
 
     <div class="nav-actions">
       <a class="home-btn" href="index.html" aria-label="Ir a inicio">
-        <span class="nav-control-icon" aria-hidden="true">⌂</span>
+        <svg class="nav-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v10h13V10"></path><path d="M9.5 20v-6h5v6"></path></svg>
         <span>Inicio</span>
       </a>
       <button class="menu-btn" type="button" aria-label="Abrir menú" aria-expanded="false">
-        <span class="nav-control-icon" aria-hidden="true">☰</span>
+        <svg class="nav-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
         <span>Menú</span>
       </button>
     </div>
