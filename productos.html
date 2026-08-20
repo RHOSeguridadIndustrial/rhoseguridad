@@ -115,6 +115,7 @@
 
   <section class="section">
     <div class="container">
+      <p id="search-status" role="status" aria-live="polite" style="display:none;margin:0 0 24px;font-weight:700;color:#071a35"></p>
       <div class="category-grid">
 
         <article class="category">
@@ -178,6 +179,11 @@
         </article>
 
       </div>
+
+      <div id="no-search-results" hidden style="margin-top:24px;padding:24px;border:1px solid #d8dee5;border-radius:18px;text-align:center;background:#f7f9fb">
+        <p style="margin:0 0 16px;font-weight:700;color:#071a35">No encontramos resultados para tu búsqueda.</p>
+        <a class="btn primary" href="https://wa.me/525569090204?text=Hola%20RHO%20Seguridad%20Industrial%2C%20necesito%20ayuda%20para%20encontrar%20un%20producto." target="_blank" rel="noopener">Solicitar cotización por WhatsApp</a>
+      </div>
     </div>
   </section>
 </main>
@@ -203,6 +209,35 @@
   });
 
   document.getElementById('year').textContent=new Date().getFullYear();
+
+  const params=new URLSearchParams(window.location.search);
+  const query=(params.get('q')||'').trim();
+  const status=document.getElementById('search-status');
+  const noResults=document.getElementById('no-search-results');
+  const categories=[...document.querySelectorAll('.category-grid .category')];
+  const normalize=value=>value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase()
+    .trim();
+
+  if(query){
+    const terms=normalize(query).split(/\s+/).filter(Boolean);
+    let matches=0;
+
+    categories.forEach(category=>{
+      const searchableText=normalize(category.textContent);
+      const isMatch=terms.every(term=>searchableText.includes(term));
+      category.hidden=!isMatch;
+      if(isMatch) matches+=1;
+    });
+
+    status.style.display='block';
+    status.textContent=matches
+      ? `Resultados para: “${query}” (${matches})`
+      : `Sin resultados para: “${query}”`;
+    noResults.hidden=matches!==0;
+  }
 </script>
 </body>
 </html>
