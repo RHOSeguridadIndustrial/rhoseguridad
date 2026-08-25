@@ -27,9 +27,18 @@ const dots=[...document.querySelectorAll('.banner-dot')];
 let currentSlide=0;
 let bannerTimer=null;
 
+function ensureSlideImage(index){
+  const img=slides[index]?.querySelector('img[data-src]');
+  if(img&&img.dataset.src){
+    img.src=img.dataset.src;
+    img.removeAttribute('data-src');
+  }
+}
+
 function showSlide(index){
   if(!slides.length) return;
   currentSlide=(index+slides.length)%slides.length;
+  ensureSlideImage(currentSlide);
   slides.forEach((slide,i)=>slide.classList.toggle('active',i===currentSlide));
   dots.forEach((dot,i)=>dot.classList.toggle('active',i===currentSlide));
 }
@@ -48,3 +57,12 @@ dots.forEach((dot,i)=>dot.addEventListener('click',()=>{
 
 showSlide(0);
 restartBannerTimer();
+
+window.addEventListener('load',()=>{
+  const warmSecondBanner=()=>{ if(slides.length>1) ensureSlideImage(1); };
+  if('requestIdleCallback' in window){
+    requestIdleCallback(warmSecondBanner,{timeout:3500});
+  }else{
+    setTimeout(warmSecondBanner,1800);
+  }
+},{once:true});
