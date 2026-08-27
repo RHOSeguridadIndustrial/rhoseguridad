@@ -1,10 +1,8 @@
 <!doctype html>
-<html lang="es">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Crear cuenta | RHO Seguridad Industrial</title>
 <style>
-:root{--navy:#071a35;--green:#4ca500;--muted:#647083;--line:#e4e9ee;--bg:#f5f8fa}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:var(--navy);background:var(--bg)}.top{background:#fff;border-bottom:1px solid var(--line);padding:16px 5%;display:flex;justify-content:space-between;align-items:center}.top img{height:48px}.top a{color:var(--navy);font-weight:800;text-decoration:none}.wrap{width:min(760px,92%);margin:34px auto}.card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:30px;box-shadow:0 18px 45px rgba(7,26,53,.08)}h1{margin:0 0 8px;font-size:clamp(2rem,7vw,3rem)}p{color:var(--muted);line-height:1.55}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:block;font-weight:700}.field.full{grid-column:1/-1}.field input,.field select{width:100%;margin-top:7px;padding:14px;border:1px solid #cbd3db;border-radius:12px;font:inherit}.check{display:flex;gap:10px;align-items:flex-start;margin:20px 0;color:var(--muted);font-size:.92rem}.btn{width:100%;padding:15px;border:0;border-radius:12px;background:var(--green);color:#fff;font-weight:800;font-size:1rem}.note{margin-top:16px;font-size:.82rem;text-align:center}@media(max-width:650px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:24px}}
+:root{--navy:#071a35;--green:#4ca500;--muted:#647083;--line:#e4e9ee;--bg:#f5f8fa}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:var(--navy);background:var(--bg)}.top{background:#fff;border-bottom:1px solid var(--line);padding:16px 5%;display:flex;justify-content:space-between;align-items:center}.top img{height:48px}.top a{color:var(--navy);font-weight:800;text-decoration:none}.wrap{width:min(760px,92%);margin:34px auto}.card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:30px;box-shadow:0 18px 45px rgba(7,26,53,.08)}h1{margin:0 0 8px;font-size:clamp(2rem,7vw,3rem)}p{color:var(--muted);line-height:1.55}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:block;font-weight:700}.field.full{grid-column:1/-1}.field input,.field select{width:100%;margin-top:7px;padding:14px;border:1px solid #cbd3db;border-radius:12px;font:inherit}.check{display:flex;gap:10px;align-items:flex-start;margin:20px 0;color:var(--muted);font-size:.92rem}.btn{width:100%;padding:15px;border:0;border-radius:12px;background:var(--green);color:#fff;font-weight:800;font-size:1rem}.btn:disabled{opacity:.6}.note{margin-top:16px;font-size:.82rem;text-align:center}.note.error{color:#b42318}.note.ok{color:#3f8d00}@media(max-width:650px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:24px}}
 </style></head>
 <body><header class="top"><a href="index.html"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"></a><a href="login.html">Iniciar sesión</a></header>
 <main class="wrap"><section class="card"><h1>Crear cuenta</h1><p>Regístrate para agilizar cotizaciones, compras y seguimiento con RHO Seguridad Industrial.</p>
@@ -17,5 +15,16 @@
 <label class="field">Contraseña<input name="password" type="password" minlength="8" required autocomplete="new-password"></label>
 <label class="field">Tipo de cliente<select name="tipo"><option>Empresa</option><option>Contratista</option><option>Particular</option><option>Distribuidor</option></select></label>
 </div><label class="check"><input type="checkbox" required><span>Acepto el uso de mis datos para administrar mi cuenta y recibir atención comercial de RHO.</span></label><button class="btn" type="submit">Crear mi cuenta</button></form>
-<p class="note" id="status">El formulario está preparado. El alta real se activará al conectar la base de datos y autenticación segura.</p></section></main>
-<script>document.getElementById('registerForm').addEventListener('submit',function(e){e.preventDefault();document.getElementById('status').textContent='Registro preparado correctamente. Falta activar la conexión segura para guardar la cuenta.';});</script></body></html>
+<p class="note" id="status">Tu cuenta se guardará de forma segura.</p></section></main>
+<script type="module">
+import { supabase } from './supabase-client.js';
+const form=document.getElementById('registerForm');const status=document.getElementById('status');const button=form.querySelector('button');
+form.addEventListener('submit',async(e)=>{
+ e.preventDefault();button.disabled=true;status.className='note';status.textContent='Creando cuenta…';
+ const f=new FormData(form);const fullName=`${f.get('nombre').trim()} ${f.get('apellidos').trim()}`.trim();
+ const {data,error}=await supabase.auth.signUp({email:f.get('email').trim(),password:f.get('password'),options:{data:{full_name:fullName,company_name:f.get('empresa').trim(),phone:f.get('telefono').trim(),customer_type:f.get('tipo')}}});
+ if(error){status.className='note error';status.textContent=error.message.includes('registered')?'Ese correo ya está registrado.':'No fue posible crear la cuenta. Revisa los datos e inténtalo de nuevo.';button.disabled=false;return;}
+ status.className='note ok';
+ if(data.session){status.textContent='Cuenta creada correctamente. Redirigiendo…';setTimeout(()=>location.href='index.html',900);}else{status.textContent='Cuenta creada. Revisa tu correo para confirmar el registro antes de iniciar sesión.';form.reset();button.disabled=false;}
+});
+</script></body></html>

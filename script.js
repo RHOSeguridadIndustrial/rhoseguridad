@@ -73,3 +73,5 @@ if(document.readyState==='loading'){
 }else{
   requestAnimationFrame(beginBannerLoading);
 }
+
+import('./analytics.js').catch(()=>{});
