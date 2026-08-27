@@ -22,23 +22,27 @@ if(quoteForm){
   });
 }
 
+const carousel=document.querySelector('.banner-carousel');
 const slides=[...document.querySelectorAll('.banner-slide')];
 const dots=[...document.querySelectorAll('.banner-dot')];
 let currentSlide=0;
 let bannerTimer=null;
 
-function ensureSlideImage(index){
+function loadSlideImage(index,priority='auto'){
   const img=slides[index]?.querySelector('img[data-src]');
-  if(img&&img.dataset.src){
-    img.src=img.dataset.src;
-    img.removeAttribute('data-src');
+  if(!img||!img.dataset.src) return;
+  if(priority!=='auto') img.fetchPriority=priority;
+  if(index===0){
+    img.addEventListener('load',()=>carousel?.classList.add('loaded'),{once:true});
   }
+  img.src=img.dataset.src;
+  img.removeAttribute('data-src');
 }
 
 function showSlide(index){
   if(!slides.length) return;
   currentSlide=(index+slides.length)%slides.length;
-  ensureSlideImage(currentSlide);
+  loadSlideImage(currentSlide,currentSlide===0?'high':'low');
   slides.forEach((slide,i)=>slide.classList.toggle('active',i===currentSlide));
   dots.forEach((dot,i)=>dot.classList.toggle('active',i===currentSlide));
 }
@@ -55,14 +59,17 @@ dots.forEach((dot,i)=>dot.addEventListener('click',()=>{
   restartBannerTimer();
 }));
 
-showSlide(0);
-restartBannerTimer();
+slides.forEach((slide,i)=>slide.classList.toggle('active',i===0));
+dots.forEach((dot,i)=>dot.classList.toggle('active',i===0));
 
-window.addEventListener('load',()=>{
-  const warmSecondBanner=()=>{ if(slides.length>1) ensureSlideImage(1); };
-  if('requestIdleCallback' in window){
-    requestIdleCallback(warmSecondBanner,{timeout:3500});
-  }else{
-    setTimeout(warmSecondBanner,1800);
-  }
-},{once:true});
+const beginBannerLoading=()=>{
+  loadSlideImage(0,'high');
+  setTimeout(()=>loadSlideImage(1,'low'),3400);
+  restartBannerTimer();
+};
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(beginBannerLoading),{once:true});
+}else{
+  requestAnimationFrame(beginBannerLoading);
+}
