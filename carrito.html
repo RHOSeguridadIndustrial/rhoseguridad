@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Carrito | RHO Seguridad Industrial</title>
+  <link rel="stylesheet" href="styles.css?v=20260828-cart">
+  <style>
+    .cart-page{max-width:980px;margin:auto;padding:36px 20px 64px}.cart-page h1{color:#071a35;margin:0 0 24px}.cart-empty{padding:30px;border:1px solid #d8dee5;border-radius:20px;text-align:center;background:#fff}.cart-row{display:grid;grid-template-columns:1fr auto auto auto;gap:18px;align-items:center;padding:20px 0;border-bottom:1px solid #e5e9ee}.cart-row h3{margin:0 0 6px;color:#071a35}.cart-row p{margin:0;color:#687386}.qty{width:72px;padding:10px;border:1px solid #ccd4dc;border-radius:10px}.remove{border:0;background:none;color:#a33030;font-weight:700;cursor:pointer}.summary{margin-top:28px;padding:24px;border-radius:20px;background:#f6f8fa}.summary-line{display:flex;justify-content:space-between;gap:20px;font-size:1.15rem;font-weight:800;color:#071a35}.checkout{display:block;margin-top:18px;padding:16px;border-radius:14px;background:#4ca500;color:#fff;text-align:center;text-decoration:none;font-weight:800}.continue{display:inline-block;margin-top:18px;color:#071a35;font-weight:700;text-decoration:none}.cart-badge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#4ca500;color:#fff;font-size:11px;font-weight:800}
+    @media(max-width:700px){.cart-row{grid-template-columns:1fr auto}.cart-price{grid-column:1}.remove{grid-column:2}.qty{grid-row:1 / span 2;grid-column:2}}
+  </style>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap"><div class="nav-actions" style="display:flex;width:100%;justify-content:space-between;align-items:center">
+  <a class="home-btn" href="index.html" style="text-decoration:none;color:#071a35;font-weight:800">Inicio</a>
+  <a class="account-btn" href="login.html" style="text-decoration:none;color:#071a35;font-weight:800">Cuenta</a>
+  <a class="cart-btn" href="carrito.html" style="text-decoration:none;color:#071a35;font-weight:800">Carrito <span class="cart-badge" data-cart-count hidden>0</span></a>
+</div></div></header>
+<main class="cart-page">
+  <h1>Tu carrito</h1>
+  <div id="cart-content"></div>
+  <a class="continue" href="productos.html">← Seguir comprando</a>
+</main>
+<script type="module">
+  import {getCart,updateQuantity,removeFromCart,cartTotal,updateCartBadges} from './cart.js';
+  const container=document.getElementById('cart-content');
+  const money=value=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(value);
+  function render(){
+    const cart=getCart();
+    updateCartBadges();
+    if(!cart.length){
+      container.innerHTML='<div class="cart-empty"><strong>Tu carrito está vacío.</strong><p>Agrega productos para preparar tu pedido.</p></div>';
+      return;
+    }
+    container.innerHTML=`<div>${cart.map(item=>`<div class="cart-row"><div><h3>${item.name}</h3><p>${money(item.price)} c/u</p></div><input class="qty" type="number" min="1" value="${item.qty}" data-qty="${item.id}" aria-label="Cantidad de ${item.name}"><strong class="cart-price">${money(item.price*item.qty)}</strong><button class="remove" data-remove="${item.id}">Quitar</button></div>`).join('')}</div><div class="summary"><div class="summary-line"><span>Total</span><span>${money(cartTotal())}</span></div><a id="checkout" class="checkout" href="#">Finalizar pedido por WhatsApp</a></div>`;
+    document.querySelectorAll('[data-qty]').forEach(input=>input.addEventListener('change',()=>{updateQuantity(input.dataset.qty,input.value);render()}));
+    document.querySelectorAll('[data-remove]').forEach(btn=>btn.addEventListener('click',()=>{removeFromCart(btn.dataset.remove);render()}));
+    document.getElementById('checkout').addEventListener('click',e=>{
+      e.preventDefault();
+      const current=getCart();
+      const lines=current.map(item=>`${item.qty} x ${item.name} - ${money(item.price*item.qty)}`).join('\n');
+      const text=`Hola RHO Seguridad Industrial, quiero solicitar este pedido:\n${lines}\n\nTotal estimado: ${money(cartTotal())}`;
+      window.open(`https://wa.me/525569090204?text=${encodeURIComponent(text)}`,'_blank','noopener');
+    });
+  }
+  render();
+  import('./analytics.js').catch(()=>{});
+</script>
+</body>
+</html>
