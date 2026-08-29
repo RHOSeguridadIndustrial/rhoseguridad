@@ -38,10 +38,9 @@ export function cartCount(){return getCart().reduce((sum,item)=>sum+item.qty,0)}
 export function cartTotal(){return getCart().reduce((sum,item)=>sum+(item.price*item.qty),0)}
 
 export function updateCartBadges(){
-  const count=cartCount();
   document.querySelectorAll('[data-cart-count]').forEach(el=>{
-    el.textContent=count;
-    el.hidden=count===0;
+    el.hidden=true;
+    el.textContent='';
   });
 }
 
