@@ -14,3 +14,7 @@
 
 /* Sin contador numérico en el carrito */
 .cart-badge,[data-cart-count]{display:none!important}
+
+/* Compra directa en todas las fichas de producto */
+.quote,.quote-button{display:none!important}
+.actions .buy,.cart-action{display:block!important;width:100%!important;flex:1 1 100%;cursor:pointer}
