@@ -18,6 +18,13 @@
 .cart-badge[hidden],[data-cart-count][hidden]{display:none!important}
 .cart-btn.has-items{color:var(--orange)!important}
 
+/* Contador del carrito: fijado sobre la esquina superior derecha del icono */
+@media(max-width:800px){
+  .site-header .cart-btn{position:relative!important;overflow:visible!important}
+  .site-header .cart-btn .cart-badge,
+  .site-header .cart-btn [data-cart-count]{position:absolute!important;top:1px!important;right:1px!important;z-index:5!important;min-width:22px!important;height:22px!important;margin:0!important;padding:0 6px!important;border:2px solid #fff!important;border-radius:999px!important;background:#4ca500!important;color:#fff!important;font-size:12px!important;line-height:18px!important;box-shadow:0 2px 6px rgba(7,26,53,.18)!important}
+}
+
 /* Compra directa en todas las fichas de producto */
 .quote,.quote-button{display:none!important}
 .actions .buy,.cart-action{display:block!important;width:100%!important;flex:1 1 100%;cursor:pointer}
