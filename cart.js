@@ -37,16 +37,32 @@ export function clearCart(){saveCart([])}
 export function cartCount(){return getCart().reduce((sum,item)=>sum+item.qty,0)}
 export function cartTotal(){return getCart().reduce((sum,item)=>sum+(item.price*item.qty),0)}
 
+function ensureIconWrap(cartBtn){
+  let wrap=cartBtn.querySelector('.cart-icon-wrap');
+  const icon=cartBtn.querySelector('.cart-icon');
+  if(!wrap&&icon){
+    wrap=document.createElement('span');
+    wrap.className='cart-icon-wrap';
+    icon.parentNode.insertBefore(wrap,icon);
+    wrap.appendChild(icon);
+  }
+  if(wrap){
+    Object.assign(wrap.style,{position:'relative',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'28px',height:'28px',overflow:'visible'});
+  }
+  return wrap||cartBtn;
+}
+
 function ensureBadge(cartBtn){
+  const wrap=ensureIconWrap(cartBtn);
   let badge=cartBtn.querySelector('[data-cart-count]');
   if(!badge){
-    const label=cartBtn.querySelector('span')||cartBtn;
     badge=document.createElement('b');
     badge.className='cart-badge';
     badge.setAttribute('data-cart-count','');
     badge.setAttribute('aria-label','Artículos en el carrito');
-    label.appendChild(badge);
   }
+  if(badge.parentNode!==wrap) wrap.appendChild(badge);
+  Object.assign(badge.style,{position:'absolute',top:'-9px',right:'-13px',zIndex:'30',minWidth:'22px',height:'22px',margin:'0',padding:'0 6px',border:'2px solid #fff',borderRadius:'999px',background:'#4ca500',color:'#fff',fontSize:'12px',fontWeight:'800',lineHeight:'18px',textAlign:'center',boxShadow:'0 2px 6px rgba(7,26,53,.18)'});
   return badge;
 }
 
