@@ -1,68 +1,25 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>Iniciar sesión | RHO Seguridad Industrial</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root{--navy:#071a35;--green:#4ca500;--orange:#ff4a00;--muted:#647083;--line:#e4e9ee;--bg:#f5f8fa}
-    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,Arial,sans-serif;color:var(--navy);background:linear-gradient(180deg,#fff 0%,#f5f8fa 100%)}
-    .topbar{padding:14px 6%;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid var(--line)}.topbar img{height:40px}.back{color:var(--navy);font-weight:800;text-decoration:none}
-    .wrap{width:min(1040px,92%);margin:28px auto;display:grid;grid-template-columns:.9fr 1.1fr;gap:24px;align-items:stretch}
-    .welcome{background:var(--navy);color:#fff;border-radius:24px;padding:28px;box-shadow:0 18px 50px rgba(7,26,53,.12);position:relative;overflow:hidden}.welcome:after{content:"";position:absolute;width:160px;height:160px;border-radius:50%;background:var(--orange);opacity:.12;right:-60px;top:-60px}.user-icon{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--green);margin-bottom:14px}.user-icon svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:2}.welcome h1{font-size:2rem;margin:0 0 8px}.welcome p{color:#c8d2de;line-height:1.45;font-size:.95rem;margin:0}
-    .card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:26px;box-shadow:0 18px 50px rgba(7,26,53,.08)}.card h2{font-size:1.9rem;margin:0 0 4px}.card>p{color:var(--muted);margin:0 0 16px;line-height:1.35}.field{display:block;font-weight:700;margin:0 0 11px}.field input{width:100%;margin-top:5px;padding:11px 12px;border:1px solid #cbd3db;border-radius:10px;font:inherit}.field input:focus{outline:3px solid rgba(76,165,0,.14);border-color:var(--green)}.primary{width:100%;padding:11px;border:0;border-radius:10px;background:var(--green);color:#fff;font:800 1rem Inter;cursor:pointer;box-shadow:0 8px 20px rgba(76,165,0,.18)}.primary:disabled{opacity:.6;cursor:wait}.divider{display:flex;align-items:center;gap:10px;margin:12px 0;color:#9aa4b2;font-size:.82rem}.divider:before,.divider:after{content:"";height:1px;flex:1;background:var(--line)}.create{display:block;text-align:center;padding:10px;border:2px solid var(--navy);border-radius:10px;color:var(--navy);font-weight:800;text-decoration:none}.note{font-size:.76rem;color:#8a95a3;text-align:center;margin:8px 0 0;line-height:1.25;min-height:16px}.note.error{color:#b42318}.note.ok{color:#3f8d00}
-    @media(max-width:760px){
-      body{min-height:100svh;overflow:hidden}.topbar{height:54px;padding:7px 6%}.topbar img{height:28px}.back{font-size:.9rem}
-      .wrap{grid-template-columns:1fr;width:94%;height:calc(100svh - 62px);margin:8px auto 0;gap:8px;display:flex;flex-direction:column}
-      .welcome{flex:0 0 auto;padding:12px 15px;border-radius:16px}.welcome:after{width:90px;height:90px;right:-34px;top:-36px}.user-icon{width:36px;height:36px;margin-bottom:4px}.user-icon svg{width:20px;height:20px}.welcome h1{font-size:1.3rem;margin:0 0 3px}.welcome p{font-size:.76rem;line-height:1.22;max-width:90%}
-      .card{flex:1 1 auto;min-height:0;padding:13px 16px 10px;border-radius:16px}.card h2{font-size:1.45rem;margin:0 0 1px}.card>p{font-size:.78rem;margin:0 0 7px}.field{font-size:.8rem;margin:0 0 6px}.field input{margin-top:3px;padding:8px 10px;border-radius:8px;font-size:.9rem}.primary{padding:9px;border-radius:8px;font-size:.9rem}.divider{margin:7px 0;font-size:.72rem}.create{padding:8px;border-radius:8px;font-size:.88rem}.note{font-size:.68rem;margin-top:5px;min-height:12px}
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Iniciar sesión | RHO Seguridad Industrial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#071a35;--green:#4ca500;--muted:#647083;--line:#e4e9ee}*{box-sizing:border-box}html,body{margin:0;font-family:Inter,Arial,sans-serif;color:var(--navy);background:#f7f9fb}.topbar{height:62px;padding:8px 6%;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid var(--line)}.topbar img{height:34px}.back{color:var(--navy);font-weight:800;text-decoration:none}.wrap{width:min(980px,92%);margin:20px auto;display:grid;grid-template-columns:.9fr 1.1fr;gap:20px}.welcome,.card{border-radius:22px}.welcome{background:var(--navy);color:#fff;padding:26px}.user-icon{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--green);margin-bottom:10px}.user-icon svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:2}.welcome h1{font-size:2rem;margin:0 0 8px}.welcome p{color:#c8d2de;line-height:1.4;margin:0}.card{background:#fff;border:1px solid var(--line);padding:25px}.card h2{font-size:1.9rem;margin:0 0 4px}.card>p{color:var(--muted);margin:0 0 14px}.field{display:block;font-weight:700;margin-bottom:10px}.field input{width:100%;margin-top:5px;padding:11px;border:1px solid #cbd3db;border-radius:10px;font:inherit}.primary{width:100%;padding:11px;border:0;border-radius:10px;background:var(--green);color:#fff;font:800 1rem Inter}.divider{display:flex;align-items:center;gap:10px;margin:11px 0;color:#9aa4b2;font-size:.8rem}.divider:before,.divider:after{content:"";height:1px;flex:1;background:var(--line)}.create{display:block;text-align:center;padding:9px;border:2px solid var(--navy);border-radius:10px;color:var(--navy);font-weight:800;text-decoration:none}.note{font-size:.72rem;color:#8a95a3;text-align:center;margin:6px 0 0;min-height:14px}.note.error{color:#b42318}.note.ok{color:#3f8d00}
+@media(max-width:760px){html,body{height:100%;min-height:100%;overflow:hidden}.topbar{height:48px!important;padding:5px 7%!important}.topbar img{height:25px!important}.back{font-size:.84rem!important}.wrap{width:92%!important;height:calc(100dvh - 54px)!important;margin:6px auto 0!important;display:flex!important;flex-direction:column!important;gap:6px!important}.welcome{height:112px!important;min-height:112px!important;padding:9px 13px!important;border-radius:14px!important;overflow:hidden!important;box-shadow:none!important}.user-icon{width:30px!important;height:30px!important;margin:0 0 2px!important}.user-icon svg{width:17px!important;height:17px!important}.welcome h1{font-size:1.16rem!important;line-height:1.05!important;margin:0 0 2px!important}.welcome p{font-size:.68rem!important;line-height:1.15!important;margin:0!important;max-width:94%!important}.card{height:calc(100dvh - 172px)!important;min-height:0!important;padding:10px 14px 7px!important;border-radius:14px!important;box-shadow:none!important;overflow:hidden!important}.card h2{font-size:1.3rem!important;line-height:1.05!important;margin:0 0 1px!important}.card>p{font-size:.7rem!important;margin:0 0 5px!important;line-height:1.1!important}.field{font-size:.73rem!important;margin:0 0 4px!important}.field input{height:36px!important;margin-top:2px!important;padding:6px 9px!important;border-radius:7px!important;font-size:.82rem!important}.primary{height:36px!important;padding:6px!important;border-radius:7px!important;font-size:.82rem!important}.divider{height:15px!important;margin:3px 0!important;font-size:.65rem!important}.create{height:35px!important;padding:6px!important;border-radius:7px!important;font-size:.8rem!important}.note{font-size:.61rem!important;line-height:1!important;margin:3px 0 0!important;min-height:10px!important}}
+</style>
 </head>
 <body>
-  <header class="topbar">
-    <a href="index.html" aria-label="Volver a inicio"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"></a>
-    <a class="back" href="index.html">Inicio</a>
-  </header>
-  <main class="wrap">
-    <section class="welcome">
-      <div class="user-icon"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path><path d="M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6"></path></svg></div>
-      <h1>Bienvenido</h1>
-      <p>Ingresa a tu cuenta para consultar tus compras, cotizaciones y favoritos.</p>
-    </section>
-    <section class="card">
-      <h2>Iniciar sesión</h2>
-      <p>Accede a tu cuenta RHO.</p>
-      <form id="loginForm">
-        <label class="field">Correo electrónico<input name="email" type="email" autocomplete="email" placeholder="correo@empresa.com" required></label>
-        <label class="field">Contraseña<input name="password" type="password" autocomplete="current-password" placeholder="••••••••" required></label>
-        <button class="primary" type="submit">Ingresar</button>
-      </form>
-      <div class="divider">o</div>
-      <a class="create" href="registro.html">Crear cuenta</a>
-      <p class="note" id="status">Acceso protegido con Supabase.</p>
-    </section>
-  </main>
-  <script type="module">
-    import { supabase } from './supabase-client.js?v=20260829-login-compact2';
-    const form=document.getElementById('loginForm');
-    const status=document.getElementById('status');
-    const button=form.querySelector('button');
-    form.addEventListener('submit',async(e)=>{
-      e.preventDefault(); status.className='note'; status.textContent='Validando acceso…'; button.disabled=true;
-      const data=new FormData(form);
-      const {data:authData,error}=await supabase.auth.signInWithPassword({email:data.get('email').trim(),password:data.get('password')});
-      if(error){status.className='note error';status.textContent='No fue posible iniciar sesión. Revisa tu correo y contraseña.';button.disabled=false;return;}
-      const {data:profile}=await supabase.from('profiles').select('role').eq('id',authData.user.id).single();
-      status.className='note ok';status.textContent='Acceso correcto.';
-      window.location.href=profile?.role==='admin'?'admin.html':'index.html';
-    });
-  </script>
-</body>
-</html>
+<header class="topbar"><a href="index.html" aria-label="Volver a inicio"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"></a><a class="back" href="index.html">Inicio</a></header>
+<main class="wrap">
+<section class="welcome"><div class="user-icon"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path><path d="M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6"></path></svg></div><h1>Bienvenido</h1><p>Ingresa a tu cuenta para consultar tus compras, cotizaciones y favoritos.</p></section>
+<section class="card"><h2>Iniciar sesión</h2><p>Accede a tu cuenta RHO.</p><form id="loginForm"><label class="field">Correo electrónico<input name="email" type="email" autocomplete="email" placeholder="correo@empresa.com" required></label><label class="field">Contraseña<input name="password" type="password" autocomplete="current-password" placeholder="••••••••" required></label><button class="primary" type="submit">Ingresar</button></form><div class="divider">o</div><a class="create" href="registro.html">Crear cuenta</a><p class="note" id="status">Acceso protegido con Supabase.</p></section>
+</main>
+<script type="module">import{supabase}from'./supabase-client.js?v=20260829-login-compact3';const form=document.getElementById('loginForm'),status=document.getElementById('status'),button=form.querySelector('button');form.addEventListener('submit',async e=>{e.preventDefault();status.className='note';status.textContent='Validando acceso…';button.disabled=true;const data=new FormData(form);const{data:authData,error}=await supabase.auth.signInWithPassword({email:data.get('email').trim(),password:data.get('password')});if(error){status.className='note error';status.textContent='No fue posible iniciar sesión. Revisa tu correo y contraseña.';button.disabled=false;return}const{data:profile}=await supabase.from('profiles').select('role').eq('id',authData.user.id).single();status.className='note ok';status.textContent='Acceso correcto.';window.location.href=profile?.role==='admin'?'admin.html':'index.html'});</script>
+</body></html>
