@@ -12,8 +12,11 @@
   .nav{top:112px}
 }
 
-/* Sin contador numérico en el carrito */
-.cart-badge,[data-cart-count]{display:none!important}
+/* Indicador activo del carrito */
+.cart-btn{position:relative}
+.cart-badge,[data-cart-count]{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;margin-left:4px;border-radius:999px;background:var(--orange);color:#fff;font-size:11px;font-weight:800;line-height:1;vertical-align:middle}
+.cart-badge[hidden],[data-cart-count][hidden]{display:none!important}
+.cart-btn.has-items{color:var(--orange)!important}
 
 /* Compra directa en todas las fichas de producto */
 .quote,.quote-button{display:none!important}
