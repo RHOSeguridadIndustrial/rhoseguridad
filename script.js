@@ -64,7 +64,8 @@ dots.forEach((dot,i)=>dot.classList.toggle('active',i===0));
 
 const beginBannerLoading=()=>{
   loadSlideImage(0,'high');
-  setTimeout(()=>loadSlideImage(1,'low'),3400);
+  // No precargar el banner 2: se descarga únicamente cuando toca mostrarse.
+  // Esto reduce la transferencia inicial en móvil de ~4.7 MB a ~2.35 MB.
   restartBannerTimer();
 };
 
@@ -74,4 +75,10 @@ if(document.readyState==='loading'){
   requestAnimationFrame(beginBannerLoading);
 }
 
-import('./analytics.js').catch(()=>{});
+// Analítica fuera de la ruta crítica de carga.
+const loadAnalytics=()=>import('./analytics.js').catch(()=>{});
+if('requestIdleCallback' in window){
+  requestIdleCallback(loadAnalytics,{timeout:4000});
+}else{
+  setTimeout(loadAnalytics,4000);
+}
