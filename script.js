@@ -1,84 +1,16 @@
 const menuBtn=document.querySelector('.menu-btn');
 const nav=document.querySelector('.nav');
-
-if(menuBtn&&nav){
-  menuBtn.addEventListener('click',()=>{
-    nav.classList.toggle('open');
-    menuBtn.setAttribute('aria-expanded',nav.classList.contains('open'));
-  });
-  document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));
-}
-
-const year=document.getElementById('year');
-if(year) year.textContent=new Date().getFullYear();
-
-const quoteForm=document.getElementById('quoteForm');
-if(quoteForm){
-  quoteForm.addEventListener('submit',e=>{
-    e.preventDefault();
-    const d=new FormData(e.target);
-    const t=`Hola RHO Seguridad Industrial, soy ${d.get('nombre')}${d.get('empresa')?` de ${d.get('empresa')}`:''}. Necesito cotizar: ${d.get('mensaje')}`;
-    window.open(`https://wa.me/525569090204?text=${encodeURIComponent(t)}`,'_blank');
-  });
-}
-
+if(menuBtn&&nav){menuBtn.addEventListener('click',()=>{nav.classList.toggle('open');menuBtn.setAttribute('aria-expanded',nav.classList.contains('open'));});document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));}
+const year=document.getElementById('year');if(year) year.textContent=new Date().getFullYear();
+const quoteForm=document.getElementById('quoteForm');if(quoteForm){quoteForm.addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);const t=`Hola RHO Seguridad Industrial, soy ${d.get('nombre')}${d.get('empresa')?` de ${d.get('empresa')}`:''}. Necesito cotizar: ${d.get('mensaje')}`;window.open(`https://wa.me/525569090204?text=${encodeURIComponent(t)}`,'_blank');});}
 const carousel=document.querySelector('.banner-carousel');
 const slides=[...document.querySelectorAll('.banner-slide')];
 const dots=[...document.querySelectorAll('.banner-dot')];
-let currentSlide=0;
-let bannerTimer=null;
-
-function loadSlideImage(index,priority='auto'){
-  const img=slides[index]?.querySelector('img[data-src]');
-  if(!img||!img.dataset.src) return;
-  if(priority!=='auto') img.fetchPriority=priority;
-  if(index===0){
-    img.addEventListener('load',()=>carousel?.classList.add('loaded'),{once:true});
-  }
-  img.src=img.dataset.src;
-  img.removeAttribute('data-src');
-}
-
-function showSlide(index){
-  if(!slides.length) return;
-  currentSlide=(index+slides.length)%slides.length;
-  loadSlideImage(currentSlide,currentSlide===0?'high':'low');
-  slides.forEach((slide,i)=>slide.classList.toggle('active',i===currentSlide));
-  dots.forEach((dot,i)=>dot.classList.toggle('active',i===currentSlide));
-}
-
-function restartBannerTimer(){
-  if(bannerTimer) clearInterval(bannerTimer);
-  if(slides.length>1){
-    bannerTimer=setInterval(()=>showSlide(currentSlide+1),5000);
-  }
-}
-
-dots.forEach((dot,i)=>dot.addEventListener('click',()=>{
-  showSlide(i);
-  restartBannerTimer();
-}));
-
-slides.forEach((slide,i)=>slide.classList.toggle('active',i===0));
-dots.forEach((dot,i)=>dot.classList.toggle('active',i===0));
-
-const beginBannerLoading=()=>{
-  loadSlideImage(0,'high');
-  // No precargar el banner 2: se descarga únicamente cuando toca mostrarse.
-  // Esto reduce la transferencia inicial en móvil de ~4.7 MB a ~2.35 MB.
-  restartBannerTimer();
-};
-
-if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(beginBannerLoading),{once:true});
-}else{
-  requestAnimationFrame(beginBannerLoading);
-}
-
-// Analítica fuera de la ruta crítica de carga.
-const loadAnalytics=()=>import('./analytics.js').catch(()=>{});
-if('requestIdleCallback' in window){
-  requestIdleCallback(loadAnalytics,{timeout:4000});
-}else{
-  setTimeout(loadAnalytics,4000);
-}
+let currentSlide=0,bannerTimer=null;
+function forceMobileFit(){if(!matchMedia('(max-width:800px)').matches)return;if(carousel){carousel.style.cssText+=';height:300px!important;min-height:300px!important;max-height:300px!important;background:#fff!important;';}slides.forEach(slide=>{slide.style.cssText+=';height:300px!important;min-height:300px!important;max-height:300px!important;margin:0!important;background:#fff!important;overflow:hidden!important;';const img=slide.querySelector('img');if(img){img.style.cssText+=';display:block!important;width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;object-fit:contain!important;object-position:center center!important;transform:none!important;background:#fff!important;';}});}
+function loadSlideImage(index,priority='auto'){const img=slides[index]?.querySelector('img[data-src]');if(!img||!img.dataset.src)return;if(priority!=='auto')img.fetchPriority=priority;img.addEventListener('load',()=>{if(index===0)carousel?.classList.add('loaded');forceMobileFit();},{once:true});img.src=img.dataset.src;img.removeAttribute('data-src');}
+function showSlide(index){if(!slides.length)return;currentSlide=(index+slides.length)%slides.length;loadSlideImage(currentSlide,currentSlide===0?'high':'low');slides.forEach((slide,i)=>slide.classList.toggle('active',i===currentSlide));dots.forEach((dot,i)=>dot.classList.toggle('active',i===currentSlide));forceMobileFit();}
+function restartBannerTimer(){if(bannerTimer)clearInterval(bannerTimer);if(slides.length>1)bannerTimer=setInterval(()=>showSlide(currentSlide+1),5000);}
+dots.forEach((dot,i)=>dot.addEventListener('click',()=>{showSlide(i);restartBannerTimer();}));slides.forEach((slide,i)=>slide.classList.toggle('active',i===0));dots.forEach((dot,i)=>dot.classList.toggle('active',i===0));
+const beginBannerLoading=()=>{forceMobileFit();loadSlideImage(0,'high');restartBannerTimer();};if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',()=>requestAnimationFrame(beginBannerLoading),{once:true});}else{requestAnimationFrame(beginBannerLoading);}window.addEventListener('resize',forceMobileFit,{passive:true});
+const loadAnalytics=()=>import('./analytics.js').catch(()=>{});if('requestIdleCallback' in window){requestIdleCallback(loadAnalytics,{timeout:4000});}else{setTimeout(loadAnalytics,4000);}
