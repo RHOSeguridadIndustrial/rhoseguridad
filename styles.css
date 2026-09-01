@@ -22,7 +22,7 @@
 @media(max-width:800px){
   .site-header .cart-btn{position:relative!important;overflow:visible!important}
   .site-header .cart-btn .cart-badge,
-  .site-header .cart-btn [data-cart-count]{position:absolute!important;top:1px!important;right:1px!important;z-index:5!important;min-width:22px!important;height:22px!important;margin:0!important;padding:0 6px!important;border:2px solid #fff!important;border-radius:999px!important;background:#4ca500!important;color:#fff!important;font-size:12px!important;line-height:18px!important;box-shadow:0 2px 6px rgba(7,26,53,.18)!important}
+  .site-header .cart-btn [data-cart-count]{position:absolute!important;top:3px!important;right:5px!important;z-index:5!important;min-width:17px!important;width:auto!important;height:17px!important;margin:0!important;padding:0 4px!important;border:1.5px solid #fff!important;border-radius:999px!important;background:#4ca500!important;color:#fff!important;font-size:9px!important;font-weight:800!important;line-height:14px!important;box-shadow:0 1px 4px rgba(7,26,53,.16)!important}
 }
 
 /* Compra directa en todas las fichas de producto */
