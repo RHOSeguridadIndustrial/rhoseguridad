@@ -1,2 +1,84 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate"><title>Administrar lealtad | RHO</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="loyalty.css?v=20260913-1"><style>.admin-grid{display:grid;grid-template-columns:360px 1fr;gap:20px}.report-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 20px}.report-card{background:#fff;border:1px solid #dce5ea;border-radius:14px;padding:16px;box-shadow:0 8px 24px rgba(7,26,53,.05)}.report-card span{display:block;color:#667581;font-size:.8rem}.report-card strong{display:block;color:#071a35;font-size:1.75rem;margin-top:5px}.tier-summary{grid-column:1/-1;background:#edf4f6;border-radius:12px;padding:11px 14px;color:#294552;font-size:.84rem}.actions{display:flex;gap:7px}.small{padding:7px 9px;font-size:.75rem}.qr-result{margin-top:18px;padding:18px;background:#edf4f6;border-radius:14px;text-align:center}.qr-result canvas{background:#fff;padding:8px;max-width:220px;width:100%;height:auto!important}.qr-result input{width:100%;padding:9px;margin:9px 0;border:1px solid #cbd5dc;border-radius:7px}@media(max-width:850px){.admin-grid{grid-template-columns:1fr}.report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.report-grid{gap:7px}.report-card{padding:10px}.report-card span{font-size:.66rem}.report-card strong{font-size:1.25rem}}</style></head><body>
-<header class="topbar"><strong>RHO · Lealtad</strong><nav><a href="admin.html">Panel general</a><a href="index.html">Sitio</a><button id="logoutBtn">Salir</button></nav></header><main class="shell"><div class="page-head"><div><h1>Tarjetas de lealtad</h1><p>Emite tarjetas físicas y digitales con el mismo QR seguro.</p></div></div><section aria-labelledby="reportTitle"><h2 id="reportTitle">Reporte privado de lealtad</h2><div class="report-grid"><article class="report-card"><span>Tarjetas emitidas</span><strong id="reportIssued">—</strong></article><article class="report-card"><span>Tarjetas activas</span><strong id="reportActive">—</strong></article><article class="report-card"><span>Puntos disponibles</span><strong id="reportPoints">—</strong></article><article class="report-card"><span>Validaciones en 30 días</span><strong id="reportScans">—</strong></article><div class="tier-summary" id="tierSummary">Cargando distribución por nivel…</div></div></section><div class="admin-grid"><article class="panel"><h2>Emitir tarjeta</h2><form id="issueForm" class="form-grid"><label class="field wide">Cliente<select name="user_id" id="clientSelect" required><option value="">Seleccionar…</option></select></label><label class="field">Producto<select name="tier_code" required><option value="azul">RHO Azul</option><option value="black">RHO Black</option><option value="oro">RHO Oro</option><option value="platino">RHO Platino</option></select></label><label class="field">Vigencia<input name="expires_at" type="date"></label><button class="primary wide" type="submit">Emitir y crear QR</button></form><p id="issueStatus" class="status"></p><section id="qrResult" class="qr-result" hidden><h3>QR listo para imprimir</h3><canvas id="adminQr"></canvas><input id="qrUrl" readonly><button id="copyQr" class="secondary" type="button">Copiar enlace</button><p class="privacy">Coloca este QR en el reverso de la tarjeta física. La tarjeta digital del cliente mostrará el mismo código.</p></section></article><article class="panel"><h2>Tarjetas emitidas</h2><div class="table-wrap"><table class="data-table"><thead><tr><th>Cliente</th><th>Tarjeta</th><th>Producto</th><th>Puntos</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="cardsBody"><tr><td colspan="6">Cargando…</td></tr></tbody></table></div></article></div></main><script type="module" src="admin-lealtad.js?v=20260913-2"></script></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+  <title>Administrar lealtad | RHO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="loyalty.css?v=20260913-1">
+  <style>
+    .admin-grid{display:grid;grid-template-columns:360px 1fr;gap:20px}
+    .report-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 20px}
+    .report-card{background:#fff;border:1px solid #dce5ea;border-radius:14px;padding:16px;box-shadow:0 8px 24px rgba(7,26,53,.05)}
+    .report-card span{display:block;color:#667581;font-size:.8rem}
+    .report-card strong{display:block;color:#071a35;font-size:1.75rem;margin-top:5px}
+    .tier-summary{grid-column:1/-1;background:#edf4f6;border-radius:12px;padding:11px 14px;color:#294552;font-size:.84rem}
+    .customer-create{margin:0 0 18px;border:1px solid #dce5ea;border-radius:12px;padding:12px}
+    .customer-create summary{cursor:pointer;font-weight:800;color:#2f6f10}
+    .customer-create .form-grid{margin-top:14px}
+    .actions{display:flex;gap:7px}
+    .small{padding:7px 9px;font-size:.75rem}
+    .qr-result{margin-top:18px;padding:18px;background:#edf4f6;border-radius:14px;text-align:center}
+    .qr-result canvas{background:#fff;padding:8px;max-width:220px;width:100%;height:auto!important}
+    .qr-result input{width:100%;padding:9px;margin:9px 0;border:1px solid #cbd5dc;border-radius:7px}
+    @media(max-width:850px){.admin-grid{grid-template-columns:1fr}.report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:480px){.report-grid{gap:7px}.report-card{padding:10px}.report-card span{font-size:.66rem}.report-card strong{font-size:1.25rem}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <strong>RHO · Lealtad</strong>
+    <nav><a href="admin.html">Panel general</a><a href="index.html">Sitio</a><button id="logoutBtn">Salir</button></nav>
+  </header>
+  <main class="shell">
+    <div class="page-head"><div><h1>Tarjetas de lealtad</h1><p>Emite tarjetas físicas y digitales con el mismo QR seguro.</p></div></div>
+    <section aria-labelledby="reportTitle">
+      <h2 id="reportTitle">Reporte privado de lealtad</h2>
+      <div class="report-grid">
+        <article class="report-card"><span>Tarjetas emitidas</span><strong id="reportIssued">—</strong></article>
+        <article class="report-card"><span>Tarjetas activas</span><strong id="reportActive">—</strong></article>
+        <article class="report-card"><span>Puntos disponibles</span><strong id="reportPoints">—</strong></article>
+        <article class="report-card"><span>Validaciones en 30 días</span><strong id="reportScans">—</strong></article>
+        <div class="tier-summary" id="tierSummary">Cargando distribución por nivel…</div>
+      </div>
+    </section>
+    <div class="admin-grid">
+      <article class="panel">
+        <h2>Emitir tarjeta</h2>
+        <details class="customer-create">
+          <summary>+ Registrar cliente</summary>
+          <form id="customerForm" class="form-grid">
+            <label class="field wide">Nombre completo<input name="full_name" required maxlength="160"></label>
+            <label class="field wide">Correo electrónico<input name="email" type="email" required maxlength="254"></label>
+            <label class="field">Empresa<input name="company_name" maxlength="160"></label>
+            <label class="field">Teléfono<input name="phone" type="tel" maxlength="40"></label>
+            <button class="secondary wide" type="submit">Registrar y enviar invitación</button>
+          </form>
+          <p id="customerStatus" class="status"></p>
+        </details>
+        <form id="issueForm" class="form-grid">
+          <label class="field wide">Cliente<select name="user_id" id="clientSelect" required><option value="">Seleccionar…</option></select></label>
+          <label class="field">Producto<select name="tier_code" required><option value="azul">RHO Azul</option><option value="black">RHO Black</option><option value="oro">RHO Oro</option><option value="platino">RHO Platino</option></select></label>
+          <label class="field">Vigencia<input name="expires_at" type="date"></label>
+          <button class="primary wide" type="submit">Emitir y crear QR</button>
+        </form>
+        <p id="issueStatus" class="status"></p>
+        <section id="qrResult" class="qr-result" hidden>
+          <h3>QR listo para imprimir</h3>
+          <canvas id="adminQr"></canvas>
+          <input id="qrUrl" readonly>
+          <button id="copyQr" class="secondary" type="button">Copiar enlace</button>
+          <p class="privacy">Coloca este QR en el reverso de la tarjeta física. La tarjeta digital del cliente mostrará el mismo código.</p>
+        </section>
+      </article>
+      <article class="panel">
+        <h2>Tarjetas emitidas</h2>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Cliente</th><th>Tarjeta</th><th>Producto</th><th>Puntos</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="cardsBody"><tr><td colspan="6">Cargando…</td></tr></tbody></table></div>
+      </article>
+    </div>
+  </main>
+  <script type="module" src="admin-lealtad.js?v=20260913-3"></script>
+</body>
+</html>
