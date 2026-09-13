@@ -84,7 +84,7 @@ Deno.serve(async (request) => {
 
   const action = String(payload.action || "");
   const audit = async (
-    auditAction: "issue_card" | "rotate_qr" | "add_points",
+    auditAction: "create_customer" | "issue_card" | "rotate_qr" | "add_points",
     cardId: string | null,
     targetUserId: string | null,
     metadata: Record<string, unknown> = {},
@@ -125,6 +125,32 @@ Deno.serve(async (request) => {
         generated_at: new Date().toISOString(),
       },
     });
+  }
+
+  if (action === "create_customer") {
+    const fullName = String(payload.full_name || "").trim().slice(0, 160);
+    const email = String(payload.email || "").trim().toLowerCase().slice(0, 254);
+    const companyName = String(payload.company_name || "").trim().slice(0, 160);
+    const phone = String(payload.phone || "").trim().slice(0, 40);
+    if (fullName.length < 3 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return json({ error: "Nombre o correo inválido" }, 400);
+    }
+
+    const { data, error } = await service.auth.admin.inviteUserByEmail(email, {
+      data: {
+        full_name: fullName,
+        company_name: companyName || null,
+        phone: phone || null,
+        customer_type: "Cliente RHO",
+      },
+    });
+    if (error || !data.user) {
+      const duplicate = /registered|already|exists/i.test(error?.message || "");
+      return json({ error: duplicate ? "Ese correo ya está registrado." : "No fue posible registrar e invitar al cliente." }, 400);
+    }
+
+    await audit("create_customer", null, data.user.id, { email, company_name: companyName || null });
+    return json({ user: { id: data.user.id, full_name: fullName, email }, invited: true }, 201);
   }
 
   if (action === "issue_card") {
