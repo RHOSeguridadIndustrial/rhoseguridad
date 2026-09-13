@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+  <title>Mi tarjeta RHO</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="loyalty.css?v=20260913-1">
+</head>
+<body>
+  <header class="topbar"><a href="index.html"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"></a><nav><a href="index.html">Inicio</a><button id="logoutBtn">Cerrar sesión</button></nav></header>
+  <main class="shell">
+    <div class="page-head"><div><h1>Mi membresía RHO</h1><p>Tu tarjeta digital, puntos y beneficios en un solo lugar.</p></div></div>
+    <div id="loading" class="panel empty">Cargando tu membresía…</div>
+    <section id="memberContent" hidden>
+      <div class="layout">
+        <div>
+          <div id="digitalCard" class="loyalty-card">
+            <section class="card-front"><div class="watermark">RHO</div><div class="brandline"><div><div class="rho-name">RHO</div><small>Seguridad Industrial</small></div><strong class="tier-name" id="tierName"></strong></div><div class="tagline">TU LEALTAD TIENE VALOR</div><div class="card-number" id="cardNumber"></div><i class="accent"></i></section>
+            <section class="card-back"><div class="qr-wrap"><canvas id="qrCanvas" aria-label="Código QR de tu tarjeta"></canvas></div><div class="back-copy"><h3>Identificación segura</h3><p>Presenta este QR al cotizar. Está asociado a tu tarjeta física y no contiene tus datos personales.</p><strong id="backTier"></strong></div><i class="accent"></i></section>
+          </div>
+          <div class="switcher"><button class="active" data-side="front">Frente</button><button data-side="back">Reverso · QR</button></div>
+          <div class="stats"><div class="stat"><small>Puntos disponibles</small><strong id="points">0</strong></div><div class="stat"><small>Puntos históricos</small><strong id="lifetime">0</strong></div><div class="stat"><small>Vigencia</small><strong id="expiry">Sin límite</strong></div></div>
+          <article class="panel"><h2>Beneficios de tu nivel</h2><ul id="benefits" class="benefits"></ul></article>
+        </div>
+        <div>
+          <article class="panel"><h2>Mi información</h2><form id="detailsForm" class="form-grid"><label class="field">Cumpleaños<input type="date" name="birth_date"></label><label class="field">Aniversario<input type="date" name="anniversary_date"></label><label class="field wide">Categorías preferidas<input name="preferred_categories" placeholder="Ej. Cascos, guantes, calzado"></label><label class="privacy wide"><input type="checkbox" name="privacy_consent" required> Acepto el <a href="aviso-privacidad.html" target="_blank">Aviso de Privacidad</a> para administrar mi membresía.</label><label class="privacy wide"><input type="checkbox" name="marketing_consent"> Deseo recibir promociones y novedades.</label><button class="primary wide" type="submit">Guardar preferencias</button></form><p id="detailsStatus" class="status"></p></article>
+          <article class="panel" style="margin-top:18px"><h2>Actividad reciente</h2><div class="table-wrap"><table class="data-table"><thead><tr><th>Fecha</th><th>Concepto</th><th>Puntos</th></tr></thead><tbody id="activityBody"></tbody></table></div></article>
+        </div>
+      </div>
+      <section class="layout" style="margin-top:18px">
+        <article class="panel"><h2>Compras recientes</h2><div class="table-wrap"><table class="data-table"><thead><tr><th>Fecha</th><th>Folio</th><th>Sucursal</th><th>Total</th></tr></thead><tbody id="purchasesBody"></tbody></table></div></article>
+        <article class="panel"><h2>Recompensas</h2><div class="table-wrap"><table class="data-table"><thead><tr><th>Recompensa</th><th>Estado</th><th>Fecha</th></tr></thead><tbody id="rewardsBody"></tbody></table></div></article>
+      </section>
+    </section>
+    <section id="noCard" class="panel empty" hidden><h2>Tu membresía aún no está emitida</h2><p>Un administrador debe asignarte una tarjeta RHO Azul, Black, Oro o Platino.</p><a class="primary" href="mailto:Administracion@rhosegind.com" style="display:inline-block;text-decoration:none">Solicitar activación</a></section>
+  </main>
+  <script type="module" src="membresia.js?v=20260913-1"></script>
+</body></html>
