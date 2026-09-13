@@ -22,7 +22,13 @@
     .btn{width:100%;padding:15px;border:0;border-radius:12px;background:var(--green);color:#fff;font-weight:800;font-size:1rem}
     .btn:disabled{opacity:.6}.note{margin-top:16px;font-size:.82rem;text-align:center}
     .note.error{color:#b42318}.note.ok{color:#3f8d00}
-    @media(max-width:650px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:24px}}
+    .contact-options{margin-top:22px;padding:20px;border-radius:18px;background:#f1f7ec;text-align:center}
+    .contact-options h2{margin:0 0 6px;font-size:1.35rem}.contact-options p{margin:0 0 14px}
+    .contact-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .contact-btn{display:flex;align-items:center;justify-content:center;min-height:50px;padding:13px;border-radius:12px;color:#fff;text-decoration:none;font-weight:800}
+    .contact-btn.whatsapp{background:#168b49}.contact-btn.email{background:#1769aa}
+    .continue-link{display:inline-block;margin-top:16px;color:var(--navy);font-weight:800}
+    @media(max-width:650px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:24px}.contact-actions{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -45,6 +51,15 @@
         <button class="btn" type="submit">Crear mi cuenta</button>
       </form>
       <p class="note" id="status">Al crear la cuenta, tu sesión se iniciará automáticamente.</p>
+      <section id="contactOptions" class="contact-options" hidden>
+        <h2>¿Cómo deseas enviar tu registro?</h2>
+        <p>Elige una opción. El destinatario y el mensaje ya estarán completos con tus datos.</p>
+        <div class="contact-actions">
+          <a id="registerWhatsApp" class="contact-btn whatsapp" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+          <a id="registerEmail" class="contact-btn email">Enviar por correo</a>
+        </div>
+        <a class="continue-link" href="index.html">Continuar al sitio</a>
+      </section>
     </section>
   </main>
   <script type="module">
@@ -120,7 +135,27 @@
 
       status.className = 'note ok';
       status.textContent = 'Cuenta creada. Sesión iniciada correctamente.';
-      setTimeout(() => location.replace('index.html'), 700);
+      const company = String(values.get('empresa') || '').trim();
+      const phone = String(values.get('telefono') || '').trim();
+      const customerType = String(values.get('tipo') || '').trim();
+      const message = [
+        'Hola RHO Seguridad Industrial,',
+        '',
+        'Acabo de crear mi cuenta como cliente con los siguientes datos:',
+        `Nombre: ${fullName}`,
+        company ? `Empresa: ${company}` : '',
+        `Tipo de cliente: ${customerType}`,
+        `Correo: ${email}`,
+        phone ? `Teléfono: ${phone}` : '',
+        '',
+        'Deseo continuar con la atención de mi registro.',
+      ].filter(Boolean).join('\n');
+      const subject = `Nuevo registro de cliente - ${fullName}`;
+
+      document.getElementById('registerEmail').href = `mailto:Administracion@rhosegind.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+      document.getElementById('registerWhatsApp').href = `https://wa.me/525569090204?text=${encodeURIComponent(message)}`;
+      form.hidden = true;
+      document.getElementById('contactOptions').hidden = false;
     });
   </script>
 </body>
