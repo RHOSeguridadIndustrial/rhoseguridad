@@ -1,15 +1,19 @@
 import { createClient } from "npm:@supabase/supabase-js@2.112.4";
 
-const cors = {
-  "Access-Control-Allow-Origin": "https://rhosegind.com",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+const allowedOrigins = new Set([
+  "https://rhosegind.com",
+  "https://rhoseguridadindustrial.github.io",
+]);
 
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
-  status,
-  headers: { ...cors, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
-});
+const corsFor = (request: Request) => {
+  const origin = request.headers.get("Origin") || "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigins.has(origin) ? origin : "https://rhosegind.com",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+};
 
 const bytesToHex = (bytes: Uint8Array) => [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
 
@@ -46,6 +50,12 @@ async function encryptToken(token: string) {
 }
 
 Deno.serve(async (request) => {
+  const cors = corsFor(request);
+  const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
+    status,
+    headers: { ...cors, "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
+  });
+
   if (request.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (request.method !== "POST") return json({ error: "Método no permitido" }, 405);
 
@@ -73,6 +83,49 @@ Deno.serve(async (request) => {
   }
 
   const action = String(payload.action || "");
+  const audit = async (
+    auditAction: "issue_card" | "rotate_qr" | "add_points",
+    cardId: string | null,
+    targetUserId: string | null,
+    metadata: Record<string, unknown> = {},
+  ) => {
+    const { error } = await service.from("loyalty_admin_audit").insert({
+      admin_user_id: authData.user.id,
+      action: auditAction,
+      card_id: cardId,
+      target_user_id: targetUserId,
+      metadata,
+    });
+    if (error) console.error("loyalty_admin_audit", error.message);
+  };
+
+  if (action === "get_report") {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const [cardsResult, scansResult, auditResult] = await Promise.all([
+      service.from("loyalty_cards").select("tier_code,status,points_balance"),
+      service.from("loyalty_qr_scans").select("id", { count: "exact", head: true }).gte("scanned_at", since),
+      service.from("loyalty_admin_audit").select("action,created_at").order("created_at", { ascending: false }).limit(8),
+    ]);
+    if (cardsResult.error || scansResult.error || auditResult.error) {
+      return json({ error: "No fue posible generar el reporte" }, 500);
+    }
+    const cards = cardsResult.data || [];
+    const byTier = cards.reduce<Record<string, number>>((summary, card) => {
+      summary[card.tier_code] = (summary[card.tier_code] || 0) + 1;
+      return summary;
+    }, {});
+    return json({
+      report: {
+        issued: cards.length,
+        active: cards.filter((card) => card.status === "active").length,
+        points: cards.reduce((total, card) => total + Number(card.points_balance || 0), 0),
+        scans_30d: scansResult.count || 0,
+        by_tier: byTier,
+        recent_actions: auditResult.data || [],
+        generated_at: new Date().toISOString(),
+      },
+    });
+  }
 
   if (action === "issue_card") {
     const userId = String(payload.user_id || "");
@@ -81,6 +134,9 @@ Deno.serve(async (request) => {
     if (!userId || !["azul", "black", "oro", "platino"].includes(tierCode)) {
       return json({ error: "Cliente o nivel inválido" }, 400);
     }
+
+    const { data: customer } = await service.from("profiles").select("id,role").eq("id", userId).maybeSingle();
+    if (!customer || customer.role !== "customer") return json({ error: "Cliente no válido" }, 400);
 
     const { data: existing } = await service.from("loyalty_cards").select("id").eq("user_id", userId).maybeSingle();
     if (existing) return json({ error: "El cliente ya tiene una tarjeta de lealtad" }, 409);
@@ -113,6 +169,7 @@ Deno.serve(async (request) => {
       return json({ error: "No fue posible asociar el QR" }, 500);
     }
 
+    await audit("issue_card", card.id, userId, { tier_code: tierCode, expires_at: expiresAt });
     return json({
       card,
       validation_url: `https://rhosegind.com/validar.html?t=${token}`,
@@ -124,7 +181,7 @@ Deno.serve(async (request) => {
     const cardId = String(payload.card_id || "");
     if (!cardId) return json({ error: "Tarjeta requerida" }, 400);
 
-    const { data: card } = await service.from("loyalty_cards").select("id,expires_at").eq("id", cardId).maybeSingle();
+    const { data: card } = await service.from("loyalty_cards").select("id,user_id,expires_at").eq("id", cardId).maybeSingle();
     if (!card) return json({ error: "Tarjeta no encontrada" }, 404);
 
     await service.from("loyalty_qr_tokens").update({ is_active: false, revoked_at: new Date().toISOString() })
@@ -140,6 +197,7 @@ Deno.serve(async (request) => {
     });
     if (error) return json({ error: "No fue posible rotar el QR" }, 500);
 
+    await audit("rotate_qr", cardId, card.user_id, {});
     return json({
       validation_url: `https://rhosegind.com/validar.html?t=${token}`,
       notice: "El QR anterior quedó revocado.",
@@ -154,16 +212,20 @@ Deno.serve(async (request) => {
     if (!cardId || !Number.isInteger(points) || points === 0 || !allowed.includes(eventType)) {
       return json({ error: "Movimiento de puntos inválido" }, 400);
     }
+    const { data: card } = await service.from("loyalty_cards").select("id,user_id").eq("id", cardId).maybeSingle();
+    if (!card) return json({ error: "Tarjeta no encontrada" }, 404);
+    const description = payload.description ? String(payload.description).slice(0, 300) : null;
     const { data, error } = await service.from("loyalty_points_ledger").insert({
       card_id: cardId,
       points_delta: points,
       event_type: eventType,
-      description: payload.description ? String(payload.description) : null,
+      description,
       expires_at: payload.expires_at ? String(payload.expires_at) : null,
       created_by: authData.user.id,
     }).select("id,points_delta,created_at").single();
     if (error) return json({ error: error.message.includes("Insufficient") ? "Puntos insuficientes" : "No fue posible registrar los puntos" }, 400);
     const { data: balance } = await service.from("loyalty_cards").select("points_balance,lifetime_points").eq("id", cardId).single();
+    await audit("add_points", cardId, card.user_id, { points_delta: points, event_type: eventType });
     return json({ movement: data, balance });
   }
 
