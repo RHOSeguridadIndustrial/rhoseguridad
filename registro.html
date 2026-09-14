@@ -36,7 +36,12 @@
   <main class="wrap">
     <section class="card">
       <h1>Crear cuenta</h1>
-      <p>Regístrate para agilizar cotizaciones, compras y seguimiento con RHO Seguridad Industrial.</p>
+      <p>Crear una cuenta es opcional. Puedes solicitar atención y cotizaciones por WhatsApp sin registrarte.</p>
+      <section class="contact-options" style="margin:0 0 22px" aria-label="Atención sin registro">
+        <a id="guestWhatsApp" class="contact-btn whatsapp" href="https://wa.me/525569090204?text=Hola%20RHO%2C%20quisiera%20atenci%C3%B3n%20sin%20crear%20una%20cuenta." target="_blank" rel="noopener">Continuar por WhatsApp sin crear cuenta</a>
+        <a class="continue-link" href="carrito.html">Cotizar los productos de mi carrito</a>
+        <p style="margin:12px 0 0">Esta opción sigue disponible aunque no puedas crear tu cuenta.</p>
+      </section>
       <form id="registerForm">
         <div class="grid">
           <label class="field">Nombre<input name="nombre" required autocomplete="given-name"></label>
@@ -62,6 +67,16 @@
       </section>
     </section>
   </main>
+  <script>
+    // Independent of account services so assistance remains available.
+    document.getElementById('guestWhatsApp').addEventListener('click', function () {
+      const form = document.getElementById('registerForm');
+      const name = [form.elements.nombre.value.trim(), form.elements.apellidos.value.trim()].filter(Boolean).join(' ');
+      const company = form.elements.empresa.value.trim();
+      const message = ['Hola RHO, quisiera atención sin crear una cuenta.', name ? 'Nombre: ' + name : '', company ? 'Empresa: ' + company : ''].filter(Boolean).join('\n');
+      this.href = 'https://wa.me/525569090204?text=' + encodeURIComponent(message);
+    });
+  </script>
   <script type="module">
     import { supabase } from './supabase-client.js?v=20260913-registration';
 
