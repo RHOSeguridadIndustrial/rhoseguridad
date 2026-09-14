@@ -58,3 +58,7 @@ body.standard-product-page{background:#f4f7fa;color:#071a35}
  .standard-product-page .product-status,.standard-product-page .helmet-status{font-size:10px}
  .standard-product-page .catalog-note{font-size:10px}
 }
+/* Alineación compacta: la imagen y el contenido comparten la primera fila. */
+.standard-product-page .product-details{grid-column:2;grid-row:1;min-width:0;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0}
+.standard-product-page .product-details>*{grid-column:auto!important}
+.standard-product-page .product-details .product-status,.standard-product-page .product-details .helmet-status{min-height:0}
