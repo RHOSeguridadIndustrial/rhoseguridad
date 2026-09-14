@@ -1,14 +1,54 @@
-const CART_KEY='rho_cart_v1';
-
-export function getCart(){
-  try{return JSON.parse(localStorage.getItem(CART_KEY)||'[]')}catch{return []}
+// Separate local carts by authenticated user. Never import the ownerless v1 cart.
+const AUTH_KEY = 'sb-mtpqpxcmngrsivntbgcc-auth-token';
+const PREFIX = 'rho_cart_v2:';
+let owner = null;
+let ready = false;
+function storedOwner() {
+  try {
+    const raw = localStorage.getItem(AUTH_KEY);
+    if (!raw) return 'guest';
+    const session = JSON.parse(raw);
+    return session?.user?.id ? 'user:' + session.user.id : null;
+  } catch { return null; }
 }
-
-export function saveCart(cart){
-  localStorage.setItem(CART_KEY,JSON.stringify(cart));
+function activeKey() {
+  // Check synchronously as storage events in other tabs can arrive after a click.
+  return ready && owner && storedOwner() === owner ? PREFIX + owner : null;
+}
+function announce() {
   updateCartBadges();
+  window.dispatchEvent(new Event('rho-cart-changed'));
 }
-
+try {
+  const { supabase } = await import('./supabase-client.js?v=20260913-loyalty');
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (!error) { owner = session?.user?.id ? 'user:' + session.user.id : 'guest'; ready = true; }
+  supabase.auth.onAuthStateChange((_event, session) => {
+    const next = session?.user?.id ? 'user:' + session.user.id : 'guest';
+    if (next !== owner || !ready) {
+      owner = next; ready = true;
+      // Supabase persists its session before notifying listeners.
+      announce();
+    }
+  });
+} catch {
+  // Guests can still shop if account services are unavailable.
+  if (storedOwner() === 'guest') { owner = 'guest'; ready = true; }
+}
+export function getCart(){
+  const key = activeKey();
+  if (!key) return [];
+  try {
+    const cart = JSON.parse(localStorage.getItem(key) || '[]');
+    return Array.isArray(cart) ? cart : [];
+  } catch { return []; }
+}
+export function saveCart(cart){
+  const key = activeKey();
+  if (!key) { alert('Tu sesión cambió. Recarga la página antes de modificar el carrito.'); return; }
+  localStorage.setItem(key,JSON.stringify(cart));
+  announce();
+}
 export function addToCart(product){
   const cart=getCart();
   const found=cart.find(item=>item.id===product.id);
@@ -78,4 +118,11 @@ export function updateCartBadges(){
 }
 
 document.addEventListener('DOMContentLoaded',updateCartBadges);
-window.addEventListener('storage',updateCartBadges);
+window.addEventListener('storage', event => {
+  if (event.key === AUTH_KEY || event.key === null) {
+    // Clear stale account contents immediately, then reload to resolve the new session.
+    ready = false; announce(); location.reload(); return;
+  }
+  if (event.key === activeKey()) announce();
+});
+window.addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
