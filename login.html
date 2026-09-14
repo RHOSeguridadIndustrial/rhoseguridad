@@ -16,6 +16,23 @@
 </head>
 <body>
 <header class="topbar"><a href="index.html" aria-label="Volver a inicio"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"></a><a class="back" href="index.html">Inicio</a></header>
-<main class="wrap"><section class="welcome"><div class="user-icon"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path><path d="M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6"></path></svg></div><h1>Bienvenido</h1><p>Ingresa a tu cuenta para consultar tus compras, cotizaciones y favoritos.</p></section><section class="card"><h2>Iniciar sesión</h2><p>Accede a tu cuenta RHO.</p><form id="loginForm"><label class="field">Correo electrónico<input name="email" type="email" autocomplete="email" placeholder="correo@empresa.com" required></label><label class="field">Contraseña<input name="password" type="password" autocomplete="current-password" placeholder="••••••••" required></label><button class="primary" type="submit">Ingresar</button></form><div class="divider">o</div><a class="create" href="registro.html">Crear cuenta</a><p class="note" id="status">Acceso protegido con Supabase.</p></section></main>
-<script type="module">import { LOYALTY_ENABLED } from './supabase/functions/_shared/loyalty-status.js?v=20260914-pause';import{supabase}from'./supabase-client.js?v=20260913-loyalty';const form=document.getElementById('loginForm'),status=document.getElementById('status'),button=form.querySelector('button');form.addEventListener('submit',async e=>{e.preventDefault();status.className='note';status.textContent='Validando acceso…';button.disabled=true;const data=new FormData(form);const{data:authData,error}=await supabase.auth.signInWithPassword({email:data.get('email').trim(),password:data.get('password')});if(error){status.className='note error';status.textContent='No fue posible iniciar sesión. Revisa tu correo y contraseña.';button.disabled=false;return}const{data:profile}=await supabase.from('profiles').select('role').eq('id',authData.user.id).single();status.className='note ok';status.textContent='Acceso correcto.';location.replace(profile?.role==='admin'?'admin.html':(LOYALTY_ENABLED?'membresia.html':'index.html'))});</script>
+<main class="wrap"><section class="welcome"><div class="user-icon"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path><path d="M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6"></path></svg></div><h1>Bienvenido</h1><p>Ingresa para consultar tus datos y continuar con tu cotización.</p></section><section class="card"><h2>Iniciar sesión</h2><p>Accede a tu cuenta RHO.</p><form id="loginForm"><label class="field">Correo electrónico<input name="email" type="email" autocomplete="email" placeholder="correo@empresa.com" required></label><label class="field">Contraseña<input name="password" type="password" autocomplete="current-password" placeholder="••••••••" required></label><button class="primary" type="submit">Ingresar</button></form><div class="divider">o</div><a class="create" href="registro.html">Crear cuenta</a><p class="note" id="status">Acceso protegido con Supabase.</p></section></main>
+<script type="module">import { supabase } from './supabase-client.js?v=20260913-loyalty';
+const form=document.getElementById('loginForm'),status=document.getElementById('status'),button=form.querySelector('button');
+async function routeUser(user) {
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id',user.id).maybeSingle();
+  location.replace(profile?.role === 'admin' ? 'admin.html' : 'cuenta.html');
+}
+form.addEventListener('submit',async event=>{
+  event.preventDefault();button.disabled=true;status.className='note';status.textContent='Validando acceso…';
+  try {
+    const values=new FormData(form);
+    const {data,error}=await supabase.auth.signInWithPassword({email:values.get('email').trim(),password:values.get('password')});
+    if(error || !data.user) throw error || new Error('Sin usuario');
+    status.className='note ok';status.textContent='Sesión iniciada. Abriendo tu cuenta…';
+    await routeUser(data.user);
+  } catch {status.className='note error';status.textContent='No fue posible acceder. Revisa tus datos y conexión.';button.disabled=false;}
+});
+try { const {data:{user}}=await supabase.auth.getUser();if(user)await routeUser(user); } catch {}
+</script>
 </body></html>
