@@ -1,1 +1,13 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Validar tarjeta RHO</title><link rel="stylesheet" href="loyalty.css?v=20260913-1"></head><body><header class="topbar"><a href="index.html"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"></a><nav><a href="index.html">Inicio</a></nav></header><main id="result" class="validation"><div class="validation-icon">…</div><h1>Validando tarjeta</h1><p>Espera un momento.</p></main><script type="module" src="validar.js?v=20260913-1"></script></body></html>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Validar tarjeta RHO</title><link rel="stylesheet" href="loyalty.css?v=20260913-1"></head><body>
+<div id="loyaltyPaused" style="max-width:620px;margin:60px auto;padding:24px;font-family:Arial,sans-serif;color:#071a35"><h1>Programa de lealtad en pausa</h1><p>Seguimos atendiéndote y cotizando por WhatsApp.</p><p><a href="carrito.html">Solicitar cotización</a> · <a href="index.html">Ir al inicio</a></p></div>
+<div id="loyaltyOriginal" hidden><header class="topbar"><a href="index.html"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"></a><nav><a href="index.html">Inicio</a></nav></header><main id="result" class="validation"><div class="validation-icon">…</div><h1>Validando tarjeta</h1><p>Espera un momento.</p></main><script type="application/x-rho-preserved-module" src="validar.js?v=20260913-1"></script></div>
+<script type="module">
+import { LOYALTY_ENABLED } from './supabase/functions/_shared/loyalty-status.js?v=20260914-pause';
+if (LOYALTY_ENABLED) {
+  document.getElementById('loyaltyPaused').hidden = true;
+  document.getElementById('loyaltyOriginal').hidden = false;
+  const original = document.querySelector('script[type="application/x-rho-preserved-module"]');
+  await import(original.src);
+}
+</script>
+</body></html>

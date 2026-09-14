@@ -5,6 +5,8 @@
   <title>Mi tarjeta RHO</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="loyalty.css?v=20260913-1">
 </head>
 <body>
+<div id="loyaltyPaused" style="max-width:620px;margin:60px auto;padding:24px;font-family:Arial,sans-serif;color:#071a35"><h1>Programa de lealtad en pausa</h1><p>Seguimos atendiéndote y cotizando por WhatsApp.</p><p><a href="carrito.html">Solicitar cotización</a> · <a href="index.html">Ir al inicio</a></p></div>
+<div id="loyaltyOriginal" hidden>
   <header class="topbar"><a href="index.html"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"></a><nav><a href="index.html">Inicio</a><button id="logoutBtn">Cerrar sesión</button></nav></header>
   <main class="shell">
     <div class="page-head"><div><h1>Mi membresía RHO</h1><p>Tu tarjeta digital, puntos y beneficios en un solo lugar.</p></div></div>
@@ -32,5 +34,15 @@
     </section>
     <section id="noCard" class="panel empty" hidden><h2>Tu membresía aún no está emitida</h2><p>Un administrador debe asignarte una tarjeta RHO Azul, Black, Oro o Platino.</p><a class="primary" href="mailto:Administracion@rhosegind.com" style="display:inline-block;text-decoration:none">Solicitar activación</a></section>
   </main>
-  <script type="module" src="membresia.js?v=20260913-1"></script>
+  <script type="application/x-rho-preserved-module" src="membresia.js?v=20260913-1"></script>
+</div>
+<script type="module">
+import { LOYALTY_ENABLED } from './supabase/functions/_shared/loyalty-status.js?v=20260914-pause';
+if (LOYALTY_ENABLED) {
+  document.getElementById('loyaltyPaused').hidden = true;
+  document.getElementById('loyaltyOriginal').hidden = false;
+  const original = document.querySelector('script[type="application/x-rho-preserved-module"]');
+  await import(original.src);
+}
+</script>
 </body></html>

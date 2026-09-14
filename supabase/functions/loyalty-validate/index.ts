@@ -1,3 +1,4 @@
+import { LOYALTY_ENABLED } from "../_shared/loyalty-status.js";
 import { createClient } from "npm:@supabase/supabase-js@2.112.4";
 
 const cors = {
@@ -18,6 +19,7 @@ async function sha256(value: string) {
 
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: cors });
+  if (!LOYALTY_ENABLED) return json({ error: "Programa de lealtad en pausa", reason: "program_paused", valid: false }, 503);
   if (request.method !== "GET") return json({ error: "Método no permitido" }, 405);
 
   const token = new URL(request.url).searchParams.get("t") || "";
