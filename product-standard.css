@@ -62,3 +62,13 @@ body.standard-product-page{background:#f4f7fa;color:#071a35}
 .standard-product-page .product-details{grid-column:2;grid-row:1;min-width:0;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0}
 .standard-product-page .product-details>*{grid-column:auto!important}
 .standard-product-page .product-details .product-status,.standard-product-page .product-details .helmet-status{min-height:0}
+
+/* Selectores de color y talla: mismas medidas que el casco en todo el catálogo. */
+.standard-product-page :is(.helmet-colors,.colors,.size-options){display:flex;flex-wrap:wrap;gap:8px;min-width:0;border:0;padding:0;margin:6px 0}
+.standard-product-page :is(.helmet-colors,.colors,.size-options) legend{font-size:16px;font-weight:800;color:#071a35;margin-bottom:6px}
+.standard-product-page :is(.helmet-choice,.choice,.size-choice){position:relative;cursor:pointer}
+.standard-product-page :is(.helmet-choice,.choice,.size-choice)>span{display:flex;align-items:center;gap:7px;padding:10px;border:2px solid #d8dee5;border-radius:12px;font-size:13px;line-height:normal;color:#071a35}
+.standard-product-page .size-choice>span{min-width:39px}
+.standard-product-page :is(.helmet-choice,.choice,.size-choice) input:checked+span{border-color:#071a35;background:#f0f4f8}
+.standard-product-page :is(.helmet-choice,.choice,.size-choice) input:focus-visible+span{outline:3px solid #4ca500;outline-offset:2px}
+.standard-product-page :is(.helmet-swatch,.swatch){display:inline-block;flex:0 0 19px;width:19px;height:19px;border-radius:50%;border:1px solid #a0a8b3}
