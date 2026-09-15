@@ -66,9 +66,11 @@ body.standard-product-page{background:#f4f7fa;color:#071a35}
 /* Selectores de color y talla: mismas medidas que el casco en todo el catálogo. */
 .standard-product-page :is(.helmet-colors,.colors,.size-options){display:flex;flex-wrap:wrap;gap:8px;min-width:0;border:0;padding:0;margin:6px 0}
 .standard-product-page :is(.helmet-colors,.colors,.size-options) legend{font-size:16px;font-weight:800;color:#071a35;margin-bottom:6px}
-.standard-product-page :is(.helmet-choice,.choice,.size-choice){position:relative;cursor:pointer}
-.standard-product-page :is(.helmet-choice,.choice,.size-choice)>span{display:flex;align-items:center;gap:7px;padding:10px;border:2px solid #d8dee5;border-radius:12px;font-size:13px;line-height:normal;color:#071a35}
+.standard-product-page :is(.helmet-choice,.choice,.size-choice){position:relative;display:inline-block;max-width:100%;cursor:pointer}
+.standard-product-page :is(.helmet-choice,.choice,.size-choice)>span{box-sizing:border-box;display:flex;align-items:center;gap:7px;min-height:43px;padding:10px;font-family:Arial,Helvetica,sans-serif;white-space:nowrap;border:2px solid #d8dee5;border-radius:12px;font-size:13px;line-height:normal;color:#071a35}
 .standard-product-page .size-choice>span{min-width:39px}
 .standard-product-page :is(.helmet-choice,.choice,.size-choice) input:checked+span{border-color:#071a35;background:#f0f4f8}
 .standard-product-page :is(.helmet-choice,.choice,.size-choice) input:focus-visible+span{outline:3px solid #4ca500;outline-offset:2px}
-.standard-product-page :is(.helmet-swatch,.swatch){display:inline-block;flex:0 0 19px;width:19px;height:19px;border-radius:50%;border:1px solid #a0a8b3}
+.standard-product-page :is(.helmet-swatch,.swatch){box-sizing:border-box;display:inline-block;flex:0 0 19px;width:19px;min-width:19px;max-width:19px;height:19px;min-height:19px;max-height:19px;border-radius:50%;border:1px solid #a0a8b3}
+
+.standard-product-page :is(.helmet-choice,.choice,.size-choice) input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
