@@ -1,0 +1,25 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate"><title>Pago | RHO Seguridad Industrial</title><style>
+:root{--navy:#071a35;--green:#4ca500;--orange:#ff5600;--muted:#657184;--line:#dfe6ec;--bg:#f5f8fa}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,sans-serif;color:var(--navy)}.top{background:var(--navy);color:#fff;padding:14px 5%;display:flex;justify-content:space-between;align-items:center}.top a{color:#fff;text-decoration:none;font-weight:800}.wrap{min-height:75vh;display:grid;place-items:center;padding:28px}.card{width:min(620px,100%);background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:0 12px 36px rgba(7,26,53,.08);text-align:center}.icon{width:70px;height:70px;border-radius:50%;margin:0 auto 16px;display:grid;place-items:center;background:#eef6e8;color:var(--green);font-size:34px;font-weight:900}.card h1{margin:0 0 8px;font-size:clamp(1.7rem,5vw,2.5rem)}.card p{color:var(--muted);line-height:1.55}.summary{margin:18px 0;padding:14px;border-radius:12px;background:#f8fafb;text-align:left;display:grid;gap:8px}.row{display:flex;justify-content:space-between;gap:12px}.row strong{color:var(--navy)}.btn{display:inline-block;margin-top:8px;padding:13px 18px;border-radius:10px;background:var(--navy);color:#fff;text-decoration:none;font-weight:800}.error .icon{background:#fff0ed;color:#b42318}.pending .icon{background:#fff6e7;color:#a56500}.small{font-size:.84rem}.hidden{display:none}</style></head><body><header class="top"><strong>RHO Seguridad Industrial</strong><a href="index.html">Inicio</a></header><main class="wrap"><section class="card pending" id="card"><div class="icon" id="icon">…</div><h1 id="title">Verificando tu pago</h1><p id="message">Estamos confirmando la operación de forma segura.</p><div class="summary hidden" id="summary"><div class="row"><span>Orden</span><strong id="order">—</strong></div><div class="row"><span>Total</span><strong id="amount">—</strong></div><div class="row"><span>Correo</span><strong id="email">—</strong></div></div><a class="btn hidden" id="continue" href="portafolio.html">Seguir comprando</a><p class="small">RHO no almacena los datos de tu tarjeta.</p></section></main><script type="module">
+import {supabase} from './supabase-client.js?v=20260918-card-checkout';
+import {clearCart} from './cart.js?v=20260918-card-checkout';
+const card=document.getElementById('card'),icon=document.getElementById('icon'),title=document.getElementById('title'),message=document.getElementById('message'),summary=document.getElementById('summary'),cont=document.getElementById('continue');
+const params=new URLSearchParams(location.search),sessionId=params.get('session_id');
+const money=(v,c='MXN')=>new Intl.NumberFormat('es-MX',{style:'currency',currency:c}).format(Number(v)||0);
+function showError(text){card.className='card error';icon.textContent='!';title.textContent='No pudimos confirmar el pago';message.textContent=text;cont.classList.remove('hidden');}
+if(!sessionId){showError('No se encontró la referencia de la operación.');}
+else{
+ try{
+  const {data,error}=await supabase.functions.invoke('verify-card-payment',{body:{session_id:sessionId}});
+  if(error)throw error;
+  if(data?.paid){
+    card.className='card';icon.textContent='✓';title.textContent='Pago confirmado';message.textContent='Gracias por tu compra. Tu pago con tarjeta fue confirmado correctamente.';
+    document.getElementById('order').textContent=data.order_id?String(data.order_id).slice(0,8).toUpperCase():'—';
+    document.getElementById('amount').textContent=money(data.amount_total,data.currency||'MXN');
+    document.getElementById('email').textContent=data.customer_email||'—';
+    summary.classList.remove('hidden');cont.classList.remove('hidden');clearCart();
+  }else{
+    card.className='card pending';icon.textContent='…';title.textContent='Pago en proceso';message.textContent='La operación todavía no aparece como pagada. Si tu banco ya la autorizó, vuelve a revisar en unos momentos.';cont.classList.remove('hidden');
+  }
+ }catch{showError('La operación no pudo verificarse en este momento. Conserva tu comprobante de pago.');}
+}
+</script></body></html>
