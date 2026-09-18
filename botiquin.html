@@ -32,4 +32,4 @@ const menu=document.querySelector('.menu-btn'),nav=document.querySelector('.nav'
 const {addToCart,getCart,updateCartBadges}=await import('./cart.js?v=20260914-account-isolation');updateCartBadges();
 const btn=document.getElementById('add'),status=document.getElementById('status'),image=document.getElementById('main-img').src;
 btn.addEventListener('click',()=>{const p={id:'botiquin-equipado',name:'Botiquín equipado',price:2199,image};const before=getCart().find(i=>i.id===p.id)?.qty||0;addToCart(p);const after=getCart().find(i=>i.id===p.id)?.qty||0;status.textContent=after===before+1?'Botiquín equipado agregado al carrito.':'No se pudo agregar. Recarga la página e inténtalo de nuevo.';});
-</script></body></html>
+</script><script type="module" src="./prices.js?v=20260918-admin-pricing"></script></body></html>
