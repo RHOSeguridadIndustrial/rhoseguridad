@@ -33,9 +33,6 @@ export function cartTotal(){return getCart().reduce((sum,item)=>sum+(item.price*
 function ensureIconWrap(cartBtn){let wrap=cartBtn.querySelector('.cart-icon-wrap');const icon=cartBtn.querySelector('.cart-icon');if(!wrap&&icon){wrap=document.createElement('span');wrap.className='cart-icon-wrap';icon.parentNode.insertBefore(wrap,icon);wrap.appendChild(icon)}if(wrap){Object.assign(wrap.style,{position:'relative',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'28px',height:'28px',overflow:'visible'})}return wrap||cartBtn}
 function ensureBadge(cartBtn){const wrap=ensureIconWrap(cartBtn);let badge=cartBtn.querySelector('[data-cart-count]');if(!badge){badge=document.createElement('b');badge.className='cart-badge';badge.setAttribute('data-cart-count','');badge.setAttribute('aria-label','Artículos en el carrito')}if(badge.parentNode!==wrap)wrap.appendChild(badge);Object.assign(badge.style,{position:'absolute',top:'-9px',right:'-13px',zIndex:'30',minWidth:'22px',height:'22px',margin:'0',padding:'0 6px',border:'2px solid #fff',borderRadius:'999px',background:'#4ca500',color:'#fff',fontSize:'12px',fontWeight:'800',lineHeight:'18px',textAlign:'center',boxShadow:'0 2px 6px rgba(7,26,53,.18)'});return badge}
 export function updateCartBadges(){const count=cartCount();document.querySelectorAll('.cart-btn').forEach(cartBtn=>{const badge=ensureBadge(cartBtn);badge.textContent=String(count);badge.hidden=count===0;cartBtn.classList.toggle('has-items',count>0);cartBtn.setAttribute('aria-label',count>0?`Ver carrito, ${count} artículo${count===1?'':'s'}`:'Ver carrito')})}
-
-// Portafolio: las dos tarjetas inferiores ya contienen su título, descripción y CTA en la imagen maestra.
-// Se muestran como tarjetas horizontales completas para evitar duplicación y espacios blancos.
 function fixPortfolioWideCards(){
   if(!/portafolio\.html$/.test(location.pathname) && location.pathname!=='/portafolio' && location.pathname!=='/') return;
   const cards=document.querySelectorAll('.wide-card');
@@ -45,31 +42,17 @@ function fixPortfolioWideCards(){
     const media=card.querySelector('.media');
     const body=card.querySelector('.body');
     if(body) body.style.display='none';
-    if(media){
-      media.style.aspectRatio='2.85 / 1';
-      media.style.height='auto';
-      media.style.backgroundSize='325.08% auto';
-      media.style.backgroundPosition=positions[i];
-      media.style.backgroundRepeat='no-repeat';
-    }
+    if(media){media.style.aspectRatio='2.85 / 1';media.style.height='auto';media.style.backgroundSize='325.08% auto';media.style.backgroundPosition=positions[i];media.style.backgroundRepeat='no-repeat';}
     card.style.minHeight='0';
   });
 }
-
-function fixSpeedBumpImage(){
+function removeSpeedReducer(){
   if(!/senalizacion\.html$/.test(location.pathname)) return;
   document.querySelectorAll('.card').forEach(card=>{
-    const title=card.querySelector('h2');
-    if(title && title.textContent.includes('Reductor de velocidad')){
-      const img=card.querySelector('.pic img');
-      if(img){
-        img.src='./reductor-velocidad-pack2.svg?v=20260918-0618';
-        img.alt='Pack de 2 reductores de velocidad de caucho negro y amarillo con tornillería';
-      }
-    }
+    const title=card.querySelector('h2')?.textContent?.toLowerCase()||'';
+    if(title.includes('reductor de velocidad')) card.remove();
   });
 }
-
-document.addEventListener('DOMContentLoaded',()=>{updateCartBadges();fixPortfolioWideCards();fixSpeedBumpImage()});
+document.addEventListener('DOMContentLoaded',()=>{updateCartBadges();fixPortfolioWideCards();removeSpeedReducer()});
 window.addEventListener('storage',event=>{if(event.key===AUTH_KEY||event.key===null){ready=false;announce();location.reload();return}if(event.key===activeKey())announce()});
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload()});
