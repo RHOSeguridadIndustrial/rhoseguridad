@@ -22,9 +22,27 @@ try {
     if (next !== owner || !ready) { owner = next; ready = true; announce(); }
   });
 } catch { if (storedOwner() === 'guest') { owner = 'guest'; ready = true; } }
-export function getCart(){ const key=activeKey(); if(!key)return[]; try{const cart=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(cart)?cart:[]}catch{return[]} }
+const PRICE_CACHE_KEY='rho-product-prices-v1',PRICE_ALIAS_KEY='rho-product-price-aliases-v1';
+function priceKey(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()}
+function currentPrice(product){
+  try{
+    const aliases=JSON.parse(localStorage.getItem(PRICE_ALIAS_KEY)||'{}');
+    const idKey=priceKey(product?.id),nameKey=priceKey(product?.name);
+    let value=aliases[idKey]??aliases[nameKey];
+    if(value==null){
+      const cached=JSON.parse(localStorage.getItem(PRICE_CACHE_KEY)||'{}');
+      const items=Array.isArray(cached.items)?cached.items:[];
+      const match=items.find(p=>priceKey(p.id)===idKey||priceKey(p.name)===nameKey||nameKey.startsWith(priceKey(p.name)+' ')||priceKey(p.name).startsWith(nameKey+' '));
+      if(match)value=match.price;
+    }
+    const n=Number(value);
+    return Number.isFinite(n)&&n>=0?n:Number(product?.price)||0;
+  }catch{return Number(product?.price)||0}
+}
+function withCurrentPrice(item){return {...item,price:currentPrice(item)}}
+export function getCart(){ const key=activeKey(); if(!key)return[]; try{const cart=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(cart)?cart.map(withCurrentPrice):[]}catch{return[]} }
 export function saveCart(cart){const key=activeKey();if(!key){alert('Tu sesión cambió. Recarga la página antes de modificar el carrito.');return}localStorage.setItem(key,JSON.stringify(cart));announce()}
-export function addToCart(product){const cart=getCart();const found=cart.find(item=>item.id===product.id);if(found){found.qty+=1}else{cart.push({...product,qty:1})}saveCart(cart);return cart}
+export function addToCart(product){const priced=withCurrentPrice(product),cart=getCart();const found=cart.find(item=>item.id===priced.id);if(found){found.qty+=1;found.price=priced.price}else{cart.push({...priced,qty:1})}saveCart(cart);return cart}
 export function updateQuantity(id,qty){const cart=getCart();const item=cart.find(item=>item.id===id);if(!item)return cart;item.qty=Math.max(1,Number(qty)||1);saveCart(cart);return cart}
 export function removeFromCart(id){const cart=getCart().filter(item=>item.id!==id);saveCart(cart);return cart}
 export function clearCart(){saveCart([])}
