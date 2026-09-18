@@ -2,7 +2,7 @@ const menuBtn=document.querySelector('.menu-btn');
 const nav=document.querySelector('.nav');
 if(menuBtn&&nav){menuBtn.addEventListener('click',()=>{nav.classList.toggle('open');menuBtn.setAttribute('aria-expanded',nav.classList.contains('open'));});document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));}
 const year=document.getElementById('year');if(year) year.textContent=new Date().getFullYear();
-const quoteForm=document.getElementById('quoteForm');if(quoteForm){quoteForm.addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);const t=`Hola RHO Seguridad Industrial, soy ${d.get('nombre')}${d.get('empresa')?` de ${d.get('empresa')}`:''}. Necesito cotizar: ${d.get('mensaje')}`;window.open(`https://wa.me/525569090204?text=${encodeURIComponent(t)}`,'_blank');});}
+const quoteForm=document.getElementById('quoteForm');if(quoteForm){quoteForm.addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);const t=`Hola RHO Seguridad Industrial, soy ${d.get('nombre')}${d.get('empresa')?` de ${d.get('empresa')}`:''}. Necesito cotizar: ${d.get('mensaje')}`;window.open(`https://wa.me/525545683441?text=${encodeURIComponent(t)}`,'_blank');});}
 const carousel=document.querySelector('.banner-carousel');
 const slides=[...document.querySelectorAll('.banner-slide')];
 const dots=[...document.querySelectorAll('.banner-dot')];
