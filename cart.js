@@ -56,6 +56,20 @@ function fixPortfolioWideCards(){
   });
 }
 
-document.addEventListener('DOMContentLoaded',()=>{updateCartBadges();fixPortfolioWideCards()});
+function fixSpeedBumpImage(){
+  if(!/senalizacion\.html$/.test(location.pathname)) return;
+  document.querySelectorAll('.card').forEach(card=>{
+    const title=card.querySelector('h2');
+    if(title && title.textContent.includes('Reductor de velocidad')){
+      const img=card.querySelector('.pic img');
+      if(img){
+        img.src='./reductor-velocidad-pack2.svg?v=20260918-0618';
+        img.alt='Pack de 2 reductores de velocidad de caucho negro y amarillo con tornillería';
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded',()=>{updateCartBadges();fixPortfolioWideCards();fixSpeedBumpImage()});
 window.addEventListener('storage',event=>{if(event.key===AUTH_KEY||event.key===null){ready=false;announce();location.reload();return}if(event.key===activeKey())announce()});
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload()});
