@@ -1,0 +1,47 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate"><title>Precios | Administración RHO</title><style>
+:root{--navy:#071a35;--green:#4ca500;--orange:#ff5600;--line:#dfe6ec;--muted:#657184;--bg:#f5f8fa}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--navy)}.top{background:var(--navy);color:#fff;padding:14px 4%;display:flex;justify-content:space-between;align-items:center;gap:12px}.top a,.top button{color:#fff;text-decoration:none;background:none;border:0;font-weight:800;cursor:pointer}.actions{display:flex;gap:14px;align-items:center}.wrap{width:min(1180px,94%);margin:24px auto}.head{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap}.head h1{margin:0;font-size:clamp(1.8rem,5vw,2.8rem)}.head p{margin:5px 0;color:var(--muted)}.badge{background:#fff3ec;color:#b43a00;border:1px solid #ffd2bd;padding:8px 12px;border-radius:999px;font-weight:800}.panel{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.filters input,.filters select{padding:10px;border:1px solid #cbd4dc;border-radius:9px;font:inherit}.filters input{flex:1;min-width:220px}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px 8px;border-bottom:1px solid #edf0f3;text-align:left;vertical-align:middle}.table th{font-size:.78rem;color:var(--muted);text-transform:uppercase}.price-input{width:120px;padding:9px;border:1px solid #bdc8d1;border-radius:8px;font:inherit}.save{border:0;border-radius:8px;background:var(--green);color:#fff;padding:9px 12px;font-weight:800;cursor:pointer}.save:disabled{opacity:.55}.status{font-size:.8rem;min-width:120px}.ok{color:#3f8d00}.err{color:#b42318}.history{margin-top:18px}.history h2{font-size:1.1rem}.history-list{display:grid;gap:7px}.history-row{padding:9px 11px;background:#f8fafb;border:1px solid var(--line);border-radius:9px;font-size:.85rem}.empty{color:var(--muted);padding:18px;text-align:center}@media(max-width:700px){.top{padding:10px 12px}.top strong{font-size:.82rem}.actions{gap:8px}.top a,.top button{font-size:.72rem}.wrap{margin:12px auto}.panel{padding:10px}.table th,.table td{padding:7px 5px;font-size:.72rem}.price-input{width:96px;padding:7px}.save{padding:7px 9px;font-size:.72rem}.status{min-width:90px;font-size:.68rem}}
+</style></head><body><header class="top"><strong>RHO · Administración de precios</strong><div class="actions"><a href="admin.html">Panel</a><a href="portafolio.html">Ver portafolio</a><button id="logout" type="button">Cerrar sesión</button></div></header><main class="wrap"><div class="head"><div><h1>Precios del portafolio</h1><p>Actualiza los precios publicados. Los cambios se guardan en la base de datos y quedan registrados.</p></div><span class="badge">Solo administrador</span></div><section class="panel"><div class="filters"><input id="search" type="search" placeholder="Buscar producto..."><select id="category"><option value="">Todas las categorías</option></select></div><div class="table-wrap"><table class="table"><thead><tr><th>Producto</th><th>Categoría</th><th>Precio actual</th><th>Nuevo precio</th><th>Acción</th><th>Estado</th></tr></thead><tbody id="body"><tr><td colspan="6" class="empty">Cargando…</td></tr></tbody></table></div></section><section class="panel history"><h2>Últimos cambios de precio</h2><div class="history-list" id="history"><div class="empty">Cargando historial…</div></div></section></main><script type="module">
+import {supabase} from './supabase-client.js?v=20260918-pricing-db';
+const {data:{session}}=await supabase.auth.getSession();
+if(!session){location.replace('login.html');throw new Error('Sin sesión');}
+const {data:profile,error:profileError}=await supabase.from('profiles').select('role').eq('id',session.user.id).single();
+if(profileError||profile?.role!=='admin'){location.replace('index.html');throw new Error('No autorizado');}
+const body=document.getElementById('body'),search=document.getElementById('search'),category=document.getElementById('category'),history=document.getElementById('history');
+let products=[];
+const money=v=>Number(v).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function load(){
+ const {data,error}=await supabase.from('products').select('id,name,category,price,currency,is_active,updated_at').order('category').order('name');
+ if(error){body.innerHTML='<tr><td colspan="6" class="empty">No fue posible cargar los productos.</td></tr>';return;}
+ products=data||[];
+ const cats=[...new Set(products.map(p=>p.category))].sort((a,b)=>a.localeCompare(b,'es'));
+ category.innerHTML='<option value="">Todas las categorías</option>'+cats.map(c=>'<option>'+esc(c)+'</option>').join('');
+ render();await loadHistory();
+}
+function render(){
+ const q=search.value.trim().toLowerCase(),cat=category.value;
+ const rows=products.filter(p=>(!cat||p.category===cat)&&(!q||p.name.toLowerCase().includes(q)||p.category.toLowerCase().includes(q)));
+ body.innerHTML=rows.length?rows.map(p=>`<tr data-id="${esc(p.id)}"><td><strong>${esc(p.name)}</strong></td><td>${esc(p.category)}</td><td>$${money(p.price)}</td><td><input class="price-input" type="number" min="0" step="0.01" value="${Number(p.price).toFixed(2)}" aria-label="Nuevo precio de ${esc(p.name)}"></td><td><button class="save" type="button">Guardar</button></td><td class="status"></td></tr>`).join(''):'<tr><td colspan="6" class="empty">No hay coincidencias.</td></tr>';
+ document.querySelectorAll('.save').forEach(btn=>btn.addEventListener('click',savePrice));
+}
+async function savePrice(e){
+ const row=e.currentTarget.closest('tr'),id=row.dataset.id,input=row.querySelector('.price-input'),status=row.querySelector('.status'),button=e.currentTarget;
+ const value=Number(input.value);
+ if(!Number.isFinite(value)||value<0){status.className='status err';status.textContent='Precio inválido';return;}
+ button.disabled=true;status.className='status';status.textContent='Guardando…';
+ const {data,error}=await supabase.from('products').update({price:value}).eq('id',id).select('id,price,updated_at').single();
+ if(error){status.className='status err';status.textContent='No se pudo guardar';button.disabled=false;return;}
+ const p=products.find(x=>x.id===id);if(p){p.price=data.price;p.updated_at=data.updated_at;}
+ status.className='status ok';status.textContent='Actualizado ✓';row.children[2].textContent='$'+money(data.price);
+ await loadHistory();button.disabled=false;
+}
+async function loadHistory(){
+ const {data,error}=await supabase.from('product_price_history').select('product_id,old_price,new_price,changed_at').order('changed_at',{ascending:false}).limit(12);
+ if(error){history.innerHTML='<div class="empty">No fue posible cargar el historial.</div>';return;}
+ const names=new Map(products.map(p=>[p.id,p.name]));
+ history.innerHTML=(data||[]).length?(data||[]).map(h=>`<div class="history-row"><strong>${esc(names.get(h.product_id)||h.product_id)}</strong> · $${money(h.old_price)} → <strong>$${money(h.new_price)}</strong> · ${new Date(h.changed_at).toLocaleString('es-MX')}</div>`).join(''):'<div class="empty">Aún no hay cambios de precio registrados.</div>';
+}
+search.addEventListener('input',render);category.addEventListener('change',render);
+document.getElementById('logout').addEventListener('click',async()=>{await supabase.auth.signOut();location.replace('login.html');});
+await load();
+</script></body></html>
