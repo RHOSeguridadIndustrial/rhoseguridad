@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+<rect width="1200" height="1200" fill="#fff"/>
+<style>
+  .h{font-family:Arial,Helvetica,sans-serif;font-weight:800;fill:#d41414}
+  .t{font-family:Arial,Helvetica,sans-serif;font-weight:700;fill:#111}
+  .c{font-family:Arial,Helvetica,sans-serif;font-weight:600;fill:#111}
+</style>
+<text x="48" y="62" class="h" font-size="40">CARACTERÍSTICAS</text>
+<g class="t" font-size="24">
+<text x="50" y="108">* MATERIAL RISTOP RESISTENTE</text>
+<text x="50" y="147">* FORRO INTERNO</text>
+<text x="50" y="186">* AGARRADERA EN TAPA PRINCIPAL</text>
+<text x="50" y="225">* 3 DIVISIONES INTERNAS DESMONTABLES</text>
+<text x="50" y="264">* 2 BOLSAS LATERALES CON CIERRE Y ANTIRREFLEJANTE</text>
+<text x="50" y="303">* 2 BROCHES EN TAPA PARA CERRAR</text>
+<text x="50" y="342">* 1 CORREA PARA HOMBRO</text>
+<text x="50" y="381">* 1 BOLSA FRONTAL CON CIERRE</text>
+<text x="50" y="420">* MEDIDAS APROXIMADAS 35x25x20 cm.</text>
+</g>
+
+<text x="48" y="492" class="h" font-size="40">CONTENIDO</text>
+
+<g class="c" font-size="23">
+<text x="50" y="540">1 germisin espuma 100ml</text>
+<text x="50" y="576">1 alcohol en gel 100ml</text>
+<text x="50" y="612">1 antibenzil 100ml</text>
+<text x="50" y="648">1 jabón quirúrgico 100ml</text>
+<text x="50" y="684">2 vendas 5x5 cm</text>
+<text x="50" y="720">2 venda 10x5 cm</text>
+<text x="50" y="756">2 venda 15x5 cm</text>
+<text x="50" y="792">1 abate lenguas madera c/25pzs</text>
+<text x="50" y="828">1 jeringa 1ml</text>
+<text x="50" y="864">1 jeringa 3ml</text>
+<text x="50" y="900">1 jeringa 5ml</text>
+<text x="50" y="936">1 compresa caliente instantánea desechable</text>
+<text x="50" y="972">1 compresa fría instantánea desechable</text>
+<text x="50" y="1008">1 ligadura torniquete</text>
+<text x="50" y="1044">1 cinta micropore</text>
+<text x="50" y="1080">1 cabestrillo adulto</text>
+<text x="50" y="1116">1 collarín blando</text>
+
+<text x="645" y="540">1 cepillo quirúrgico con antiséptico</text>
+<text x="645" y="576">3 cubre bocas</text>
+<text x="645" y="612">10 pastillas paracetamol</text>
+<text x="645" y="648">10 gasas simples 7.5x5cm</text>
+<text x="645" y="684">10 toallitas alcohol pads</text>
+<text x="645" y="720">4 guante látex estéril</text>
+<text x="645" y="756">1 tijera uso rudo</text>
+<text x="645" y="792">1 algodón 50gr</text>
+<text x="645" y="828">1 lava ojos</text>
+<text x="645" y="864">10 curitas</text>
+<text x="645" y="900">1 rosa venus 25gr</text>
+<text x="645" y="936">1 solural líquido</text>
+<text x="645" y="972">1 cotonetes c/15pzs</text>
+<text x="645" y="1008">1 termometro digital</text>
+<text x="645" y="1044">1 silbato de emergencia</text>
+<text x="645" y="1080">1 lámpara diagnostico</text>
+<text x="645" y="1116">1 merthiolate 20ml</text>
+<text x="645" y="1152">1 sabana térmica reutilizable</text>
+</g>
+</svg>
