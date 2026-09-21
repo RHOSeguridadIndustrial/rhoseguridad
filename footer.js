@@ -5,19 +5,20 @@
       const style=document.createElement('style');
       style.id='rho-global-footer-style';
       style.textContent=`
-        .rho-global-footer{box-sizing:border-box;width:100%;margin-top:28px;padding:38px 18px 34px;background:#051a38;color:#fff;text-align:center;font-family:Arial,Helvetica,sans-serif}
-        .rho-global-footer__logo{font-size:clamp(54px,8vw,86px);font-weight:800;line-height:.95;letter-spacing:.01em}
+        .rho-global-footer{box-sizing:border-box!important;display:block!important;width:100%!important;max-width:none!important;margin:28px 0 0!important;padding:38px 18px 34px!important;background:#051a38!important;color:#fff!important;text-align:center!important;font-family:Arial,Helvetica,sans-serif!important}
+        .rho-global-footer *{box-sizing:border-box!important}
+        .rho-global-footer__logo{margin:0!important;padding:0!important;font-size:clamp(54px,8vw,86px)!important;font-weight:800!important;line-height:.95!important;letter-spacing:.01em!important}
         .rho-global-footer__logo .r{color:#fff}.rho-global-footer__logo .h{color:#f15a24}.rho-global-footer__logo .o{color:#4ca500}
-        .rho-global-footer__sub{margin-top:14px;font-size:clamp(18px,2.6vw,28px);line-height:1.2;font-weight:400}
-        .rho-global-footer__copy{margin-top:24px;font-size:clamp(14px,2.3vw,24px);line-height:1.35;font-weight:400}
-        .rho-global-footer__privacy{display:inline-block;margin-top:22px;color:#fff;text-decoration:underline;text-underline-offset:4px;font-size:clamp(15px,2.1vw,22px);font-weight:400}
+        .rho-global-footer__sub{margin:14px 0 0!important;padding:0!important;font-size:clamp(18px,2.6vw,28px)!important;line-height:1.2!important;font-weight:400!important}
+        .rho-global-footer__copy{margin:24px 0 0!important;padding:0!important;font-size:clamp(14px,2.3vw,24px)!important;line-height:1.35!important;font-weight:400!important}
+        .rho-global-footer__privacy{display:inline-block!important;margin:22px 0 0!important;padding:0!important;color:#fff!important;text-decoration:underline!important;text-underline-offset:4px!important;font-size:clamp(15px,2.1vw,22px)!important;font-weight:400!important}
         .rho-global-footer__privacy:hover,.rho-global-footer__privacy:focus{color:#cfe7bd}
         @media(max-width:800px){
-          .rho-global-footer{margin-top:18px;padding:30px 14px 28px}
-          .rho-global-footer__logo{font-size:58px}
-          .rho-global-footer__sub{margin-top:11px;font-size:18px}
-          .rho-global-footer__copy{margin-top:20px;font-size:13px}
-          .rho-global-footer__privacy{margin-top:16px;font-size:18px}
+          .rho-global-footer{margin-top:18px!important;padding:30px 14px 28px!important}
+          .rho-global-footer__logo{font-size:58px!important}
+          .rho-global-footer__sub{margin-top:11px!important;font-size:18px!important}
+          .rho-global-footer__copy{margin-top:20px!important;font-size:13px!important}
+          .rho-global-footer__privacy{margin-top:16px!important;font-size:18px!important}
         }
       `;
       document.head.appendChild(style);
