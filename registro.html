@@ -29,6 +29,7 @@
     .contact-btn.whatsapp{background:#168b49}.contact-btn.email{background:#1769aa}
     .continue-link{display:inline-block;margin-top:16px;color:var(--navy);font-weight:800}
     @media(max-width:650px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:24px}.contact-actions{grid-template-columns:1fr}}
+  .privacy-short{margin:18px 0 10px;padding:14px 16px;border:1px solid #dfe6ec;border-radius:14px;background:#f8fafb;color:#4f5d70;font-size:.82rem;line-height:1.5}.privacy-short strong{color:var(--navy)}.privacy-short a{color:var(--navy);font-weight:800}
   </style>
 </head>
 <body>
@@ -52,7 +53,8 @@
           <label class="field">Contraseña<input name="password" type="password" minlength="8" required autocomplete="new-password"></label>
           <label class="field">Tipo de cliente<select name="tipo"><option>Empresa</option><option>Contratista</option><option>Particular</option><option>Distribuidor</option></select></label>
         </div>
-        <label class="check"><input type="checkbox" required><span>Acepto el uso de mis datos para administrar mi cuenta y recibir atención comercial de RHO. Consulta el <a href="aviso-privacidad.html" target="_blank" rel="noopener">Aviso de privacidad</a>.</span></label>
+        <div class="privacy-short" role="note"><strong>Aviso de Privacidad Simplificado.</strong> RHO SEGURIDAD INDUSTRIAL SAS DE CV, con domicilio en Esperanza 74, Int. 107, Col. Santa Inés, Azcapotzalco, C.P. 02140, Ciudad de México, es responsable de sus datos. Para crear y administrar su cuenta trataremos nombre, apellidos, empresa, correo, teléfono, tipo de cliente y credenciales de acceso gestionadas por nuestro proveedor de autenticación; los utilizaremos para registro, autenticación, atención, cotizaciones y seguimiento de la relación comercial. De manera adicional podremos utilizar datos de navegación para estadísticas y mejora del sitio; puede limitar estas finalidades escribiendo a <a href="mailto:Administracion@rhosegind.com">Administracion@rhosegind.com</a>. Consulte el <a href="aviso-privacidad.html" target="_blank" rel="noopener">Aviso de Privacidad Integral</a>.</div>
+        <label class="check"><input type="checkbox" required><span>Confirmo que he leído el aviso de privacidad y acepto el tratamiento de mis datos para crear, administrar y autenticar mi cuenta, así como para recibir la atención y seguimiento que solicite a RHO.</span></label>
         <button class="btn" type="submit">Crear mi cuenta</button>
       </form>
       <p class="note" id="status">Al crear la cuenta, tu sesión se iniciará automáticamente.</p>
