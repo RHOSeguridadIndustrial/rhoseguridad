@@ -38,10 +38,10 @@
 <div class="product-grid">
 <article class="product-card">
   <div class="botiquin-gallery">
-    <div class="product-photo"><img id="botiquin-main-img" alt="Botiquín equipado RHO"></div>
+    <div class="product-photo"><img id="botiquin-main-img" src="assets/botiquin-equipado.jpg?v=20260921-imgfix" alt="Botiquín equipado RHO"></div>
     <div class="botiquin-thumbs" aria-label="Imágenes del botiquín">
-      <button class="botiquin-thumb active" type="button" data-image-index="0" aria-label="Ver imagen del botiquín equipado"><img id="botiquin-thumb-1" alt=""></button>
-      <button class="botiquin-thumb" type="button" data-image-index="1" aria-label="Ver características y contenido del botiquín"><img id="botiquin-thumb-2" alt=""></button>
+      <button class="botiquin-thumb active" type="button" data-image="assets/botiquin-equipado.jpg?v=20260921-imgfix" aria-label="Ver imagen del botiquín equipado"><img src="assets/botiquin-equipado.jpg?v=20260921-imgfix" alt="Botiquín equipado"></button>
+      <button class="botiquin-thumb" type="button" data-image="assets/botiquin-contenido.jpg?v=20260921-imgfix" aria-label="Ver características y contenido del botiquín"><img src="assets/botiquin-contenido.jpg?v=20260921-imgfix" alt="Características y contenido del botiquín equipado"></button>
     </div>
     <p class="botiquin-gallery-note">Selecciona una imagen para verla.</p>
   </div>
@@ -69,30 +69,20 @@ const menu=document.querySelector('.menu-btn'),nav=document.querySelector('.nav'
 menu?.addEventListener('click',()=>nav.classList.toggle('open'));
 
 const main=document.getElementById('botiquin-main-img');
-const thumbImgs=[document.getElementById('botiquin-thumb-1'),document.getElementById('botiquin-thumb-2')];
 const thumbBtns=[...document.querySelectorAll('.botiquin-thumb')];
 const btn=document.getElementById('add'),status=document.getElementById('status');
-let images=[];
+
+thumbBtns.forEach(thumb=>thumb.addEventListener('click',()=>{
+  main.src=thumb.dataset.image;
+  thumbBtns.forEach(x=>x.classList.remove('active'));
+  thumb.classList.add('active');
+}));
 
 try{
- const [{addToCart,getCart,updateCartBadges},one,two]=await Promise.all([
-   import('./cart.js?v=20260914-account-isolation'),
-   fetch('./assets/botiquin-equipado-1.b64?v=20260921-restored',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('img1');return r.text()}),
-   fetch('./assets/botiquin-equipado-2.b64?v=20260921-restored',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('img2');return r.text()})
- ]);
- images=[
-   'data:image/jpeg;base64,'+one.replace(/\s+/g,''),
-   'data:image/jpeg;base64,'+two.replace(/\s+/g,'')
- ];
- main.src=images[0];thumbImgs[0].src=images[0];thumbImgs[1].src=images[1];
- btn.dataset.image=images[0];btn.disabled=false;updateCartBadges();
-
- thumbBtns.forEach((thumb,index)=>thumb.addEventListener('click',()=>{
-   main.src=images[index];
-   thumbBtns.forEach(x=>x.classList.remove('active'));
-   thumb.classList.add('active');
- }));
-
+ const {addToCart,getCart,updateCartBadges}=await import('./cart.js?v=20260914-account-isolation');
+ updateCartBadges();
+ btn.dataset.image='assets/botiquin-equipado.jpg?v=20260921-imgfix';
+ btn.disabled=false;
  btn.addEventListener('click',()=>{
    const product={id:btn.dataset.productId,name:btn.dataset.name,price:Number(btn.dataset.price),image:btn.dataset.image};
    const before=getCart().find(i=>i.id===product.id)?.qty||0;
@@ -103,7 +93,7 @@ try{
    }catch{status.textContent='No se pudo guardar el carrito. Inténtalo de nuevo.'}
  });
 }catch{
- status.textContent='No se pudieron cargar las imágenes. Recarga la página para intentar de nuevo.';
+ status.textContent='No se pudo cargar el carrito. Recarga la página para intentar de nuevo.';
 }
 import('./analytics.js').catch(()=>{});
 </script>
