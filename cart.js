@@ -69,20 +69,19 @@ function ensureRhoFooter(){
     const style=document.createElement('style');
     style.id='rho-global-footer-style';
     style.textContent=`
-      .rho-global-footer{box-sizing:border-box;width:100%;margin-top:28px;padding:30px 16px 26px;background:#051a38;color:#fff;text-align:center;font-family:Arial,Helvetica,sans-serif}
-      .rho-global-footer__logo{font-size:clamp(44px,8vw,76px);font-weight:900;line-height:1;letter-spacing:.02em}
-      .rho-global-footer__logo .r{color:#fff}.rho-global-footer__logo .h{color:#f15a24}.rho-global-footer__logo .o{color:#4ca500}
-      .rho-global-footer__sub{margin-top:12px;font-size:clamp(15px,2.2vw,22px);font-weight:400}
-      .rho-global-footer__copy{margin-top:20px;font-size:clamp(13px,2vw,20px);line-height:1.35}
-      .rho-global-footer__privacy{display:inline-block;margin-top:14px;color:#fff;text-decoration:underline;font-size:clamp(12px,1.8vw,16px);font-weight:700}
+      .rho-global-footer{box-sizing:border-box;width:100%;margin-top:28px;padding:34px 16px 30px;background:#051a38;color:#fff;text-align:center;font-family:Arial,Helvetica,sans-serif}
+      .rho-global-footer__brand{display:flex;justify-content:center}
+      .rho-global-footer__brand img{display:block;width:88px;height:88px;object-fit:contain;background:#fff;border-radius:9px;padding:4px}
+      .rho-global-footer__copy{margin-top:17px;font-size:clamp(13px,2vw,20px);line-height:1.35}
+      .rho-global-footer__privacy{display:inline-block;margin-top:15px;color:#fff;text-decoration:underline;text-underline-offset:3px;font-size:clamp(14px,2vw,20px);font-weight:500}
       .rho-global-footer__privacy:hover,.rho-global-footer__privacy:focus{color:#cfe7bd}
-      @media(max-width:800px){.rho-global-footer{margin-top:18px;padding:24px 14px 22px}.rho-global-footer__sub{margin-top:9px}.rho-global-footer__copy{margin-top:15px}.rho-global-footer__privacy{margin-top:11px}}
+      @media(max-width:800px){.rho-global-footer{margin-top:18px;padding:24px 14px 25px}.rho-global-footer__brand img{width:84px;height:84px}.rho-global-footer__copy{margin-top:14px;font-size:12px}.rho-global-footer__privacy{margin-top:12px;font-size:16px}}
     `;
     document.head.appendChild(style);
   }
   const footer=document.createElement('footer');
   footer.className='rho-global-footer';
-  footer.innerHTML='<div class="rho-global-footer__logo" aria-label="RHO"><span class="r">R</span><span class="h">H</span><span class="o">O</span></div><div class="rho-global-footer__sub">Seguridad Industrial</div><div class="rho-global-footer__copy">© 2026 RHO Seguridad Industrial. Todos los derechos reservados.</div><a class="rho-global-footer__privacy" href="aviso-privacidad.html">Aviso de privacidad</a>';
+  footer.innerHTML='<div class="rho-global-footer__brand"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"></div><div class="rho-global-footer__copy">© 2026 RHO Seguridad Industrial. Todos los derechos reservados.</div><a class="rho-global-footer__privacy" href="aviso-privacidad.html">Aviso de privacidad</a>';
   const existing=[...document.querySelectorAll('footer')];
   if(existing.length){existing[0].replaceWith(footer);existing.slice(1).forEach(node=>node.remove())}
   else document.body.appendChild(footer);
