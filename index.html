@@ -54,6 +54,64 @@
       #contacto.section{padding:14px 0 18px!important}#contacto .container{width:92%!important}.contact-grid{display:grid!important;grid-template-columns:1fr 1.15fr!important;gap:12px!important;align-items:start!important}.contact-grid>div h2{font-size:23px!important;line-height:1.05!important;margin:0 0 7px!important}.contact-grid .eyebrow{font-size:10px!important;letter-spacing:1.5px!important}.contact-grid>div p{font-size:12px!important;line-height:1.4!important;margin:10px 0 0!important}.contact-grid .form{padding:12px!important;border-radius:14px!important;gap:7px!important}.contact-grid .form label{font-size:11px!important;gap:3px!important}.contact-grid .form input,.contact-grid .form textarea{padding:7px 9px!important;font-size:12px!important;border-radius:8px!important}.contact-grid .form textarea{min-height:46px!important;height:46px!important}.contact-grid .form .btn{padding:8px 10px!important;font-size:11px!important}
       footer .footer-wrap{padding:10px 0!important;gap:6px!important}footer .footer-wrap img{width:54px!important}footer .footer-wrap p{font-size:10px!important;margin:0!important}
     }
+    /* RHO 2026-09-23: carrusel estable — los 3 banners usan exactamente la misma caja 3:1 */
+    .banner-carousel{
+      width:100%!important;
+      aspect-ratio:3/1!important;
+      height:auto!important;
+      min-height:0!important;
+      max-height:none!important;
+      overflow:hidden!important;
+      background:#fff!important;
+    }
+    .banner-carousel .banner-slide{
+      position:absolute!important;
+      inset:0!important;
+      display:none!important;
+      width:100%!important;
+      height:100%!important;
+      min-height:0!important;
+      max-height:none!important;
+      margin:0!important;
+      overflow:hidden!important;
+      background:#fff!important;
+    }
+    .banner-carousel .banner-slide.active{display:block!important}
+    .banner-carousel .banner-slide img{
+      position:absolute!important;
+      inset:0!important;
+      display:block!important;
+      width:100%!important;
+      height:100%!important;
+      min-height:0!important;
+      max-height:none!important;
+      object-fit:cover!important;
+      object-position:center center!important;
+      transform:none!important;
+      background:#fff!important;
+    }
+    @media(max-width:800px){
+      .banner-carousel{
+        aspect-ratio:3/1!important;
+        height:auto!important;
+        min-height:0!important;
+        max-height:none!important;
+      }
+      .banner-carousel .banner-slide,
+      .banner-carousel .banner-slide.active{
+        height:100%!important;
+        min-height:0!important;
+        max-height:none!important;
+      }
+      .banner-carousel .banner-slide img{
+        width:100%!important;
+        height:100%!important;
+        object-fit:cover!important;
+        object-position:center center!important;
+      }
+      .banner-dots{bottom:8px!important}
+    }
+
   </style>
 <style>[data-loyalty-link][hidden]{display:none!important}</style></head>
 <body>
@@ -70,7 +128,7 @@
 <section id="contacto" class="section light"><div class="container contact-grid"><div><h2>Solicita una cotización</h2><span class="eyebrow">Contacto</span><p><strong>Teléfono:</strong> 55 4568 3441<br>Ciudad de México y zona metropolitana</p></div><form id="quoteForm" class="form"><label>Nombre<input required name="nombre" autocomplete="name"></label><label>Empresa<input name="empresa" autocomplete="organization"></label><label>Producto o necesidad<textarea required name="mensaje" rows="2"></textarea></label><button class="btn primary" type="submit">Enviar por WhatsApp</button></form></div></section>
 </main>
 <footer><div class="container footer-wrap"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial" loading="lazy"><p>© <span id="year"></span> RHO Seguridad Industrial. Todos los derechos reservados.</p><a href="aviso-privacidad.html" style="color:inherit;text-decoration:underline">Aviso de privacidad</a></div></footer>
-<script src="script.js?v=20260923-banner-final-working" defer></script>
+<script src="script.js?v=20260923-banners-uniformes" defer></script>
 <script type="module">import {updateCartBadges} from './cart.js?v=20260914-account-isolation';updateCartBadges();</script>
 <script type="module">import { LOYALTY_ENABLED } from './supabase/functions/_shared/loyalty-status.js?v=20260914-pause';document.querySelectorAll('[data-loyalty-link]').forEach(link=>link.hidden=!LOYALTY_ENABLED);</script><script src="./footer.js?v=20260921-global-v2"></script></body>
 </html>
