@@ -350,7 +350,12 @@
       width:45.8%!important;
       height:16.2%!important;
       z-index:3!important;
-      background:#fff!important;
+      /* Integrado visualmente con las tarjetas originales del banner:
+         elimina el rectángulo blanco tipo "parche". */
+      background:linear-gradient(180deg,#f8f9f8 0%,#f3f5f3 100%)!important;
+      border:1px solid rgba(7,26,53,.07)!important;
+      border-radius:clamp(5px,.7vw,9px)!important;
+      box-shadow:0 2px 8px rgba(7,26,53,.08)!important;
       display:flex!important;
       align-items:center!important;
       justify-content:center!important;
@@ -359,6 +364,7 @@
       padding:0 5%!important;
       color:#071a35!important;
       font-family:Arial,sans-serif!important;
+      overflow:hidden!important;
       pointer-events:none!important;
     }
     .banner-carousel .banner-slide.banner-3 .banner-3-delivery-icon{
