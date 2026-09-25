@@ -18,15 +18,33 @@
     .privacy-highlight{padding:14px 16px;border-radius:14px;background:#f4f8f1;border:1px solid #dce9d3}
     .privacy-contact{padding:14px 16px;border-radius:14px;background:#f5f8fa;border:1px solid #dfe6ec}
     .privacy-doc a{overflow-wrap:anywhere}
+    .privacy-menu-btn{display:none;align-items:center;justify-content:center;gap:6px;color:#fff;background:transparent;border:0;cursor:pointer;font:800 14px Inter,Arial,sans-serif}
+    .privacy-menu-btn svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+    @media(max-width:800px){
+      .topbar{position:relative;min-height:72px;padding:10px 5%}
+      .topbar img{height:46px}
+      .privacy-menu-btn{display:inline-flex;flex-direction:column;font-size:11px}
+      .topbar .privacy-nav{display:none;position:absolute;top:100%;left:0;right:0;z-index:100;background:#071a35;border-top:1px solid rgba(255,255,255,.13);border-bottom:1px solid rgba(255,255,255,.13);box-shadow:0 12px 28px rgba(0,0,0,.25);padding:8px 5%;gap:0;flex-direction:column;align-items:stretch}
+      .topbar .privacy-nav.open{display:flex}
+      .topbar .privacy-nav a{padding:13px 4px;border-bottom:1px solid rgba(255,255,255,.12)}
+      .topbar .privacy-nav a:last-child{border-bottom:0}
+    }
   </style>
 </head>
 <body>
 <header class="topbar">
   <a href="index.html"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"></a>
-  <nav>
+  <button class="privacy-menu-btn" type="button" aria-label="Abrir menú" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    <span>Menú</span>
+  </button>
+  <nav class="privacy-nav">
     <a href="index.html">Inicio</a>
+    <a href="portafolio.html">Productos</a>
     <a href="cuenta.html">Mi cuenta</a>
+    <a href="carrito.html">Carrito</a>
     <a data-loyalty-link hidden href="membresia.html">Mi membresía</a>
+    <a href="aviso-privacidad.html" aria-current="page">Aviso de privacidad</a>
   </nav>
 </header>
 
@@ -118,6 +136,20 @@
   </article>
 </main>
 
+<script>
+  const privacyMenuBtn=document.querySelector('.privacy-menu-btn');
+  const privacyNav=document.querySelector('.privacy-nav');
+  if(privacyMenuBtn&&privacyNav){
+    privacyMenuBtn.addEventListener('click',()=>{
+      const open=privacyNav.classList.toggle('open');
+      privacyMenuBtn.setAttribute('aria-expanded',String(open));
+    });
+    privacyNav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
+      privacyNav.classList.remove('open');
+      privacyMenuBtn.setAttribute('aria-expanded','false');
+    }));
+  }
+</script>
 <script type="module">
   import { LOYALTY_ENABLED } from './supabase/functions/_shared/loyalty-status.js?v=20260914-pause';
   document.querySelectorAll('[data-loyalty-link]').forEach(link=>link.hidden=!LOYALTY_ENABLED);
