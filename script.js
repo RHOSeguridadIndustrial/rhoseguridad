@@ -82,13 +82,14 @@ if(carousel&&slides.length>1){
 
   let pointerStartX=0,pointerStartY=0,pointerActive=false;
   carousel.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='touch')return;
     if(e.pointerType==='mouse'&&e.button!==0)return;
     pointerActive=true;
     pointerStartX=e.clientX;
     pointerStartY=e.clientY;
   },{passive:true});
   carousel.addEventListener('pointerup',e=>{
-    if(!pointerActive)return;
+    if(e.pointerType==='touch'||!pointerActive)return;
     pointerActive=false;
     const dx=e.clientX-pointerStartX;
     const dy=e.clientY-pointerStartY;
