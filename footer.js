@@ -1,5 +1,32 @@
 // RHO global footer — standard approved 2026-09-21
 (function(){
+
+  // RHO image guard — prevents broken/empty images
+  function installImageFallback(){
+    const fallback='assets/rho-image-fallback.svg?v=20261001-imageguard';
+    function repair(img){
+      if(!img || img.tagName!=='IMG' || img.dataset.rhoNoFallback==='true') return;
+      const current=img.getAttribute('src')||'';
+      if(!current || current.indexOf('rho-image-fallback.svg')!==-1) return;
+      img.dataset.rhoOriginalSrc=current;
+      img.removeAttribute('srcset');
+      img.setAttribute('src',fallback);
+      img.classList.add('rho-image-fallback');
+    }
+    document.addEventListener('error',function(ev){
+      if(ev.target && ev.target.tagName==='IMG') repair(ev.target);
+    },true);
+    function scan(){
+      document.querySelectorAll('img').forEach(function(img){
+        if(img.complete && img.naturalWidth===0) repair(img);
+      });
+    }
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',scan,{once:true});
+    else scan();
+    window.addEventListener('load',scan,{once:true});
+  }
+  installImageFallback();
+
   function renderRhoFooter(){
     if(!document.getElementById('rho-global-footer-style')){
       const style=document.createElement('style');
