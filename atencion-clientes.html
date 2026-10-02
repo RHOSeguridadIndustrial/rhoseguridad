@@ -11,10 +11,9 @@
     html,body{margin:0;width:100%;background:#fff;color:var(--navy);font-family:Arial,Helvetica,sans-serif}
     body{min-height:100vh}
     .site-header{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 10px rgba(7,26,53,.05)}
-    .header-inner{width:min(1180px,100%);margin:auto;display:grid;grid-template-columns:1fr 1.55fr 1fr 1fr 1fr;align-items:center;min-height:96px;padding:4px 28px;gap:8px}
+    .header-inner{width:min(1180px,100%);margin:auto;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;min-height:96px;padding:4px 28px;gap:8px}
     .nav-item,.menu-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;color:var(--navy);font-size:14px;font-weight:800;background:none;border:0;padding:0;cursor:pointer}
     .nav-item svg,.menu-btn svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
-    .brand{display:grid;place-items:center}.brand img{display:block;width:min(152px,100%);max-height:70px;object-fit:contain}
     .cart-wrap{position:relative;display:inline-grid;place-items:center}.cart-badge{position:absolute;top:-7px;right:-10px;min-width:22px;height:22px;padding:2px 5px;border-radius:999px;background:var(--green);color:#fff;font-size:12px}
     .menu-panel{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;padding:12px 20px;box-shadow:0 10px 20px rgba(7,26,53,.08)}
     .menu-panel.open{display:flex;gap:18px;flex-wrap:wrap}.menu-panel a{text-decoration:none;font-weight:800;color:var(--navy)}
@@ -38,7 +37,7 @@
     .note{margin:18px 2px 0;color:var(--muted);font-size:12px;line-height:1.5}
     footer{background:#051326;color:#fff;padding:20px 16px}.footer-wrap{width:min(820px,100%);margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px}.footer-wrap img{width:66px;background:#fff;border-radius:6px}.footer-wrap p{margin:0;color:#b9c3d0;font-size:12px}.footer-wrap a{color:#fff;font-size:12px}
     @media(max-width:800px){
-      .header-inner{grid-template-columns:repeat(4,1fr);min-height:82px;padding:4px 14px;gap:2px}.brand{display:none!important}.nav-item,.menu-btn{font-size:11px}.nav-item svg,.menu-btn svg{width:25px;height:25px}
+      .header-inner{grid-template-columns:repeat(4,1fr);min-height:82px;padding:4px 14px;gap:2px}.nav-item,.menu-btn{font-size:11px}.nav-item svg,.menu-btn svg{width:25px;height:25px}
       .menu-panel{top:82px;left:12px;right:auto;width:240px;padding:6px;border:1px solid #e5e9ee;border-radius:12px;box-shadow:0 10px 24px rgba(7,26,53,.16);z-index:100}.menu-panel.open{display:flex;flex-direction:column;gap:0;flex-wrap:nowrap}.menu-panel a{display:block;width:100%;padding:13px 12px;border-radius:8px;border-bottom:1px solid #eef1f4;font-size:14px;text-align:left;background:#fff}.menu-panel a:last-child{border-bottom:0}.menu-panel a:active{background:#f5f7f9}
       main{padding:26px 16px 42px}.title{font-size:32px}.intro{font-size:14px;margin-bottom:18px}.contact-card{border-radius:18px}.contact-row{grid-template-columns:44px 1fr 20px;gap:12px;padding:17px 16px;min-height:82px}.contact-icon{width:42px;height:42px;border-radius:12px}.contact-icon svg{width:25px;height:25px}.copy strong{font-size:16px}.copy span{font-size:14px}.footer-wrap{flex-direction:column;text-align:center}
     }
@@ -50,7 +49,6 @@
     <button class="menu-btn" type="button" aria-label="Abrir menú" aria-expanded="false">
       <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Menú</span>
     </button>
-    <a class="brand" href="index.html"><img src="logo-rho.jpeg?v=20260904" alt="RHO Seguridad Industrial"></a>
     <a class="nav-item" href="index.html"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 10v10h13V10"/></svg><span>Inicio</span></a>
     <a class="nav-item" href="cuenta.html"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6"/></svg><span>Cuenta</span></a>
     <a class="nav-item" href="carrito.html"><span class="cart-wrap"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L20.5 8H6.2"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg><b class="cart-badge" data-cart-count hidden>0</b></span><span>Carrito</span></a>
