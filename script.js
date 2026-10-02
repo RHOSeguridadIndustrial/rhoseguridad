@@ -1,6 +1,15 @@
 const menuBtn=document.querySelector('.menu-btn');
 const nav=document.querySelector('.nav');
 if(menuBtn&&nav){menuBtn.addEventListener('click',()=>{nav.classList.toggle('open');menuBtn.setAttribute('aria-expanded',nav.classList.contains('open'));});document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));}
+const customerToggle=document.querySelector('.customer-menu-toggle');
+const customerSubmenu=document.getElementById('customer-submenu');
+if(customerToggle&&customerSubmenu){
+  const closeCustomerMenu=()=>{customerSubmenu.hidden=true;customerToggle.setAttribute('aria-expanded','false');};
+  customerToggle.addEventListener('click',e=>{e.stopPropagation();const willOpen=customerSubmenu.hidden;customerSubmenu.hidden=!willOpen;customerToggle.setAttribute('aria-expanded',String(willOpen));});
+  customerSubmenu.addEventListener('click',e=>e.stopPropagation());
+  customerSubmenu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{closeCustomerMenu();nav?.classList.remove('open');menuBtn?.setAttribute('aria-expanded','false');}));
+  document.addEventListener('click',closeCustomerMenu);
+}
 const year=document.getElementById('year');if(year) year.textContent=new Date().getFullYear();
 const quoteForm=document.getElementById('quoteForm');if(quoteForm){quoteForm.addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);const t=`Hola RHO Seguridad Industrial, soy ${d.get('nombre')}${d.get('empresa')?` de ${d.get('empresa')}`:''}. Necesito cotizar: ${d.get('mensaje')}`;window.open(`https://wa.me/525545683441?text=${encodeURIComponent(t)}`,'_blank');});}
 const carousel=document.querySelector('.banner-carousel');
