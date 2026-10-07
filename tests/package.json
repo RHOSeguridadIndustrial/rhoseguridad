@@ -1,0 +1,11 @@
+{
+  "name": "rho-customer-admin-tests",
+  "private": true,
+  "scripts": {
+    "test": "cd .. && node --test tests/customer-handler.test.mjs && node tests/customer-database.mjs && node tests/customer-browser.cjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.3.14",
+    "playwright": "1.62.1"
+  }
+}

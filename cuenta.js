@@ -14,14 +14,21 @@ async function init() {
     if (error) throw error;
     if (!user) { location.replace('login.html'); return; }
     const { data: profile, error: profileError } = await supabase.from('profiles')
-      .select('full_name,company_name,role').eq('id', user.id).maybeSingle();
+      .select('full_name,company_name,phone,role,deactivated_at').eq('id', user.id).maybeSingle();
+    if (profile?.deactivated_at) {
+      clearAccount();
+      await supabase.auth.signOut({ scope: 'local' });
+      status.textContent = 'Tu cuenta está inactiva. Contacta a RHO para solicitar su reactivación.';
+      byId('recovery').hidden = false;
+      return;
+    }
     const metadata = user.user_metadata || {};
     const name = profile?.full_name || metadata.full_name || '';
     byId('greeting').textContent = name ? 'Bienvenido, ' + name : 'Bienvenido a tu cuenta';
     byId('fullName').textContent = name || 'Sin registrar';
     byId('email').textContent = user.email || 'Sin registrar';
     byId('company').textContent = profile?.company_name || metadata.company_name || 'Sin registrar';
-    byId('phone').textContent = metadata.phone || 'Sin registrar';
+    byId('phone').textContent = profile?.phone || metadata.phone || 'Sin registrar';
     byId('profileNote').hidden = !profileError;
     status.textContent = '';
     byId("adminInventoryLink").hidden = profile?.role !== "admin";
