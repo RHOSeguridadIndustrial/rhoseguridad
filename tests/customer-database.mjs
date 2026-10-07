@@ -1,0 +1,68 @@
+import { PGlite } from '@electric-sql/pglite';
+import { readFileSync, readdirSync } from 'node:fs';
+import assert from 'node:assert/strict';
+const db = new PGlite();
+const tables=['loyalty_customer_details','loyalty_cards','loyalty_transactions','loyalty_transaction_items','loyalty_points_ledger','loyalty_redemptions'];
+const admin='11111111-1111-4111-8111-111111111111', customer='22222222-2222-4222-8222-222222222222';
+await db.exec(`create role anon; create role authenticated; create role service_role bypassrls; create schema auth; create schema private;
+create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+grant usage on schema public,auth,private to authenticated;
+create table auth.users(id uuid primary key,email text unique,raw_app_meta_data jsonb default '{}',raw_user_meta_data jsonb default '{}',banned_until timestamptz);
+create table public.profiles(id uuid primary key references auth.users(id), email text not null,full_name text,company_name text,phone text,role text not null default 'customer',created_at timestamptz default now(),updated_at timestamptz not null default now());
+create table public.orders(id int primary key,customer_email text);
+create table public.customer_admin_audit(id bigint generated always as identity primary key,admin_user_id uuid references profiles(id),customer_user_id uuid references profiles(id),action text not null constraint customer_admin_audit_action_check check(action in ('create_customer','resend_invite')),customer_email text not null,metadata jsonb not null default '{}',created_at timestamptz default now());
+alter table profiles enable row level security;
+grant select,update on profiles to authenticated;
+create policy own_read on profiles for select to authenticated using(id=auth.uid());
+create policy own_update on profiles for update to authenticated using(id=auth.uid()) with check(id=auth.uid() and role='customer');
+${tables.map(t=>`create table ${t}(user_id uuid); alter table ${t} enable row level security; grant all on ${t} to authenticated; create policy own_all on ${t} for all to authenticated using(user_id=auth.uid()) with check(user_id=auth.uid());`).join('\n')}
+insert into auth.users(id,email) values('${admin}','admin@example.test'),('${customer}','cliente@example.test');
+insert into profiles(id,email,full_name,role) values('${admin}','admin@example.test','Admin','admin'),('${customer}','cliente@example.test','Cliente Demo','customer');
+insert into orders values(1,'cliente@example.test'); insert into loyalty_cards values('${customer}');`);
+const filename=readdirSync('supabase/migrations').find(f=>f.endsWith('admin_customer_edit_and_deactivation.sql'));
+await db.exec(readFileSync(`supabase/migrations/${filename}`,'utf8'));
+const get=async()=> (await db.query('select *,updated_at::text as revision from profiles where id=$1',[customer])).rows[0];
+const op=async(action,extra={})=>({id:crypto.randomUUID(),actor_id:admin,action,expected_updated_at:(await get()).revision,...extra});
+async function authUpdate(operation,email,ban){
+  await db.transaction(async tx=>{
+    // Model Auth writing metadata before other fields, in the same transaction.
+    await tx.query('update auth.users set raw_app_meta_data=jsonb_build_object(\'rho_customer_admin_operation\',$2::jsonb) where id=$1',[customer,JSON.stringify(operation)]);
+    if(email!==undefined)await tx.query('update auth.users set email=$2 where id=$1',[customer,email]);
+    if(ban!==undefined)await tx.query('update auth.users set banned_until=$2 where id=$1',[customer,ban]);
+  });
+}
+const fields={full_name:'Cliente Editado',company_name:'Empresa Demo',email:'nuevo@example.test',phone:'5555555555'};
+await authUpdate(await op('edit',{fields}),fields.email);
+assert.equal((await get()).email,fields.email); assert.equal((await get()).full_name,fields.full_name);
+assert.equal((await db.query('select count(*)::int as n from customer_admin_audit')).rows[0].n,1);
+console.log('PASS edit: Auth, profile and audit synchronize across multiple Auth statements');
+const stale=await op('edit',{fields:{...fields,full_name:'Stale'}});
+await db.query('update profiles set phone=$1 where id=$2',['5544444444',customer]);
+await assert.rejects(authUpdate(stale,'stale@example.test'));
+assert.equal((await db.query('select email from auth.users where id=$1',[customer])).rows[0].email,fields.email);
+console.log('PASS stale edits rollback Auth and preserve latest profile');
+await assert.rejects(authUpdate(await op('edit',{actor_id:customer,fields}),fields.email));
+console.log('PASS non-admin/self operation rejected');
+await authUpdate(await op('deactivate',{reason:'Prueba'}),undefined,'2126-10-07T00:00:00Z');
+assert.ok((await get()).deactivated_at);
+await db.exec(`set role authenticated; select set_config('request.jwt.claim.sub','${customer}',false);`);
+assert.equal((await db.query('select * from loyalty_cards')).rows.length,0);
+assert.equal((await db.query("update profiles set full_name='Blocked' returning id")).rows.length,0);
+await assert.rejects(db.exec('update profiles set deactivated_at=null'));
+await assert.rejects(db.exec("update profiles set role='admin'"));
+assert.equal((await db.query('select id from profiles')).rows.length,1);
+await db.exec("reset role; select set_config('request.jwt.claim.sub','',false);");
+assert.equal((await db.query('select count(*)::int as n from orders')).rows[0].n,1);
+console.log('PASS deactivation blocks stale JWT access, prevents self-reactivation, preserves profile/orders');
+await authUpdate(await op('reactivate'),undefined,null);
+assert.equal((await get()).deactivated_at,null);
+await db.exec(`set role authenticated; select set_config('request.jwt.claim.sub','${customer}',false);`);
+assert.equal((await db.query('select * from loyalty_cards')).rows.length,1);
+await db.exec("reset role; select set_config('request.jwt.claim.sub','',false);");
+console.log('PASS reactivation restores access');
+await db.exec("create function public.fail_audit() returns trigger language plpgsql as $$ begin raise exception 'Audit unavailable'; end $$; create trigger fail_audit before insert on customer_admin_audit for each row execute function fail_audit();");
+await assert.rejects(authUpdate(await op('edit',{fields:{...fields,email:'rollback@example.test'}}),'rollback@example.test'));
+assert.equal((await get()).email,fields.email);
+assert.equal((await db.query('select email from auth.users where id=$1',[customer])).rows[0].email,fields.email);
+console.log('PASS audit failure rolls back profile and login email atomically');
+await db.close();
