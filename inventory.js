@@ -1,6 +1,6 @@
 import { supabase } from './supabase-client.js?v=20261007-inventory';
 
-let inventory=new Map(), reachable=false;
+let inventory=new Map(), connection='loading';
 const page=(location.pathname.split('/').pop()||'').replace(/\.html$/,'');
 function selectedSku(article) {
   if(page==='cabeza') return 'casco-mundial-infra-sin-matraca-'+(document.querySelector('[name="helmet-color"]:checked')?.value||'amarillo');
@@ -9,16 +9,23 @@ function selectedSku(article) {
   return article.dataset.inventorySku;
 }
 export function availability(sku) {
-  if(!reachable) return {state:'unknown',text:'Consultar disponibilidad'};
+  if(connection==='loading') return {state:'loading',text:'Cargando existencias…'};
+  if(connection!=='ready') return {state:'unknown',text:'No fue posible cargar las existencias. Intenta de nuevo.'};
   const item=inventory.get(sku);
   if(!item) {
-    if(sku?.startsWith('chaleco-seguridad-')&&inventory.get('chaleco-seguridad')?.state==='pending') return {state:'pending',text:'Próximamente · color por confirmar'};
-    return {state:'unknown',text:'Consultar disponibilidad'};
+    // No matching record is different from a confirmed stock count of zero.
+    const variant=sku?.startsWith('bota-van-vien-blu-negro-talla-')?'esta talla':
+      /^(casco-mundial-infra-sin-matraca|chaleco-seguridad)-/.test(sku||'')?'este color':'este artículo';
+    return {state:'unregistered',text:`0 unidades registradas · Sin inventario para ${variant}`};
   }
-  if(!item.is_active) return {state:'unavailable',text:'No disponible'};
-  if(item.state==='pending') return {state:'pending',text:'Próximamente'};
-  if(item.quantity===0) return {state:'empty',text:'Agotado'};
-  return {state:'available',text:item.quantity===1?`Última ${item.unit==='par'?'unidad (par)':item.unit}`:`${item.quantity} disponibles (${item.unit})`,quantity:item.quantity};
+  const quantity=item.is_active?item.quantity:0;
+  const units={unidad:['unidad','unidades'],pieza:['pieza','piezas'],par:['par','pares'],caja:['caja','cajas'],rollo:['rollo','rollos']};
+  const unit=(units[item.unit]||units.unidad)[quantity===1?0:1];
+  const count=`${quantity} ${unit} ${quantity===1?'disponible':'disponibles'}`;
+  if(!item.is_active) return {state:'unavailable',text:`${count} · No disponible para venta`,quantity};
+  if(item.state==='pending') return {state:'pending',text:`${count} · Pendiente de compra`,quantity};
+  if(quantity===0) return {state:'empty',text:`${count} · Agotado`,quantity};
+  return {state:'available',text:count,quantity};
 }
 function render() {
   for(const article of document.querySelectorAll('article[data-inventory-sku]')) {
@@ -28,11 +35,11 @@ function render() {
     // The current store accepts quote requests; adding to a quote never reserves stock.
     const button=article.querySelector('.cart-action,.buy,button.btn');
     if(button) button.textContent=result.state==='available'?'Agregar al carrito':'Agregar para cotizar';
-    for(const node of article.querySelectorAll('.product-meta li,.delivery-time strong')) if(/Entrega de 24hrs/.test(node.textContent)) node.textContent=result.state==='available'?'Entrega estimada de 24 a 48 hrs':'Entrega por confirmar';
+    for(const node of article.querySelectorAll('[data-inventory-delivery]')) node.textContent=result.state==='available'?'Entrega estimada de 24 a 48 hrs':'Entrega por confirmar';
   }
   for(const row of document.querySelectorAll('.cart-card')) {
     const sku=row.querySelector('[data-qty]')?.dataset.qty; if(!sku)continue;
-    let badge=row.querySelector('.inventory-badge');if(!badge){badge=document.createElement('p');badge.className='inventory-badge';row.querySelector('.unit-price')?.after(badge);}
+    let badge=row.querySelector('.inventory-badge');if(!badge){badge=document.createElement('p');badge.className='inventory-badge';badge.setAttribute('role','status');badge.setAttribute('aria-live','polite');row.querySelector('.unit-price')?.after(badge);}
     const result=availability(sku);badge.textContent=result.text;badge.dataset.state=result.state;
   }
 }
@@ -40,8 +47,8 @@ let inflight;
 export async function refreshInventory() {
   if(inflight)return inflight;
   inflight=(async()=>{
-    try {const {data,error}=await supabase.from('inventory_items').select('sku,quantity,unit,state,is_active');if(error)throw error;inventory=new Map(data.map(i=>[i.sku,i]));reachable=true;}
-    catch {reachable=false;inventory=new Map();}
+    try {const {data,error}=await supabase.from('inventory_items').select('sku,quantity,unit,state,is_active');if(error)throw error;inventory=new Map(data.map(i=>[i.sku,i]));connection='ready';}
+    catch {connection='error';inventory=new Map();}
     finally {render();inflight=null;}
   })();return inflight;
 }
