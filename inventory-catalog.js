@@ -17,12 +17,14 @@ export const inventoryVariants = [
   {
     "sku": "3m-earsoft-311-1250",
     "product_id": "tapones-3m-con-cordon",
-    "name": "3M Tapones auditivos con cordón"
+    "name": "3M Tapones auditivos con cordón",
+    "unit": "par"
   },
   {
     "sku": "3m-earsoft-yellow-neons-sin-cordon",
     "product_id": "tapones-3m-sin-cordon",
-    "name": "3M E-A-Rsoft Yellow Neons — Tapones auditivos sin cordón"
+    "name": "3M E-A-Rsoft Yellow Neons — Tapones auditivos sin cordón",
+    "unit": "par"
   },
   {
     "sku": "casco-mundial-infra-sin-matraca-amarillo",
@@ -32,17 +34,20 @@ export const inventoryVariants = [
   {
     "sku": "guante-japones-latex",
     "product_id": "guante-japones-latex",
-    "name": "Guante tipo japonés con palma de látex"
+    "name": "Guante tipo japonés con palma de látex",
+    "unit": "par"
   },
   {
     "sku": "guante-carnaza-vestimenta",
     "product_id": "guante-carnaza-vestimenta",
-    "name": "Guante de carnaza de vestimenta"
+    "name": "Guante de carnaza de vestimenta",
+    "unit": "par"
   },
   {
     "sku": "guante-limpieza-rudo",
     "product_id": "guante-limpieza-rudo",
-    "name": "Guante para limpieza - Uso Rudo (Látex + Nitrilo)"
+    "name": "Guante para limpieza - Uso Rudo (Látex + Nitrilo)",
+    "unit": "par"
   },
   {
     "sku": "mascarilla-3m-8210-n95",
