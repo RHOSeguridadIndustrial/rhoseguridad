@@ -26,7 +26,8 @@ class Query {
  then(resolve,reject){const data=this.result();return Promise.resolve({data:data.slice(this.start,this.end+1),count:this.table==='site_visits'?79:data.length,error:null}).then(resolve,reject);}
 }
 export const supabase={
- auth:{getSession:async()=>({data:{session:{user:{id:adminId}}}}),signOut:async()=>({})},
+ rpc:async()=>({data:true}),
+ auth:{mfa:{getAuthenticatorAssuranceLevel:async()=>({data:{currentLevel:'aal2'}})},getUser:async()=>({data:{user:{id:adminId}}}),onAuthStateChange:()=>{},getSession:async()=>({data:{session:{user:{id:adminId}}}}),signOut:async()=>({})},
  from:table=>new Query(table),
  functions:{invoke:async(name,{body})=>{window.previewCalls.push({name,body});if(window.previewFailure)return {error:{context:{json:async()=>({error:'Ese correo ya pertenece a otra cuenta de RHO.'})}}};const row=rows.find(r=>r.id===body.customer_id);if(body.action==='edit')for(const k of ['email','full_name','phone','company_name'])row[k]=body[k];else row.deactivated_at=body.action==='deactivate'?'2026-10-07T20:00:00Z':null;row.updated_at=new Date().toISOString();return {data:{ok:true}};}}
 };`;

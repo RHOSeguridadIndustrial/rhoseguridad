@@ -1,3 +1,4 @@
+import { requireAdminSession } from '../_shared/admin-auth.js';
 import { LOYALTY_ENABLED } from "../_shared/loyalty-status.js";
 import { createClient } from "npm:@supabase/supabase-js@2.112.4";
 
@@ -76,6 +77,7 @@ Deno.serve(async (request) => {
 
   const { data: profile } = await service.from("profiles").select("role").eq("id", authData.user.id).single();
   if (profile?.role !== "admin") return json({ error: "Acceso de administrador requerido" }, 403);
+  if (!(await requireAdminSession(jwt))) return json({error:"Verifica tu código de administrador antes de continuar.",code:"mfa_required"},403);
 
   let payload: Record<string, unknown>;
   try {

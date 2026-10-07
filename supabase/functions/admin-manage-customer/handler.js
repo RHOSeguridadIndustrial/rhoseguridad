@@ -1,3 +1,4 @@
+import { requireAdminSession } from '../_shared/admin-auth.js';
 const allowedOrigins = new Set([
   'https://rhosegind.com', 'https://www.rhosegind.com',
   'https://rhoseguridadindustrial.github.io',
@@ -6,7 +7,7 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const actions = new Set(['edit', 'deactivate', 'reactivate']);
 const profileFields = 'id,role,email,full_name,company_name,phone,updated_at,deactivated_at';
 
-export function createHandler(service) {
+export function createHandler(service, checkSession = requireAdminSession) {
   return async function handle(request) {
     const origin = request.headers.get('Origin') || '';
     const headers = {
@@ -28,6 +29,9 @@ export function createHandler(service) {
         .select('id,role,deactivated_at').eq('id', auth.user.id).maybeSingle();
       if (actorError || actor?.role !== 'admin' || actor.deactivated_at) {
         return json({ error: 'Esta acción solo está disponible para administradores.' }, 403);
+      }
+      if (!(await checkSession(authorization.replace(/^Bearer\s+/i, '')))) {
+        return json({error:'Verifica tu código de administrador antes de continuar.',code:'mfa_required'},403);
       }
       const text = await request.text();
       if (new TextEncoder().encode(text).length > 16384) return json({ error: 'Solicitud demasiado grande.' }, 413);

@@ -2,7 +2,8 @@
   "name": "rho-customer-admin-tests",
   "private": true,
   "scripts": {
-    "test": "cd .. && node --test tests/customer-handler.test.mjs && node tests/customer-database.mjs && node tests/customer-browser.cjs"
+    "test": "cd .. && node --test tests/customer-handler.test.mjs && node tests/customer-database.mjs && node tests/customer-browser.cjs",
+    "test:security": "cd .. && node --test tests/customer-handler.test.mjs && node tests/admin-security-database.mjs && node tests/admin-security-browser.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.3.14",

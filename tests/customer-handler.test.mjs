@@ -13,7 +13,7 @@ function setup(options={}){
     }},
     from(){return {select(){return this;},eq(_,id){this.id=id;return this;},async maybeSingle(){return {data:this.id===actor.id?{...actor,...options.actor}:{...target,...options.target}};}};}
   };
-  const handler=createHandler(service);
+  const handler=createHandler(service,async()=>!options.insecure);
   return {writes,run:(body=valid,headers={Authorization:'Bearer valid'},method='POST')=>handler(new Request('https://example.test',{method,headers:{'Content-Type':'application/json',...headers},body:method==='POST'?JSON.stringify(body):undefined}))};
 }
 test('missing/invalid authentication rejected without writes',async()=>{
@@ -30,3 +30,5 @@ test('duplicate email surfaces actionable error',async()=>{const s=setup({update
 test('deactivation requires confirmation and reason; bans via Auth',async()=>{const s=setup(),body={...valid,action:'deactivate'};assert.equal((await s.run(body)).status,400);assert.equal((await s.run({...body,confirm:true,reason:'x'})).status,400);assert.equal((await s.run({...body,confirm:true,reason:'Cuenta de prueba'})).status,200);assert.equal(s.writes[0].changes.ban_duration,'876000h');});
 test('reactivation clears ban only for inactive customers',async()=>{let s=setup();assert.equal((await s.run({...valid,action:'reactivate',confirm:true})).status,409);s=setup({target:{deactivated_at:'2026-10-07'}});assert.equal((await s.run({...valid,action:'reactivate',confirm:true})).status,200);assert.equal(s.writes[0].changes.ban_duration,'none');});
 test('untrusted origin rejected and no mutations on preflight',async()=>{const s=setup();assert.equal((await s.run(valid,{Authorization:'Bearer valid',Origin:'https://other.example'})).status,403);assert.equal((await s.run(null,{Origin:'https://rhosegind.com'},'OPTIONS')).status,200);assert.equal(s.writes.length,0);});
+
+test('missing MFA or expired session rejects mutations',async()=>{const s=setup({insecure:true});assert.equal((await s.run()).status,403);assert.equal(s.writes.length,0);});

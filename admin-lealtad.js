@@ -1,6 +1,9 @@
 import { supabase } from './supabase-client.js?v=20260913-loyalty';
 import QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm';
 
+import {requireSecureAdmin} from './admin-security-guard.js?v=20261007-1';
+await requireSecureAdmin(supabase);
+
 const { data: { session } } = await supabase.auth.getSession();
 if (!session) {
   location.replace('login.html');
