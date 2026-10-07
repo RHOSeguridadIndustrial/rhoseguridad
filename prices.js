@@ -16,12 +16,13 @@ export async function refreshProductPrices(){
   const {data,error}=await supabase.from('products').select('id,name,category,price,currency,is_active').eq('is_active',true);
   if(error||!Array.isArray(data)) return cachedProducts();
   localStorage.setItem(CACHE_KEY,JSON.stringify({updatedAt:Date.now(),items:data}));
+  const byId=new Map(data.map(p=>[p.id,p]));
   const byName=new Map(data.map(p=>[normalize(p.name),p]));
   const aliases={};
   for(const article of document.querySelectorAll('article')){
     const title=article.querySelector('h2');
     if(!title) continue;
-    const product=byName.get(normalize(title.textContent));
+    const product=byId.get(article.dataset.rhoProductId)||byName.get(normalize(title.textContent));
     if(!product) continue;
     const price=Number(product.price);
     article.dataset.rhoProductId=product.id;

@@ -47,7 +47,8 @@ export const inventoryVariants = [
   {
     "sku": "mascarilla-3m-8210-n95",
     "product_id": "mascarilla-3m-8210-n95",
-    "name": "3M 8210 – Mascarilla contra partículas N95 (CJ 20 PZ)"
+    "name": "3M 8210 – Mascarilla contra partículas N95",
+    "unit": "pieza"
   },
   {
     "sku": "chaleco-seguridad",
