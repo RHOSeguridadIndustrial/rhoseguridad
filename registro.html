@@ -39,7 +39,7 @@
       <h1>Crear cuenta</h1>
       <p>Crear una cuenta es opcional. Puedes solicitar atención y cotizaciones por WhatsApp sin registrarte.</p>
       <section class="contact-options" style="margin:0 0 22px" aria-label="Atención sin registro">
-        <a id="guestWhatsApp" class="contact-btn whatsapp" href="https://wa.me/525569090204?text=Hola%20RHO%2C%20quisiera%20atenci%C3%B3n%20sin%20crear%20una%20cuenta." target="_blank" rel="noopener">Continuar por WhatsApp sin crear cuenta</a>
+        <a id="guestWhatsApp" class="contact-btn whatsapp" href="https://wa.me/525545683441?text=Hola%20RHO%2C%20quisiera%20atenci%C3%B3n%20sin%20crear%20una%20cuenta." target="_blank" rel="noopener">Continuar por WhatsApp sin crear cuenta</a>
         <a class="continue-link" href="carrito.html">Cotizar los productos de mi carrito</a>
         <p style="margin:12px 0 0">Esta opción sigue disponible aunque no puedas crear tu cuenta.</p>
       </section>
@@ -76,7 +76,7 @@
       const name = [form.elements.nombre.value.trim(), form.elements.apellidos.value.trim()].filter(Boolean).join(' ');
       const company = form.elements.empresa.value.trim();
       const message = ['Hola RHO, quisiera atención sin crear una cuenta.', name ? 'Nombre: ' + name : '', company ? 'Empresa: ' + company : ''].filter(Boolean).join('\n');
-      this.href = 'https://wa.me/525569090204?text=' + encodeURIComponent(message);
+      this.href = 'https://wa.me/525545683441?text=' + encodeURIComponent(message);
     });
   </script>
   <script type="module">
@@ -170,7 +170,7 @@
       const subject = `Nuevo registro de cliente - ${fullName}`;
 
       document.getElementById('registerEmail').href = `mailto:Administracion@rhosegind.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
-      document.getElementById('registerWhatsApp').href = `https://wa.me/525569090204?text=${encodeURIComponent(message)}`;
+      document.getElementById('registerWhatsApp').href = `https://wa.me/525545683441?text=${encodeURIComponent(message)}`;
       form.hidden = true;
       document.getElementById('contactOptions').hidden = false;
     });
