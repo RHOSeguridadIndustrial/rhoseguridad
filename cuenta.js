@@ -3,6 +3,7 @@ const status = byId('status'), account = byId('account');
 let supabase;
 function clearAccount() {
   account.hidden = true;
+  byId("adminInventoryLink").hidden = true;
   ['greeting','fullName','email','company','phone'].forEach(id => byId(id).textContent = '');
 }
 async function init() {
@@ -13,7 +14,7 @@ async function init() {
     if (error) throw error;
     if (!user) { location.replace('login.html'); return; }
     const { data: profile, error: profileError } = await supabase.from('profiles')
-      .select('full_name,company_name').eq('id', user.id).maybeSingle();
+      .select('full_name,company_name,role').eq('id', user.id).maybeSingle();
     const metadata = user.user_metadata || {};
     const name = profile?.full_name || metadata.full_name || '';
     byId('greeting').textContent = name ? 'Bienvenido, ' + name : 'Bienvenido a tu cuenta';
@@ -23,6 +24,7 @@ async function init() {
     byId('phone').textContent = metadata.phone || 'Sin registrar';
     byId('profileNote').hidden = !profileError;
     status.textContent = '';
+    byId("adminInventoryLink").hidden = profile?.role !== "admin";
     account.hidden = false;
     supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || !session) { clearAccount(); location.replace('login.html'); }
