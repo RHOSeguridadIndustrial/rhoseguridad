@@ -1,3 +1,4 @@
+import {requireSecureAdmin} from './admin-security-guard.js?v=20261007-1';
 import { supabase } from './supabase-client.js?v=20261007-inventory';
 import { inventoryVariants } from './inventory-catalog.js?v=20261007-1';
 
@@ -15,6 +16,7 @@ function lock(message) {
 }
 async function init() {
   try {
+    await requireSecureAdmin(supabase);
     const {data: {user}, error} = await supabase.auth.getUser();
     if (error || !user) { lock('Inicia sesión con tu cuenta de administrador para continuar.'); const a=document.createElement('a'); a.href='login.html'; a.textContent=' Iniciar sesión'; $('access').append(a); return; }
     const {data: profile, error: profileError} = await supabase.from('profiles').select('role').eq('id',user.id).single();
