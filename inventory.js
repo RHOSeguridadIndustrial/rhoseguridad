@@ -12,29 +12,23 @@ export function availability(sku) {
   if(connection==='loading') return {state:'loading',text:'Cargando existencias…'};
   if(connection!=='ready') return {state:'unknown',text:'No fue posible cargar las existencias. Intenta de nuevo.'};
   const item=inventory.get(sku);
-  if(!item) {
-    // No matching record is different from a confirmed stock count of zero.
-    const variant=sku?.startsWith('bota-van-vien-blu-negro-talla-')?'esta talla':
-      /^(casco-mundial-infra-sin-matraca|chaleco-seguridad)-/.test(sku||'')?'este color':'este artículo';
-    return {state:'unregistered',text:`0 unidades registradas · Sin inventario para ${variant}`};
-  }
+  // A variant without a stock record has no pieces registered for sale.
+  if(!item) return {state:'unregistered',text:'0 piezas disponibles',quantity:0};
   const quantity=item.is_active?item.quantity:0;
-  const units={unidad:['unidad','unidades'],pieza:['pieza','piezas'],par:['par','pares'],caja:['caja','cajas'],rollo:['rollo','rollos']};
-  const unit=(units[item.unit]||units.unidad)[quantity===1?0:1];
-  const count=`${quantity} ${unit} ${quantity===1?'disponible':'disponibles'}`;
-  if(!item.is_active) return {state:'unavailable',text:`${count} · No disponible para venta`,quantity};
-  if(item.state==='pending') return {state:'pending',text:`${count} · Pendiente de compra`,quantity};
-  if(quantity===0) return {state:'empty',text:`${count} · Agotado`,quantity};
+  const count=`${quantity} ${quantity===1?'pieza disponible':'piezas disponibles'}`;
+  if(!item.is_active) return {state:'unavailable',text:count,quantity};
+  if(item.state==='pending') return {state:'pending',text:count,quantity};
+  if(quantity===0) return {state:'empty',text:count,quantity};
   return {state:'available',text:count,quantity};
 }
 function render() {
   for(const article of document.querySelectorAll('article[data-inventory-sku]')) {
-    let badge=article.querySelector('.inventory-badge');
-    if(!badge) {badge=document.createElement('p');badge.className='inventory-badge';badge.setAttribute('role','status');badge.setAttribute('aria-live','polite');const price=article.querySelector('.product-price,.price');(price||article.querySelector('h2')).after(badge);}
-    const result=availability(selectedSku(article));badge.textContent=result.text;badge.dataset.state=result.state;
+    // Stock is shown when reviewing the order, not on the product page.
+    article.querySelectorAll('.inventory-badge').forEach(badge=>badge.remove());
+    const result=availability(selectedSku(article));
     // The current store accepts quote requests; adding to a quote never reserves stock.
     const button=article.querySelector('.cart-action,.buy,button.btn');
-    if(button) button.textContent=result.state==='available'?'Agregar al carrito':'Agregar para cotizar';
+    if(button) button.textContent='Agregar al carrito';
     for(const node of article.querySelectorAll('[data-inventory-delivery]')) node.textContent=result.state==='available'?'Entrega estimada de 24 a 48 hrs':'Entrega por confirmar';
   }
   for(const row of document.querySelectorAll('.cart-card')) {
