@@ -25,6 +25,7 @@ if (query !== null && query.trim()) {
   for (const product of products) {
     const article = document.createElement('article');
     article.dataset.productId = product.product_id;
+    article.dataset.price = String(product.price);
     const image = document.createElement('img');
     image.src = product.image;
     image.alt = product.name;
@@ -49,6 +50,7 @@ if (query !== null && query.trim()) {
     const delivery = document.createElement('p');
     delivery.textContent = 'Fecha de entrega: por confirmar según código postal.';
     article.append(image, category, heading, price, tax, stock, delivery, link);
+    addCartControls(article, product);
     results.append(article);
   }
   loadDetails(products, results).catch(() => {
@@ -76,6 +78,7 @@ async function loadDetails(products, results) {
     const price = prices.get(product.product_id);
     if (price && price.price !== null && Number.isFinite(Number(price.price)) && Number(price.price) >= 0 && price.currency === 'MXN') {
       article.querySelector('.search-price').textContent = formatPrice(price.price);
+      article.dataset.price = String(Number(price.price));
     }
     const variants = inventoryVariants.filter(row => row.product_id === product.product_id);
     const stock = article.querySelector('.search-stock');
@@ -98,6 +101,65 @@ async function loadDetails(products, results) {
       stock.append(line);
     }
   }
+}
+
+function addCartControls(article, product) {
+  let variants = inventoryVariants.filter(row => row.product_id === product.product_id);
+  if (product.product_id === 'chaleco-seguridad') variants = variants.filter(row => row.sku !== 'chaleco-seguridad');
+  const controls = document.createElement('div');
+  controls.className = 'search-cart-controls';
+  let select;
+  if (variants.length > 1) {
+    const label = document.createElement('label');
+    label.textContent = product.product_id === 'bota-industrial-dielectrica' ? 'Elige talla' : 'Elige color';
+    select = document.createElement('select');
+    select.id = `variant-${product.product_id}`;
+    label.htmlFor = select.id;
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Selecciona una opción';
+    select.append(placeholder);
+    for (const variant of variants) {
+      const option = document.createElement('option');
+      option.value = variant.sku;
+      option.textContent = variant.name;
+      select.append(option);
+    }
+    controls.append(label, select);
+  }
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = 'Agregar al carrito';
+  const status = document.createElement('p');
+  status.setAttribute('role', 'status');
+  status.setAttribute('aria-live', 'polite');
+  button.addEventListener('click', async () => {
+    const variant = select ? variants.find(row => row.sku === select.value) : variants[0];
+    if (!variant) { status.textContent = 'Selecciona talla o color antes de agregar.'; select?.focus(); return; }
+    button.disabled = true;
+    status.textContent = 'Agregando…';
+    try {
+      const { addToCart, getCart } = await withTimeout(import('./cart.js?v=20260914-account-isolation'));
+      const before = getCart().find(row => row.id === variant.sku)?.qty || 0;
+      // Keep the same sales price for the selected variant when the cart resolves aliases.
+      try {
+        const aliases = JSON.parse(localStorage.getItem('rho-product-price-aliases-v1') || '{}');
+        const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        aliases[normalize(variant.sku)] = Number(article.dataset.price);
+        localStorage.setItem('rho-product-price-aliases-v1', JSON.stringify(aliases));
+      } catch {}
+      addToCart({ id:variant.sku, name:variants.length > 1 ? variant.name : product.name, price:Number(article.dataset.price), image:product.image, unit:product.unit || 'pieza' });
+      const after = getCart().find(row => row.id === variant.sku)?.qty || 0;
+      if (after !== before + 1) throw new Error('Cart was not saved');
+      button.textContent = 'Agregar otra unidad';
+      status.textContent = 'Agregado al carrito.';
+      const count = getCart().reduce((total, row) => total + row.qty, 0);
+      for (const badge of document.querySelectorAll('[data-cart-count]')) { badge.textContent = String(count); badge.hidden = count === 0; }
+    } catch { status.textContent = 'No se pudo agregar. Intenta nuevamente.'; }
+    finally { button.disabled = false; }
+  });
+  controls.append(button, status);
+  article.append(controls);
 }
 
 function withTimeout(request) {
