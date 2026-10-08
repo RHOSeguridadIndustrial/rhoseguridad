@@ -51,7 +51,8 @@ function render() {
   if(checkout && note) {
     const items=[...document.querySelectorAll('.cart-card [data-qty]')].map(node=>({sku:node.dataset.qty,quantity:Number(node.value)}));
     const channel=purchaseChannel(items,[...inventory.values()],connection);
-    note.textContent=connection==='loading'?'Consultando existencias para tu pedido…':channel.message;
+    note.hidden=channel.action==='special';
+    note.textContent=channel.action==='special'?'':connection==='loading'?'Consultando existencias para tu pedido…':channel.message;
     checkout.disabled=channel.action!=='special';
     checkout.textContent=channel.action==='special'?'Cotizar pedido especial por WhatsApp':channel.action==='onsite_pending'?'Compra en la página: próximamente':'Confirmar existencias';
   }
