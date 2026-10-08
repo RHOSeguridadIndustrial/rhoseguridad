@@ -20,16 +20,16 @@ test('a recorded zero remains distinct from unconfirmed stock', () => {
   const result = describeAvailability('ready', {is_active:true,state:'tracked',quantity:0});
   assert.equal(result.state, 'empty');
   assert.equal(result.quantity, 0);
-  assert.match(result.text, /Inventario: 0 piezas/);
+  assert.match(result.text, /Existencias en stock: 0 piezas/);
 });
 
 test('counts use the confirmed sales unit and do not promise free stock', () => {
   const one = describeAvailability('ready', {is_active:true,state:'tracked',quantity:1,unit:'unidad'}, 'par');
   const five = describeAvailability('ready', {is_active:true,state:'tracked',quantity:5,unit:'unidad'}, 'par');
-  assert.match(one.text, /Inventario: 1 par/);
-  assert.match(five.text, /Inventario: 5 pares/);
+  assert.match(one.text, /Existencias en stock: 1 par/);
+  assert.match(five.text, /Existencias en stock: 5 pares/);
   assert.equal(describeAvailability('ready', {is_active:true,state:'pending',quantity:0}).quantity, 0);
-  assert.match(describeAvailability('ready', {is_active:true,state:'tracked',quantity:2,unit:'rollo'}).text, /Inventario: 2 rollos/);
+  assert.match(describeAvailability('ready', {is_active:true,state:'tracked',quantity:2,unit:'rollo'}).text, /Existencias en stock: 2 rollos/);
 });
 
 test('inactive or malformed records do not expose a sellable count', () => {

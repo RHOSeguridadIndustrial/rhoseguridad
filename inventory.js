@@ -1,6 +1,6 @@
 import { addSpecialOrderMessage } from './special-order.js?v=20261008-1';
 import { supabase } from './supabase-client.js?v=20261007-inventory';
-import { describeAvailability } from './inventory-availability.js?v=20261008-1';
+import { describeAvailability } from './inventory-availability.js?v=20261008-2';
 import { inventoryVariants } from './inventory-catalog.js?v=20261008-1';
 
 const salesUnits = new Map(inventoryVariants.filter(item => item.unit).map(item => [item.sku,item.unit]));
@@ -12,9 +12,28 @@ export function availability(sku) {
 }
 function render() {
   for(const article of document.querySelectorAll('article[data-inventory-sku]')) {
-    addSpecialOrderMessage(article, article.querySelector('h2,h3')?.textContent, article.querySelector('.inventory-badge,.price'));
-    // Stock is shown when reviewing the order, not on the product page.
-    article.querySelectorAll('.inventory-badge').forEach(badge=>badge.remove());
+    let sku=article.dataset.inventorySku;
+    const helmet=article.querySelector('[name="helmet-color"]:checked');
+    const boot=article.querySelector('[name="boot-size"]:checked');
+    const vest=article.querySelector('[name="color"]:checked');
+    if(helmet)sku=`casco-mundial-infra-sin-matraca-${helmet.value}`;
+    if(boot)sku=`bota-van-vien-blu-negro-talla-${boot.value}`;
+    if(vest)sku=`chaleco-seguridad-${vest.value}`;
+    const price=article.querySelector('.product-price,.price');
+    let tax=article.querySelector('.tax-note') || [...article.querySelectorAll('p,small,div')].find(node=>node.children.length===0 && node.textContent.trim()==='IVA incluido');
+    if(!tax && price){tax=document.createElement('p');tax.className='tax-note';price.after(tax);}
+    if(tax)tax.textContent='IVA incluido';
+    let unit=article.querySelector('.rho-sale-unit');
+    if(!unit && tax){unit=document.createElement('p');unit.className='rho-sale-unit';tax.after(unit);}
+    if(unit)unit.textContent=`Precio por: 1 ${salesUnits.get(sku)||'pieza'}`;
+    for(const node of article.querySelectorAll('.product-meta li')) {
+      if(/^(1 (pieza|par)|Unidad de venta: 1 (pieza|par))$/.test(node.textContent.trim()))node.remove();
+    }
+    let badge=article.querySelector('.inventory-badge');
+    if(!badge && unit){badge=document.createElement('p');badge.className='inventory-badge';badge.setAttribute('role','status');badge.setAttribute('aria-live','polite');unit.after(badge);}
+    const result=availability(sku);if(badge){badge.textContent=result.text;badge.dataset.state=result.state;}
+    addSpecialOrderMessage(article, article.querySelector('h2,h3')?.textContent, badge);
+    const special=article.querySelector('.rho-special-order');if(badge&&special)badge.after(special);
     // The current store accepts quote requests; adding to a quote never reserves stock.
     const button=article.querySelector('.cart-action,.buy,button.btn');
     if(button) button.textContent='Agregar al carrito';
@@ -22,7 +41,7 @@ function render() {
   }
   for(const row of document.querySelectorAll('.cart-card')) {
     const sku=row.querySelector('[data-qty]')?.dataset.qty; if(!sku)continue;
-    let badge=row.querySelector('.inventory-badge');if(!badge){badge=document.createElement('p');badge.className='inventory-badge';badge.setAttribute('role','status');badge.setAttribute('aria-live','polite');row.querySelector('.unit-price')?.after(badge);}
+    let badge=row.querySelector('.inventory-badge');if(!badge){badge=document.createElement('p');badge.className='inventory-badge';badge.setAttribute('role','status');badge.setAttribute('aria-live','polite');row.querySelector('.rho-sale-unit')?.after(badge);}
     const result=availability(sku);badge.textContent=result.text;badge.dataset.state=result.state;
     addSpecialOrderMessage(row, row.querySelector('.item-name')?.textContent, badge);
   }

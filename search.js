@@ -44,13 +44,16 @@ if (query !== null && query.trim()) {
     price.textContent = formatPrice(product.price);
     const tax = document.createElement('p');
     tax.className = 'search-tax';
-    tax.textContent = product.unit ? `1 ${product.unit} · IVA incluido` : 'IVA incluido';
+    tax.textContent = 'IVA incluido';
+    const salesUnit = document.createElement('p');
+    salesUnit.className = 'rho-sale-unit';
+    salesUnit.textContent = `Precio por: 1 ${product.unit || 'pieza'}`;
     const stock = document.createElement('p');
     stock.className = 'search-stock';
     stock.textContent = 'Consultando inventario…';
     const delivery = document.createElement('p');
     delivery.textContent = 'Fecha de entrega: por confirmar según código postal.';
-    article.append(image, category, heading, price, tax, stock, delivery, link);
+    article.append(image, category, heading, price, tax, salesUnit, stock, delivery, link);
     addSpecialOrderMessage(article, product.name, stock);
     addCartControls(article, product);
     results.append(article);
@@ -96,7 +99,7 @@ async function loadDetails(products, results) {
       const prefix = variants.length > 1 ? `${variant.name}: ` : '';
       if (item?.is_active && Number.isInteger(item.quantity) && item.quantity >= 0) {
         const words = product.unit === 'par' ? ['par', 'pares'] : ['pieza', 'piezas'];
-        line.textContent = `${prefix}${item.quantity} ${words[item.quantity === 1 ? 0 : 1]} en inventario`;
+        line.textContent = `${prefix}Existencias en stock: ${item.quantity} ${words[item.quantity === 1 ? 0 : 1]}`;
       } else {
         line.textContent = `${prefix}Sin registro de inventario disponible`;
       }
