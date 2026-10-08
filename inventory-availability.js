@@ -11,5 +11,5 @@ export function describeAvailability(connection, item, unitOverride) {
   const labels = {pieza:['pieza','piezas'], par:['par','pares'], caja:['caja','cajas'], rollo:['rollo','rollos'], unidad:['unidad','unidades']};
   const words = labels[unit] || labels.unidad;
   const quantity = item.quantity;
-  return {state:item.state === 'pending' ? 'pending' : quantity === 0 ? 'empty' : 'available', quantity, text:`Existencias en stock: ${quantity} ${words[quantity === 1 ? 0 : 1]}`};
+  return {state:item.state === 'pending' ? 'pending' : quantity === 0 ? 'empty' : 'available', quantity, text:`Existencias en stock: ${quantity} ${quantity === 0 ? 'piezas' : words[quantity === 1 ? 0 : 1]}`};
 }

@@ -1,7 +1,7 @@
 import { purchaseChannel } from './purchase-channel.js?v=20261008-1';
 import { addSpecialOrderMessage } from './special-order.js?v=20261008-1';
 import { supabase } from './supabase-client.js?v=20261007-inventory';
-import { describeAvailability } from './inventory-availability.js?v=20261008-2';
+import { describeAvailability } from './inventory-availability.js?v=20261008-3';
 import { inventoryVariants } from './inventory-catalog.js?v=20261008-1';
 
 const salesUnits = new Map(inventoryVariants.filter(item => item.unit).map(item => [item.sku,item.unit]));

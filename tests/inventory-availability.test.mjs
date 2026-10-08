@@ -19,6 +19,7 @@ test('missing and failed inventory never invent a zero', () => {
 test('a recorded zero remains distinct from unconfirmed stock', () => {
   const result = describeAvailability('ready', {is_active:true,state:'tracked',quantity:0});
   assert.equal(result.state, 'empty');
+  assert.equal(describeAvailability('ready', {is_active:true,state:'tracked',quantity:0,unit:'par'}, 'par').text, 'Existencias en stock: 0 piezas');
   assert.equal(result.quantity, 0);
   assert.match(result.text, /Existencias en stock: 0 piezas/);
 });

@@ -99,7 +99,7 @@ async function loadDetails(products, results) {
       const prefix = variants.length > 1 ? `${variant.name}: ` : '';
       if (item?.is_active && Number.isInteger(item.quantity) && item.quantity >= 0) {
         const words = product.unit === 'par' ? ['par', 'pares'] : ['pieza', 'piezas'];
-        line.textContent = `${prefix}Existencias en stock: ${item.quantity} ${words[item.quantity === 1 ? 0 : 1]}`;
+        line.textContent = `${prefix}Existencias en stock: ${item.quantity} ${item.quantity === 0 ? 'piezas' : words[item.quantity === 1 ? 0 : 1]}`;
       } else {
         line.textContent = `${prefix}Sin registro de inventario disponible`;
       }
