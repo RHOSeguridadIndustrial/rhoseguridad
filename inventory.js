@@ -1,3 +1,4 @@
+import { purchaseChannel } from './purchase-channel.js?v=20261008-1';
 import { addSpecialOrderMessage } from './special-order.js?v=20261008-1';
 import { supabase } from './supabase-client.js?v=20261007-inventory';
 import { describeAvailability } from './inventory-availability.js?v=20261008-2';
@@ -44,6 +45,15 @@ function render() {
     let badge=row.querySelector('.inventory-badge');if(!badge){badge=document.createElement('p');badge.className='inventory-badge';badge.setAttribute('role','status');badge.setAttribute('aria-live','polite');row.querySelector('.rho-sale-unit')?.after(badge);}
     const result=availability(sku);badge.textContent=result.text;badge.dataset.state=result.state;
     addSpecialOrderMessage(row, row.querySelector('.item-name')?.textContent, badge);
+  }
+  const checkout=document.getElementById('checkout');
+  const note=document.getElementById('purchaseChannelNote');
+  if(checkout && note) {
+    const items=[...document.querySelectorAll('.cart-card [data-qty]')].map(node=>({sku:node.dataset.qty,quantity:Number(node.value)}));
+    const channel=purchaseChannel(items,[...inventory.values()],connection);
+    note.textContent=connection==='loading'?'Consultando existencias para tu pedido…':channel.message;
+    checkout.disabled=channel.action!=='special';
+    checkout.textContent=channel.action==='special'?'Cotizar pedido especial por WhatsApp':channel.action==='onsite_pending'?'Compra en la página: próximamente':'Confirmar existencias';
   }
 }
 let inflight;
