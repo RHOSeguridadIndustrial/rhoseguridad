@@ -1,0 +1,15 @@
+[hidden]{display:none!important}
+#productSearch{padding:24px 20px 36px;min-height:350px}
+#productSearch form{max-width:720px;margin-bottom:28px}
+#productSearch label{display:block;font-weight:700;margin-bottom:8px}
+.search-controls{display:flex;gap:8px}
+.search-controls input{min-width:0;flex:1;padding:12px;border:1px solid #a9b4c2;border-radius:10px;font:16px Arial,sans-serif}
+.search-controls button{padding:12px 18px;background:#43a324;color:#fff;border:0;border-radius:10px;font-weight:700}
+#searchHeading{font-size:26px;margin:0 0 12px}
+#searchSummary{line-height:1.5;overflow-wrap:anywhere}
+#searchResults{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px;margin:22px 0}
+#searchResults article{border:1px solid #d8dee5;border-radius:16px;padding:18px;background:#fff}
+#searchResults p{margin:0 0 8px;color:#54647c;font-size:13px}
+#searchResults h2{font-size:19px;line-height:1.35;margin:0 0 18px}
+#productSearch a{color:#071a35;font-weight:700}
+#searchResults a{display:inline-block;padding:12px 0}
