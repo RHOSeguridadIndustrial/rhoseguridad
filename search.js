@@ -1,3 +1,4 @@
+import { addSpecialOrderMessage } from './special-order.js?v=20261008-1';
 import { searchCatalog } from './search-catalog.js?v=20261008-4';
 import { inventoryVariants } from './inventory-catalog.js?v=20261008-1';
 
@@ -50,6 +51,7 @@ if (query !== null && query.trim()) {
     const delivery = document.createElement('p');
     delivery.textContent = 'Fecha de entrega: por confirmar según código postal.';
     article.append(image, category, heading, price, tax, stock, delivery, link);
+    addSpecialOrderMessage(article, product.name, stock);
     addCartControls(article, product);
     results.append(article);
   }

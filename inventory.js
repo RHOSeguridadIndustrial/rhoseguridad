@@ -1,3 +1,4 @@
+import { addSpecialOrderMessage } from './special-order.js?v=20261008-1';
 import { supabase } from './supabase-client.js?v=20261007-inventory';
 import { describeAvailability } from './inventory-availability.js?v=20261008-1';
 import { inventoryVariants } from './inventory-catalog.js?v=20261008-1';
@@ -11,6 +12,7 @@ export function availability(sku) {
 }
 function render() {
   for(const article of document.querySelectorAll('article[data-inventory-sku]')) {
+    addSpecialOrderMessage(article, article.querySelector('h2,h3')?.textContent, article.querySelector('.inventory-badge,.price'));
     // Stock is shown when reviewing the order, not on the product page.
     article.querySelectorAll('.inventory-badge').forEach(badge=>badge.remove());
     // The current store accepts quote requests; adding to a quote never reserves stock.
@@ -22,6 +24,7 @@ function render() {
     const sku=row.querySelector('[data-qty]')?.dataset.qty; if(!sku)continue;
     let badge=row.querySelector('.inventory-badge');if(!badge){badge=document.createElement('p');badge.className='inventory-badge';badge.setAttribute('role','status');badge.setAttribute('aria-live','polite');row.querySelector('.unit-price')?.after(badge);}
     const result=availability(sku);badge.textContent=result.text;badge.dataset.state=result.state;
+    addSpecialOrderMessage(row, row.querySelector('.item-name')?.textContent, badge);
   }
 }
 let inflight;
