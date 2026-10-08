@@ -1,4 +1,4 @@
-import { searchCatalog } from './search-catalog.js?v=20261008-1';
+import { searchCatalog } from './search-catalog.js?v=20261008-2';
 
 export function findProducts(query) {
   const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
