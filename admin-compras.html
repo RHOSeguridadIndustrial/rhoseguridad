@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data:; connect-src 'self' https://mtpqpxcmngrsivntbgcc.supabase.co wss://mtpqpxcmngrsivntbgcc.supabase.co https://cdn.jsdelivr.net; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Campaña de compras | Administración RHO</title>
+  <link rel="stylesheet" href="admin-compras.css?v=20261008-1">
+</head>
+<body>
+  <header class="top"><a class="brand" href="admin.html">RHO <span>Administración</span></a><nav aria-label="Administración"><a href="admin.html">Panel</a><a href="admin-inventario.html">Inventario</a><a href="index.html">Ver tienda</a><button id="logout" hidden>Cerrar sesión</button></nav></header>
+  <main>
+    <p id="access" role="status">Verificando su acceso de administrador…</p>
+    <div id="app" hidden>
+      <div class="heading"><div><p class="eyebrow">Abastecimiento de EPP</p><h1>Campaña de compras</h1><p>Mariana · Investigación y cotizaciones para RHO.</p></div><button id="refresh" class="secondary" type="button">Actualizar estado</button></div>
+      <section class="control-card" aria-labelledby="control-title">
+        <div class="control-heading"><div><p class="eyebrow">Control de actividad</p><h2 id="control-title">Usted decide cuándo avanzar</h2></div><span class="badge" id="mode">Consultando…</span></div>
+        <p id="mode-description">Cargando el estado guardado de la campaña.</p>
+        <div class="controls" role="group" aria-label="Control de la campaña">
+          <button type="button" data-mode="active" class="start" disabled><span aria-hidden="true">▶</span> Encender</button>
+          <button type="button" data-mode="paused" class="pause" disabled><span aria-hidden="true">Ⅱ</span> Pausar</button>
+          <button type="button" data-mode="off" class="stop" disabled><span aria-hidden="true">■</span> Apagar</button>
+        </div>
+        <p id="message" class="message" role="status" aria-live="polite"></p>
+        <div class="status-grid"><div><span>Último cambio guardado</span><strong id="changed-at">—</strong></div><div><span>Última comprobación de la campaña</span><strong id="checked-at">—</strong><p id="acknowledgment"></p></div></div>
+        <p class="note">El control se comprueba en cada revisión programada, aproximadamente cada hora, y antes de cada nuevo envío. Pausar o apagar conserva el historial; un envío que ya comenzó no puede retirarse desde este panel.</p>
+      </section>
+      <div class="details-grid">
+        <section class="panel"><p class="eyebrow">Horario de contacto</p><h2>Lunes a viernes</h2><p class="hours">09:00 — 18:00</p><p>Hora de Ciudad de México</p><span id="contact-window" class="schedule-state">Consultando horario…</span><p class="note">Se respeta también el horario publicado por cada proveedor. Fuera de esta ventana, una campaña activa puede investigar y revisar respuestas, pero no enviar solicitudes.</p></section>
+        <section class="panel"><p class="eyebrow">Alcance de Mariana</p><h2>Cotizar, comparar y avisar</h2><ul><li>Buscar fabricantes y distribuidores en México.</li><li>Pedir precios, mínimos, existencias, tiempos de entrega, envío a domicilio y tienda física.</li><li>Evitar solicitudes duplicadas y comparar las mismas unidades e impuestos.</li></ul><p class="manual">La selección y la compra las realiza Rafael manualmente.</p></section>
+      </div>
+      <section class="panel history"><div class="control-heading"><div><p class="eyebrow">Trazabilidad</p><h2>Historial de controles</h2></div><span class="small">Últimos 10 cambios · hora CDMX</span></div><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Cambio</th><th>Responsable</th></tr></thead><tbody id="history"></tbody></table></div></section>
+      <details class="rules panel"><summary>Ver reglas y significado de los controles</summary><dl><dt>Encender</dt><dd>Permite retomar la investigación y las cotizaciones en la siguiente revisión. No inicia una compra.</dd><dt>Pausar</dt><dd>Interrumpe temporalmente la actividad. Para retomarla, pulse Encender.</dd><dt>Apagar</dt><dd>Da por terminada la actividad hasta que usted vuelva a encenderla. Conserva configuración, solicitudes previas e historial.</dd><dt>Canales y presentación</dt><dd>Mariana se presenta como asistente virtual de compras. Los hilos iniciados como Rafael mantienen su firma. Se utiliza el correo autorizado de RHO; WhatsApp requiere verificar un canal compatible antes de enviar.</dd><dt>Solicitudes y avisos</dt><dd>Una solicitud inicial por proveedor y necesidad. No se menciona la reventa ni se comprometen cantidades. Los avisos se reservan para cotizaciones útiles, cambios relevantes y ahorros comparables de al menos 5%.</dd></dl></details>
+    </div>
+    <noscript>Active JavaScript para controlar la campaña.</noscript>
+  </main>
+  <footer>RHO Seguridad Industrial · Administración de compras</footer>
+  <script type="module" src="admin-compras.js?v=20261008-1"></script>
+</body>
+</html>

@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "test": "cd .. && node --test tests/customer-handler.test.mjs && node tests/customer-database.mjs && node tests/customer-browser.cjs",
-    "test:security": "cd .. && node --test tests/customer-handler.test.mjs && node tests/admin-security-database.mjs && node tests/admin-security-browser.cjs"
+    "test:security": "cd .. && node --test tests/customer-handler.test.mjs && node tests/admin-security-database.mjs && node tests/admin-security-browser.cjs",
+    "test:procurement": "cd .. && node tests/procurement-database.mjs && node tests/procurement-browser.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.3.14",

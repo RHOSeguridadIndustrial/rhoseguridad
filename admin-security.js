@@ -1,5 +1,5 @@
 import {supabase} from './supabase-client.js?v=20261007-security';
-const $=id=>document.getElementById(id),allowed=new Set(['admin.html','admin-precios.html','admin-pedidos.html','admin-inventario.html','admin-lealtad.html']);
+const $=id=>document.getElementById(id),allowed=new Set(['admin.html','admin-precios.html','admin-pedidos.html','admin-inventario.html','admin-lealtad.html','admin-compras.html']);
 const requested=new URLSearchParams(location.search).get('next'),next=allowed.has(requested)?requested:'admin.html';
 let factorId=null,enrolling=false;
 function feedback(text){$('status').textContent=text;}
