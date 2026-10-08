@@ -1,5 +1,4 @@
-import { searchCatalog } from './search-catalog.js?v=20261008-3';
-import { supabase } from './supabase-client.js?v=20260918-pricing-db';
+import { searchCatalog } from './search-catalog.js?v=20261008-4';
 import { inventoryVariants } from './inventory-catalog.js?v=20261008-1';
 
 export function findProducts(query) {
@@ -40,7 +39,7 @@ if (query !== null && query.trim()) {
     link.textContent = 'Ver en catálogo';
     const price = document.createElement('p');
     price.className = 'search-price';
-    price.textContent = 'Precio por confirmar';
+    price.textContent = formatPrice(product.price);
     const tax = document.createElement('p');
     tax.className = 'search-tax';
     tax.textContent = product.unit ? `1 ${product.unit} · IVA incluido` : 'IVA incluido';
@@ -52,13 +51,20 @@ if (query !== null && query.trim()) {
     article.append(image, category, heading, price, tax, stock, delivery, link);
     results.append(article);
   }
-  loadDetails(products, results).catch(() => {});
+  loadDetails(products, results).catch(() => {
+    for (const stock of results.querySelectorAll('.search-stock')) stock.textContent = 'No fue posible consultar el inventario. Intenta nuevamente.';
+  });
+}
+
+function formatPrice(price) {
+  return `$${Number(price).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`;
 }
 
 async function loadDetails(products, results) {
+  const { supabase } = await withTimeout(import('./supabase-client.js?v=20260918-pricing-db'));
   const responses = await Promise.allSettled([
-    supabase.from('products').select('id,price,currency').eq('is_active', true),
-    supabase.from('inventory_items').select('sku,quantity,unit,state,is_active')
+    withTimeout(supabase.from('products').select('id,price,currency').eq('is_active', true)),
+    withTimeout(supabase.from('inventory_items').select('sku,quantity,unit,state,is_active'))
   ]);
   const rows = index => responses[index].status === 'fulfilled' && !responses[index].value.error
     ? responses[index].value.data || [] : [];
@@ -69,10 +75,14 @@ async function loadDetails(products, results) {
     if (!article) continue;
     const price = prices.get(product.product_id);
     if (price && price.price !== null && Number.isFinite(Number(price.price)) && Number(price.price) >= 0 && price.currency === 'MXN') {
-      article.querySelector('.search-price').textContent = `$${Number(price.price).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`;
+      article.querySelector('.search-price').textContent = formatPrice(price.price);
     }
     const variants = inventoryVariants.filter(row => row.product_id === product.product_id);
     const stock = article.querySelector('.search-stock');
+    if (responses[1].status !== 'fulfilled' || responses[1].value.error) {
+      stock.textContent = 'No fue posible consultar el inventario. Intenta nuevamente.';
+      continue;
+    }
     const records = variants.map(variant => ({variant, item:inventory.get(variant.sku)}));
     stock.textContent = '';
     for (const {variant, item} of records) {
@@ -88,4 +98,11 @@ async function loadDetails(products, results) {
       stock.append(line);
     }
   }
+}
+
+function withTimeout(request) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Request timeout')), 10000);
+    Promise.resolve(request).then(resolve, reject).finally(() => clearTimeout(timer));
+  });
 }
