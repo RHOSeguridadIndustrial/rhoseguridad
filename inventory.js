@@ -1,35 +1,22 @@
 import { supabase } from './supabase-client.js?v=20261007-inventory';
+import { describeAvailability } from './inventory-availability.js?v=20261008-1';
+import { inventoryVariants } from './inventory-catalog.js?v=20261008-1';
+
+const salesUnits = new Map(inventoryVariants.filter(item => item.unit).map(item => [item.sku,item.unit]));
 
 let inventory=new Map(), connection='loading';
 const page=(location.pathname.split('/').pop()||'').replace(/\.html$/,'');
-function selectedSku(article) {
-  if(page==='cabeza') return 'casco-mundial-infra-sin-matraca-'+(document.querySelector('[name="helmet-color"]:checked')?.value||'amarillo');
-  if(page==='ropa') return 'chaleco-seguridad-'+(document.querySelector('[name="color"]:checked')?.value||'naranja');
-  if(page==='pies') return 'bota-van-vien-blu-negro-talla-'+(document.querySelector('[name="boot-size"]:checked')?.value||'23');
-  return article.dataset.inventorySku;
-}
 export function availability(sku) {
-  if(connection==='loading') return {state:'loading',text:'Cargando existencias…'};
-  if(connection!=='ready') return {state:'unknown',text:'No fue posible cargar las existencias. Intenta de nuevo.'};
-  const item=inventory.get(sku);
-  // A variant without a stock record has no pieces registered for sale.
-  if(!item) return {state:'unregistered',text:'0 piezas disponibles',quantity:0};
-  const quantity=item.is_active?item.quantity:0;
-  const count=`${quantity} ${quantity===1?'pieza disponible':'piezas disponibles'}`;
-  if(!item.is_active) return {state:'unavailable',text:count,quantity};
-  if(item.state==='pending') return {state:'pending',text:count,quantity};
-  if(quantity===0) return {state:'empty',text:count,quantity};
-  return {state:'available',text:count,quantity};
+  return describeAvailability(connection, inventory.get(sku), salesUnits.get(sku));
 }
 function render() {
   for(const article of document.querySelectorAll('article[data-inventory-sku]')) {
     // Stock is shown when reviewing the order, not on the product page.
     article.querySelectorAll('.inventory-badge').forEach(badge=>badge.remove());
-    const result=availability(selectedSku(article));
     // The current store accepts quote requests; adding to a quote never reserves stock.
     const button=article.querySelector('.cart-action,.buy,button.btn');
     if(button) button.textContent='Agregar al carrito';
-    for(const node of article.querySelectorAll('[data-inventory-delivery]')) node.textContent=result.state==='available'?'Entrega estimada de 24 a 48 hrs':'Entrega por confirmar';
+    for(const node of article.querySelectorAll('[data-inventory-delivery]')) node.textContent='Entrega por confirmar';
   }
   for(const row of document.querySelectorAll('.cart-card')) {
     const sku=row.querySelector('[data-qty]')?.dataset.qty; if(!sku)continue;
