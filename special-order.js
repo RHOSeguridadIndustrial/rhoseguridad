@@ -11,10 +11,10 @@ export function addSpecialOrderMessage(card, productName, anchor) {
   box.className = 'rho-special-order';
   const title = document.createElement('p');
   const strong = document.createElement('strong');
-  strong.textContent = '¿Necesitas más piezas de las disponibles?';
+  strong.textContent = card.classList.contains('cart-card') ? '¿Necesitas más piezas?' : '¿Necesitas más piezas de las disponibles?';
   title.append(strong);
   const copy = document.createElement('p');
-  copy.textContent = 'Gestionamos la cantidad adicional como pedido especial con un descuento adicional. Solicita tu cotización por WhatsApp para conocer el precio final y la fecha de entrega.';
+  copy.textContent = card.classList.contains('cart-card') ? 'Cotiza por WhatsApp cantidad, descuento y fecha de entrega.' : 'Gestionamos la cantidad adicional como pedido especial con un descuento adicional. Solicita tu cotización por WhatsApp para conocer el precio final y la fecha de entrega.';
   const link = document.createElement('a');
   link.textContent = 'Cotizar pedido especial';
   link.href = 'https://wa.me/525545683441?text=' + encodeURIComponent(`Hola RHO, quisiera cotizar un pedido especial con descuento adicional para: ${productName || 'este artículo'}. Necesito más piezas de las disponibles. ¿Me ayudan a confirmar cantidad, precio final y fecha de entrega?`);
