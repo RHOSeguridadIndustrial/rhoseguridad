@@ -41,6 +41,16 @@
       .menu-panel{top:82px;left:12px;right:auto;width:240px;padding:6px;border:1px solid #e5e9ee;border-radius:12px;box-shadow:0 10px 24px rgba(7,26,53,.16);z-index:100}.menu-panel.open{display:flex;flex-direction:column;gap:0;flex-wrap:nowrap}.menu-panel a{display:block;width:100%;padding:13px 12px;border-radius:8px;border-bottom:1px solid #eef1f4;font-size:14px;text-align:left;background:#fff}.menu-panel a:last-child{border-bottom:0}.menu-panel a:active{background:#f5f7f9}
       main{padding:26px 16px 42px}.title{font-size:32px}.intro{font-size:14px;margin-bottom:18px}.contact-card{border-radius:18px}.contact-row{grid-template-columns:44px 1fr 20px;gap:12px;padding:17px 16px;min-height:82px}.contact-icon{width:42px;height:42px;border-radius:12px}.contact-icon svg{width:25px;height:25px}.copy strong{font-size:16px}.copy span{font-size:14px}.footer-wrap{flex-direction:column;text-align:center}
     }
+    .support-menu{margin:0 0 28px}
+    .support-link{display:grid;grid-template-columns:26px minmax(0,1fr) 20px;align-items:center;gap:16px;min-height:64px;padding:16px 4px;color:var(--navy);text-decoration:none;font-size:16px;border-bottom:1px solid #eef2f5}
+    .support-link>svg:first-child{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+    .support-link:hover{background:#f5f8fa}.support-link:focus-visible,.contact-row:focus-visible{outline:2px solid var(--green);outline-offset:-2px}
+    .contact-subtitle{margin:0 0 12px;font-size:17px;font-weight:700}
+    .intro{font-size:13px}.contact-card{border-radius:14px;box-shadow:none}
+    .contact-row{grid-template-columns:30px minmax(0,1fr) 18px;gap:10px;padding:12px 14px;min-height:60px}
+    .contact-icon{width:30px;height:30px;border-radius:9px}.contact-icon svg{width:20px;height:20px}
+    .copy strong{font-size:13px;margin-bottom:3px}.copy span{font-size:12px;line-height:1.4}.note{font-size:11px}
+    @media(max-width:800px){.support-link{font-size:15px;min-height:60px;padding:15px 2px}.contact-subtitle{font-size:16px}.intro{font-size:13px}.copy strong{font-size:13px}.copy span{font-size:12px}}
   </style>
 </head>
 <body>
@@ -68,7 +78,14 @@
     <h1 class="title">Atención a clientes</h1>
     <p class="intro">Estamos para ayudarte. Elige el medio de contacto que prefieras.</p>
 
-    <section class="contact-card" aria-label="Opciones de atención a clientes">
+<nav class="support-menu" aria-label="Submenús de atención a clientes"><a class="support-link" href="index.html#contacto"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h4"/></svg><span>Solicitar cotización</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+<a class="support-link" href="cuenta.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 9-4 9 4v10l-9 4-9-4ZM3 7l9 4 9-4M12 11v10"/></svg><span>Mis pedidos</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+<a class="support-link" href="facturacion.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2ZM9 7h6M9 11h6"/></svg><span>Facturación</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+<a class="support-link" href="https://wa.me/525545683441?text=Hola%2C%20quisiera%20informaci%C3%B3n%20sobre%20env%C3%ADos%20y%20entregas." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h11v11H3zM14 10h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Envíos y entregas</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+<a class="support-link" href="https://wa.me/525545683441?text=Hola%2C%20necesito%20atenci%C3%B3n%20sobre%20una%20devoluci%C3%B3n%20o%20aclaraci%C3%B3n%20de%20mi%20pedido." target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h10a6 6 0 0 1 0 12M4 10l5-5M4 10l5 5"/></svg><span>Devoluciones y aclaraciones</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a>
+<a class="support-link" href="aviso-privacidad.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4v5c0 5-8 9-8 9s-8-4-8-9V7Z"/><path d="m8 12 3 3 5-6"/></svg><span>Aviso de privacidad</span><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></a></nav>
+<h2 class="contact-subtitle" id="datos-contacto">Datos de contacto</h2>
+    <section class="contact-card" aria-labelledby="datos-contacto">
       <a class="contact-row" href="tel:+525545683441">
         <span class="contact-icon"><svg viewBox="0 0 24 24"><path d="M7 4h3l1.5 4-2 1.5a14 14 0 0 0 5 5L16 12.5l4 1.5v3c0 1.1-.9 2-2 2C10.8 19 5 13.2 5 6c0-1.1.9-2 2-2Z"/></svg></span>
         <span class="copy"><strong>Teléfono</strong><span>55 4568 3441</span></span>
@@ -93,11 +110,6 @@
         <span></span>
       </div>
 
-      <a class="contact-row quote" href="index.html#contacto">
-        <span class="contact-icon"><svg viewBox="0 0 24 24"><path d="M6 3h12v18H6z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></span>
-        <span class="copy"><strong>Solicitar cotización</strong><span>Cuéntanos qué producto o equipo necesitas</span></span>
-        <svg class="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
-      </a>
     </section>
 
     <p class="note">RHO Seguridad Industrial · Atención en Ciudad de México y zona metropolitana.</p>
