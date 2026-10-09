@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
   <title>Facturación | RHO Seguridad Industrial</title>
   <style>
@@ -38,7 +38,9 @@
       .menu-panel{top:82px;left:12px;right:auto;width:240px;padding:6px;border:1px solid #e5e9ee;border-radius:12px;box-shadow:0 10px 24px rgba(7,26,53,.16);z-index:100}.menu-panel.open{display:flex;flex-direction:column;gap:0;flex-wrap:nowrap}.menu-panel a{display:block;width:100%;padding:13px 12px;border-radius:8px;border-bottom:1px solid #eef1f4;font-size:14px;text-align:left;background:#fff}.menu-panel a:last-child{border-bottom:0}.menu-panel a:active{background:#f5f7f9}
       main{padding:26px 16px 42px}h1{font-size:32px}.intro{font-size:14px;margin-bottom:18px}.billing-card{border-radius:18px}.billing-row{grid-template-columns:44px 1fr 20px;gap:12px;padding:17px 16px;min-height:82px}.billing-icon{width:42px;height:42px;border-radius:12px}.billing-icon svg{width:25px;height:25px}.copy strong{font-size:16px}.copy span{font-size:14px}.footer-wrap{flex-direction:column;text-align:center}
     }
-  </style>
+  
+.billing-form{margin:0 0 24px;padding:24px;background:white;border:1px solid var(--line);border-radius:18px}.billing-form h2{font-size:21px;margin:0 0 16px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:700}.field input,.field select,.field textarea{width:100%;padding:12px;border:1px solid #bbc5d1;border-radius:8px;font:16px Arial;color:var(--navy);background:white}.wide{grid-column:1/-1}.scan-actions{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}.billing-form button,.scan-label{display:inline-block;background:var(--navy);color:white;border:0;border-radius:9px;padding:13px 18px;font:700 16px Arial;cursor:pointer}.billing-form button:disabled{opacity:.55;cursor:wait}.scan-label input{display:none}.scan-help,#scan-status{font-size:14px;line-height:1.5}.scan-help{color:var(--muted)}.form-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.billing-form fieldset{border:0;margin:22px 0 0;padding:0}.billing-form legend{font-size:18px;font-weight:700;margin-bottom:14px}@media(max-width:600px){.form-grid{grid-template-columns:1fr}.billing-form{padding:18px}.wide{grid-column:auto}}
+</style>
 </head>
 <body>
 <header class="site-header">
@@ -61,7 +63,35 @@
   <div class="wrap">
     <a class="back" href="index.html"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>Volver al inicio</a>
     <h1>Facturación</h1>
-    <p class="intro">Solicita apoyo de facturación por cualquiera de nuestros canales de atención.</p>
+    <p class="intro">Escanea tu ticket y completa los datos para solicitar tu factura.</p>
+
+
+<form class="billing-form" id="invoice-form">
+<h2>Escanea tu ticket de compra</h2>
+<div class="scan-actions"><label class="scan-label">Tomar foto del ticket<input id="ticket-camera" type="file" accept="image/*" capture="environment"></label><label class="scan-label">Subir foto o PDF<input id="ticket-file" type="file" accept="image/*,application/pdf"></label></div>
+<p class="scan-help">Incluye todo el ticket, con buena luz y sin reflejos. Revisa los datos detectados antes de enviar tu solicitud. También puedes capturarlos manualmente.</p>
+<p id="scan-status" role="status" aria-live="polite"></p>
+<fieldset><legend>Datos de la compra</legend><div class="form-grid">
+<label class="field">Número de ticket o folio<input id="ticket-folio" required maxlength="60"></label>
+<label class="field">Fecha de compra<input id="ticket-date" type="date" required></label>
+<label class="field">Sucursal<input id="ticket-store" maxlength="40"></label>
+<label class="field">Caja<input id="ticket-register" maxlength="40"></label>
+<label class="field">Total pagado (MXN)<input id="ticket-total" type="number" min="0.01" step="0.01" required></label>
+<label class="field">Forma de pago<select id="ticket-payment" required><option value="">Selecciona</option><option>01 Efectivo</option><option>03 Transferencia</option><option>04 Tarjeta de crédito</option><option>28 Tarjeta de débito</option></select></label>
+<label class="field wide">Detalle de la compra<textarea id="ticket-detail" rows="4" placeholder="Productos, cantidades e importes"></textarea></label>
+</div></fieldset>
+<fieldset><legend>Datos fiscales</legend><div class="form-grid">
+<label class="field wide">Nombre o razón social<input id="fiscal-name" required maxlength="254" autocomplete="organization"></label>
+<label class="field">RFC<input id="fiscal-rfc" required minlength="12" maxlength="13" pattern="[A-Za-zÑñ&amp;]{3,4}[0-9]{6}[A-Za-z0-9]{3}" autocapitalize="characters" spellcheck="false"></label>
+<label class="field">C.P. fiscal<input id="fiscal-cp" required pattern="[0-9]{5}" maxlength="5" inputmode="numeric" autocomplete="postal-code"></label>
+<label class="field">Uso de CFDI<select id="fiscal-use" required><option value="">Selecciona</option><option>G01 Adquisición de mercancías</option><option>G02 Devoluciones, descuentos o bonificaciones</option><option>G03 Gastos en general</option><option>I08 Otra maquinaria y equipo</option><option>S01 Sin efectos fiscales</option></select></label>
+<label class="field">Régimen fiscal<select id="fiscal-regime" required><option value="">Selecciona</option><option>601 General de Ley Personas Morales</option><option>603 Personas Morales con Fines no Lucrativos</option><option>605 Sueldos y Salarios e Ingresos Asimilados a Salarios</option><option>606 Arrendamiento</option><option>607 Régimen de Enajenación o Adquisición de Bienes</option><option>608 Demás ingresos</option><option>610 Residentes en el Extranjero sin Establecimiento Permanente en México</option><option>611 Ingresos por Dividendos (socios y accionistas)</option><option>612 Personas Físicas con Actividades Empresariales y Profesionales</option><option>614 Ingresos por intereses</option><option>615 Régimen de los ingresos por obtención de premios</option><option>616 Sin obligaciones fiscales</option><option>620 Sociedades Cooperativas de Producción que optan por diferir sus ingresos</option><option>621 Incorporación Fiscal</option><option>622 Actividades Agrícolas, Ganaderas, Silvícolas y Pesqueras</option><option>623 Opcional para Grupos de Sociedades</option><option>624 Coordinados</option><option>625 Régimen de las Actividades Empresariales con ingresos a través de Plataformas Tecnológicas</option><option>626 Régimen Simplificado de Confianza</option></select></label>
+<label class="field wide">Correo para recibir PDF y XML<input id="fiscal-email" type="email" autocomplete="email" required></label>
+</div></fieldset>
+<p class="scan-help">Captura tus datos como aparecen en tu Constancia de Situación Fiscal. La lectura del ticket prepara una solicitud; RHO revisará la compra y los datos antes de emitir la factura.</p>
+<div class="form-actions"><button type="submit">Solicitar por WhatsApp</button><button type="button" id="invoice-mail">Solicitar por correo</button></div>
+<p class="scan-help">Se abrirá el canal elegido con tu solicitud preparada. Adjunta ahí tu ticket y tu Constancia de Situación Fiscal antes de enviarla.</p>
+</form>
 
     <section class="billing-card" aria-label="Opciones de facturación">
       <a class="billing-row" href="mailto:Administracion@rhosegind.com?subject=Solicitud%20de%20facturaci%C3%B3n">
@@ -98,5 +128,60 @@ if(b&&m){
 </script>
 <script type="module">import{updateCartBadges}from'./cart.js?v=20260914-account-isolation';updateCartBadges();</script>
 <script src="./footer.js?v=20261001-imageguard"></script>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id), form=$('invoice-form'), status=$('scan-status');
+let scanning=false;
+function loadScript(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=()=>reject(new Error('No se pudo cargar el lector.'));document.head.append(script)})}
+function readTicket(text){
+const normalized=text.replace(/\r/g,'').replace(/[ \t]+/g,' ');
+const match=regex=>(normalized.match(regex)||[])[1]||'';
+const folio=match(/\bFOLIO(?: DEL TICKET)?\s*[:#]?\s*([\w-]+)/i);
+const date=match(/\bFECHA(?: DE COMPRA)?\s*[:]?\s*(\d{2}[\/.-]\d{2}[\/.-]\d{4})/i);
+const total=match(/(?:^|\n)\s*TOTAL(?: PAGADO)?\s*[:]?\s*\$?\s*([\d,]+\.\d{2})/i);
+const fields={'ticket-folio':folio,'ticket-store':match(/\bSUCURSAL\s*[:]?\s*([\w-]+)/i),'ticket-register':match(/\bCAJA\s*[:]?\s*([\w-]+)/i),'ticket-total':total.replace(/,/g,'')};
+if(date){const [d,m,y]=date.split(/[\/.-]/);fields['ticket-date']=`${y}-${m}-${d}`;}
+// A new scan must never retain a value from the previous ticket.
+for(const id of ['ticket-folio','ticket-store','ticket-register','ticket-total','ticket-date','ticket-payment','ticket-detail'])$(id).value='';
+for(const [id,value] of Object.entries(fields))$(id).value=value;
+const payment=/TRANSFERENCIA/i.test(normalized)?'03 Transferencia':/D[EÉ]BITO/i.test(normalized)?'28 Tarjeta de débito':/CR[EÉ]DITO/i.test(normalized)?'04 Tarjeta de crédito':/EFECTIVO/i.test(normalized)?'01 Efectivo':'';
+$('ticket-payment').value=payment;
+const section=normalized.split(/DES\s*C?\s*RI\s*PCI\s*[ÓO]\s*N[^\n]*\n/i)[1];
+$('ticket-detail').value=section?section.split(/\bSUBTOTAL\b/i)[0].trim():normalized.slice(0,10000);
+const count=[folio,date,total].filter(Boolean).length;
+status.textContent=count===3?'Ticket leído. Revisa el folio, la fecha, los productos y el total antes de continuar.':'Lectura parcial. Revisa y completa los datos de la compra que no se detectaron.';
+}
+async function scan(file){
+if(!file||scanning)return;
+if(file.size>15*1024*1024){status.textContent='El archivo supera 15 MB. Sube una imagen o PDF más pequeño.';return;}
+scanning=true;const inputs=[$('ticket-camera'),$('ticket-file')];inputs.forEach(i=>i.disabled=true);status.textContent='Leyendo el ticket…';let worker;
+try{
+let source=file,text='';
+if(file.type==='application/pdf'||/\.pdf$/i.test(file.name)){
+if(!window.pdfjsLib)await loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js');
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;const page=await pdf.getPage(1);const content=await page.getTextContent();
+let lastY=null;for(const item of content.items){const y=item.transform[5];text+=(lastY!==null&&Math.abs(y-lastY)>3?'\n':' ')+item.str;lastY=y;}
+if(!/\bFOLIO\b/i.test(text)||!/(?:^|\n)\s*TOTAL\b/i.test(text)){
+const viewport=page.getViewport({scale:2});const canvas=document.createElement('canvas');canvas.width=viewport.width;canvas.height=viewport.height;await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;source=canvas;text='';}
+}
+if(!text){
+if(!window.Tesseract)await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');
+worker=await Tesseract.createWorker('spa',1,{logger:event=>{if(event.status==='recognizing text')status.textContent=`Leyendo el ticket… ${Math.round(event.progress*100)}%`;}});
+const result=await worker.recognize(source);text=result.data.text;
+}
+if(!text.trim())throw new Error('No se encontró texto legible.');readTicket(text);
+}catch(error){status.textContent='No se pudo leer el ticket. Intenta con una foto más clara o captura los datos manualmente.';}
+finally{if(worker)await worker.terminate().catch(()=>{});scanning=false;inputs.forEach(i=>{i.disabled=false;i.value='';});}
+}
+$('ticket-camera').addEventListener('change',e=>scan(e.target.files[0]));$('ticket-file').addEventListener('change',e=>scan(e.target.files[0]));
+$('fiscal-rfc').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/\s/g,''));
+function message(){return 'Buenos días, RHO Seguridad Industrial. Solicito una factura de mi compra.\n\n'+[['Ticket / folio','ticket-folio'],['Fecha','ticket-date'],['Sucursal','ticket-store'],['Caja','ticket-register'],['Total MXN','ticket-total'],['Forma de pago','ticket-payment'],['Detalle de compra','ticket-detail'],['Nombre o razón social','fiscal-name'],['RFC','fiscal-rfc'],['C.P. fiscal','fiscal-cp'],['Uso de CFDI','fiscal-use'],['Régimen fiscal','fiscal-regime'],['Correo para PDF y XML','fiscal-email']].map(([label,id])=>label+': '+$(id).value.trim()).join('\n')+'\n\nAdjunto mi ticket y mi Constancia de Situación Fiscal. Gracias por su atención.';}
+form.addEventListener('submit',e=>{e.preventDefault();if(scanning)return;window.open('https://wa.me/525545683441?text='+encodeURIComponent(message()),'_blank','noopener');});
+$('invoice-mail').addEventListener('click',()=>{if(!form.reportValidity()||scanning)return;location.href='mailto:Administracion@rhosegind.com?subject='+encodeURIComponent('Solicitud de factura RHO — ticket '+$('ticket-folio').value)+'&body='+encodeURIComponent(message());});
+})();
+</script>
+
 </body>
 </html>
