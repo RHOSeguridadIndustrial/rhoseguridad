@@ -10,7 +10,10 @@ try {
     ('valid','cs_test_valid',29100,false,clock_timestamp()+interval '30 minutes',true),
     ('late','cs_test_late',29100,false,clock_timestamp()-interval '1 minute',true),
     ('cancelled','cs_test_cancelled',29100,false,clock_timestamp()+interval '30 minutes',false),
-    ('other','cs_test_other',29100,false,clock_timestamp()+interval '30 minutes',true)`);
+    ('other','cs_test_other',29100,false,clock_timestamp()+interval '30 minutes',true);
+    insert into qw10_test.stock values('cone',4,true);
+    insert into qw10_test.lines values('valid','cone',1),('late','cone',1),
+      ('cancelled','cone',1),('other','cone',1)`);
   const pay=async(id='valid',pi='pi_valid',amount=29100,currency='mxn',live=false,event='evt_first')=>
     (await db.query('select qw10_test.commit_payment($1,$2,$3,$4,$5,$6,$7) result',
       [id,'cs_test_'+id,pi,amount,currency,live,event])).rows[0].result;
@@ -18,6 +21,8 @@ try {
   assert.equal(results[0].orderId,results[1].orderId);
   assert.equal((await db.query('select count(*)::int n from qw10_test.purchase_orders')).rows[0].n,1);
   assert.equal((await db.query('select count(*)::int n from qw10_test.receipts')).rows[0].n,1);
+  assert.equal((await db.query("select quantity from qw10_test.stock where sku='cone'")).rows[0].quantity,3);
+  assert.equal((await db.query('select count(*)::int n from qw10_test.movements')).rows[0].n,1);
   console.log('PASS queued repeated confirmations: one receipt and one order');
   for(const args of [['valid','pi_other'],['valid','pi_valid',19200],['valid','pi_valid',29100,'usd'],['valid','pi_valid',29100,'mxn',true]])
     await assert.rejects(pay(...args));
@@ -31,6 +36,19 @@ try {
   }
   assert.equal((await db.query('select count(*)::int n from qw10_test.purchase_orders')).rows[0].n,1);
   console.log('PASS late/cancelled hold: payment recorded, no fulfillment order');
+  await db.exec(`insert into qw10_test.requests values
+    ('short','cs_test_short',29100,false,clock_timestamp()+interval '30 minutes',true);
+    insert into qw10_test.stock values('boot',0,true);
+    insert into qw10_test.lines values('short','cone',1),('short','boot',1)`);
+  assert.equal((await pay('short','pi_short')).status,'reconciliation_required');
+  assert.equal((await db.query("select quantity from qw10_test.stock where sku='cone'")).rows[0].quantity,3);
+  assert.equal((await db.query('select count(*)::int n from qw10_test.movements')).rows[0].n,1);
+  console.log('PASS shortage in one SKU: no partial stock deduction');
+  await db.exec(`insert into qw10_test.quote_holds values
+    ('RHO-00000001','cone',3,clock_timestamp()+interval '30 minutes',true)`);
+  assert.equal((await pay('other','pi_other')).status,'reconciliation_required');
+  assert.equal((await db.query("select quantity from qw10_test.stock where sku='cone'")).rows[0].quantity,3);
+  console.log('PASS quotation holds protected from checkout fulfillment');
   for(const role of ['anon','authenticated']) {
     await db.exec('set role '+role);
     await assert.rejects(pay());await assert.rejects(db.query('select * from qw10_test.receipts'));
