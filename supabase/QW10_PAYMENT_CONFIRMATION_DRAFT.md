@@ -2,6 +2,10 @@
 
 Status: tested policy module, NOT deployed or connected to customer checkout.
 
+2026-10-15 preparation: `checkout-quote.js` builds MXN totals from trusted variant prices, aggregates duplicate SKUs, requires explicit server coverage approval, rejects malformed quantities and computes automatic shipping. Browser-supplied names, prices and totals are ignored. Six pricing tests pass. This does not reserve inventory or create a Stripe session. The production catalog/coverage adapters are still required.
+
+Production inventory review: `inventory_before_write`, `inventory_audit`, and `inventory_reservation_guard` require a real authenticated MFA administrator. A webhook service cannot use them unchanged. Do not spoof an administrator JWT or disable these triggers. Before deployment, introduce a narrowly authorized server inventory path with a distinct audit actor/source, and integrate both checkout and quotation reservations into shared stock locks and availability calculations. Existing QW9 reservations are administrator-created quotation holds and must not be repurposed as public checkout holds.
+
 The existing create-card-checkout function is disabled and has no inventory reservation or request idempotency. Existing verify-card-payment writes paid state after a browser call. Do not enable these functions unchanged.
 
 Prepared module checks authoritative Stripe session state, bound server request, MXN amount, payment identity, and sandbox/live isolation. Both completed and asynchronous success events use the same path. Failed/expired events do not confirm purchases. Shipping is automatic: standard 99 MXN below 299, free at 299; express above 1200, free, CDMX only. Coverage still requires server-side address validation.
@@ -20,5 +24,7 @@ Local verification: node --test tests/payment-confirmation.test.mjs. These tests
 Database prototype: `payment-confirmation-prototype.sql` runs only in isolated PGlite fixtures via `tests/payment-confirmation-database.mjs`. Repeated queued confirmations generate one receipt/order, conflicting payment identities/amount/currency/environment fail, expired/cancelled holds record a reconciliation receipt without an order, and client roles lack access. It is NOT deployed. Its request/hold fixtures must be replaced by shared QW9 inventory locks and real request bindings before use. Single-connection queue tests do not prove independent PostgreSQL contention.
 
 Activation dependencies: securely configured restricted Stripe test key and webhook signing secret in the server environment, registered Stripe test webhook endpoint, an atomic request/reservation/receipt adapter, and end-to-end test payment. The connected Stripe MCP account authorizes API operations but does not itself configure server credentials. Never ask the user to paste keys into chat.
+
+Integrated local verification: `tests/payment-flow-integration.mjs` connects raw-body SDK signature verification, authoritative-session retrieval fixture, request binding and the isolated SQL commit function. A paid completion followed by a repeated completion and asynchronous success yields exactly one receipt, one order, one movement and one stock deduction. A tampered body is rejected before session retrieval. This is a local integration test; it does not exercise a deployed webhook, real Stripe session retrieval, independent PostgreSQL connections or the production inventory adapter.
 
 The authorized test Checkout session is an isolated preview and has no rho_request_id binding; it cannot generate production orders through this module. PayPal is excluded. Never commit Stripe or Supabase secret keys.
