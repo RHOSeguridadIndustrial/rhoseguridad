@@ -23,7 +23,7 @@ export async function createTestCheckout(input, {ownerId, retryKey, stripe,
     // One server-priced total includes shipping. Product detail stays in request.
     line_items:[{price_data:{currency:'mxn',unit_amount:quote.totalCents,
       product_data:{name:'PRUEBA RHO — carrito simulado sin entrega'}},quantity:1}],
-    expires_at:request.expiresAt,success_url:'https://rhosegind.com',
+    expires_at:request.expiresAt,success_url:'https://rhosegind.com/confirmacion-prueba.html?session_id={CHECKOUT_SESSION_ID}',
     cancel_url:'https://rhosegind.com',locale:'es-419',
     integration_identifier:'rho_cart_test_qwertyui'};
   // Retry with the same immutable payload/key if the network outcome is unknown.

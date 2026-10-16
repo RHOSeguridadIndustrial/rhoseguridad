@@ -20,6 +20,7 @@ test('server prices and owner bind cart to test session before returning redirec
  assert.equal(f.calls[0][1].ownerId,'server-owner');
  assert.equal(f.calls[1][1].metadata.rho_request_id,'request_fixture');
  assert.equal(f.calls[2][0],'bind');
+ assert.equal(f.calls[1][1].success_url,'https://rhosegind.com/confirmacion-prueba.html?session_id={CHECKOUT_SESSION_ID}');
 });
 test('retry repeats identical Stripe idempotency key and payload',async()=>{
  const f=fixture();await createTestCheckout(input,f.deps);await createTestCheckout(input,f.deps);
