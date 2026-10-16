@@ -8,15 +8,16 @@ let operationBusy=false;
 let operationOwner=null;
 function disableOperations(){ $('prepare-test').disabled=true;$('dispatch-test').disabled=true;operationOwner=null; }
 async function refresh(){
- disableOperations();
+ disableOperations();$('session-help').hidden=true;
  $('result-refresh').disabled=true;$('result-detail').hidden=true;
  $('result-title').textContent='Verificando pago de prueba';
  try{
   if(!/^cs_test_[A-Za-z0-9_]{1,250}$/.test(sessionId||'')) throw Error();
-  const {data:{session},error}=await supabase.auth.getSession();if(error||!session) throw Error();
+  const {data:{session},error}=await supabase.auth.getSession();if(error||!session) throw Error('session_required');
   const {data,error:failure}=await supabase.functions.invoke('test-order-status',{
    headers:{Authorization:`Bearer ${session.access_token}`},body:{environment:'test',sessionId}});
-  if(failure||data?.environment!=='test') throw Error();
+  if(failure){if(failure.context?.status===401)throw Error('session_required');if(failure.context?.status===404)throw Error('order_not_found');throw Error('query_failed');}
+  if(data?.environment!=='test') throw Error();
   const current=await supabase.auth.getSession();if(current.data.session?.user.id!==session.user.id) throw Error();
   if(data.state==='pending'){$('result-title').textContent='Pago de prueba sin confirmar';$('result-status').textContent='Aún no se ha confirmado el pago. Puedes consultar de nuevo.';return;}
   if(data.state==='reconciliation_required'){$('result-title').textContent='Prueba pendiente de revisión';$('result-status').textContent='El resultado requiere revisión. No se confirmó una orden.';return;}
@@ -42,7 +43,12 @@ async function refresh(){
    $('dispatch-test').disabled=operationBusy||stage!=='prepared';
   }
   $('result-detail').hidden=false;
- }catch{$('result-title').textContent='No se pudo verificar la prueba';$('result-status').textContent='Revisa tu sesión de administrador con autenticador y consulta de nuevo. Esta pantalla no confirma un pago.';}
+ }catch(error){
+  const needsSession=error.message==='session_required';
+  $('result-title').textContent=needsSession?'Verifica tu sesión de administrador':'No se pudo verificar la prueba';
+  $('result-status').textContent=needsSession?'Inicia sesión y completa el autenticador en este mismo navegador. Después regresa a esta pestaña y pulsa Consultar de nuevo.':error.message==='order_not_found'?'Esta orden de prueba no está disponible para la cuenta actual.':'La consulta no se completó. Pulsa Consultar de nuevo. Esta pantalla no confirma un pago.';
+  $('session-help').hidden=!needsSession;
+ }
  finally{$('result-refresh').disabled=false;}
 }
 async function recordOperation(action){
