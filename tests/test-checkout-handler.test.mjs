@@ -17,3 +17,8 @@ test('real environment and unsupported postal rejected before checkout creation'
  for(const body of [{environment:'live',address:{postalCode:'02000'}},{environment:'test',address:{postalCode:'99999'}}])
   assert.equal((await h(request(body,{authorization:'Bearer fixture'}))).status,400);
 });
+
+test('Supabase browser client preflight permits SDK header',async()=>{
+ const r=await make()(new Request('https://local.test',{method:'OPTIONS',headers:{origin:'https://rhosegind.com','access-control-request-headers':'authorization,apikey,content-type,x-client-info'}}));
+ assert.equal(r.status,204);assert.match(r.headers.get('access-control-allow-headers'),/x-client-info/);
+});

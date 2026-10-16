@@ -3,7 +3,7 @@ export function testCheckoutHandler({authorize,quoteDeps,reserve,bindSession,str
  return async req=>{
   const origin=req.headers.get('origin');
   const headers={'Access-Control-Allow-Origin':'https://rhosegind.com','Vary':'Origin',
-   'Access-Control-Allow-Headers':'authorization,apikey,content-type',
+   'Access-Control-Allow-Headers':'authorization,apikey,content-type,x-client-info',
    'Access-Control-Allow-Methods':'POST,OPTIONS','Cache-Control':'no-store'};
   const respond=(data,status)=>Response.json(data,{status,headers});
   if(origin && origin!=='https://rhosegind.com') return respond({error:'origin_not_allowed'},403);
