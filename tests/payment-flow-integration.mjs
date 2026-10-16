@@ -1,5 +1,6 @@
 import {readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import {paymentTestStore} from '../supabase/functions/_shared/payment-test-store.js';
 import {paymentRuntime} from '../supabase/functions/_shared/payment-runtime.js';
 const {PGlite}=await import(process.env.PGLITE_MODULE || '@electric-sql/pglite');
 const {default:Stripe}=await import(process.env.STRIPE_TEST_MODULE || 'stripe');
@@ -22,13 +23,11 @@ try {
     ('flow','cs_test_flow',29100,false,clock_timestamp()+interval '30 minutes',true);
     insert into qw10_test.stock values('cone',1,true);
     insert into qw10_test.lines values('flow','cone',1)`);
+  const store=paymentTestStore({query:(sql,params)=>db.query(sql,params)});
+  await assert.rejects(()=>store.loadRequest('cs_live_forbidden'), /Test session required/);
+  await assert.rejects(()=>store.commitPaid({livemode:true}), /Invalid test payment/);
   const handler=paymentRuntime({Stripe:Client,apiKey:'rk_test_fixture',signingSecret:secret,enabled:true,
-    loadRequest:async sessionId=>{
-      const {rows}=await db.query('select id,session_id,total_cents,livemode from qw10_test.requests where session_id=$1',[sessionId]);
-      const r=rows[0];return r && {id:r.id,sessionId:r.session_id,totalCents:Number(r.total_cents),livemode:r.livemode};
-    },
-    commitPaid:async p=>(await db.query('select qw10_test.commit_payment($1,$2,$3,$4,$5,$6,$7) result',
-      [p.requestId,p.sessionId,p.paymentIntentId,p.amountCents,p.currency,p.livemode,p.eventId])).rows[0].result
+    ...store
   });
   const notify=async(id,type='checkout.session.completed',tamper=false)=>{
     const payload=JSON.stringify({id,livemode:false,type,data:{object:{object:'checkout.session',id:session.id}}});
