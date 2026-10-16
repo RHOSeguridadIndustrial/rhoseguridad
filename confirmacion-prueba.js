@@ -19,7 +19,7 @@ async function refresh(){
   const q=data.quote;
   if(data.state!=='paid'||!/^\d+$/.test(data.orderId||'')||!q||q.currency!=='mxn'||!['standard','express'].includes(q.mode)||!Array.isArray(q.lines)||!q.lines.length||
     ![q.subtotalCents,q.shippingCents,q.totalCents].every(validAmount)||q.totalCents<=0||q.totalCents!==q.subtotalCents+q.shippingCents||
-    q.lines.some(i=>typeof i.name!=='string'||!Number.isSafeInteger(i.quantity)||i.quantity<1||!validAmount(i.unitPriceCents)||i.lineTotalCents!==i.unitPriceCents*i.quantity)||
+    q.lines.some(i=>typeof i.sku!=='string'||!/^[a-z0-9][a-z0-9-]{1,119}$/.test(i.sku)||typeof i.name!=='string'||!Number.isSafeInteger(i.quantity)||i.quantity<1||!validAmount(i.unitPriceCents)||i.lineTotalCents!==i.unitPriceCents*i.quantity)||
     q.lines.reduce((s,i)=>s+i.lineTotalCents,0)!==q.subtotalCents) throw Error();
   $('result-title').textContent='Pago de prueba aprobado';
   $('result-status').textContent='La orden se generó automáticamente al verificar el pago simulado.';
@@ -27,6 +27,7 @@ async function refresh(){
   $('result-items').replaceChildren(...q.lines.map(i=>{const li=document.createElement('li');li.textContent=`${i.quantity} × ${i.name} · ${money(i.lineTotalCents)}`;return li;}));
   $('result-shipping-label').textContent=q.mode==='express'?'Envío express simulado':'Envío estándar simulado';
   $('result-subtotal').textContent=money(q.subtotalCents);$('result-shipping').textContent=money(q.shippingCents);$('result-total').textContent=money(q.totalCents);
+  $('result-preparation').replaceChildren(...q.lines.map(i=>{const li=document.createElement('li');li.textContent=`${i.name} · SKU: ${i.sku} · Cantidad: ${i.quantity}`;return li;}));
   $('result-detail').hidden=false;
  }catch{$('result-title').textContent='No se pudo verificar la prueba';$('result-status').textContent='Revisa tu sesión de administrador con autenticador y consulta de nuevo. Esta pantalla no confirma un pago.';}
  finally{$('result-refresh').disabled=false;}
