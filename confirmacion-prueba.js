@@ -14,7 +14,7 @@ async function refresh(){
    headers:{Authorization:`Bearer ${session.access_token}`},body:{environment:'test',sessionId}});
   if(failure||data?.environment!=='test') throw Error();
   const current=await supabase.auth.getSession();if(current.data.session?.user.id!==session.user.id) throw Error();
-  if(data.state==='pending'){$('result-status').textContent='Aún no se ha confirmado el pago. Puedes consultar de nuevo.';return;}
+  if(data.state==='pending'){$('result-title').textContent='Pago de prueba sin confirmar';$('result-status').textContent='Aún no se ha confirmado el pago. Puedes consultar de nuevo.';return;}
   if(data.state==='reconciliation_required'){$('result-title').textContent='Prueba pendiente de revisión';$('result-status').textContent='El resultado requiere revisión. No se confirmó una orden.';return;}
   const q=data.quote;
   if(data.state!=='paid'||!/^\d+$/.test(data.orderId||'')||!q||q.currency!=='mxn'||q.mode!=='standard'||!Array.isArray(q.lines)||!q.lines.length||
@@ -31,5 +31,10 @@ async function refresh(){
  finally{$('result-refresh').disabled=false;}
 }
 $('result-refresh').addEventListener('click',refresh);
-supabase.auth.onAuthStateChange(()=>{$('result-detail').hidden=true;$('result-title').textContent='Verificando sesión';});
+supabase.auth.onAuthStateChange((event)=>{
+ if(event==='INITIAL_SESSION'||event==='TOKEN_REFRESHED') return;
+ $('result-detail').hidden=true;$('result-title').textContent='Verificando sesión';
+ // Defer session reads until the authentication callback releases its lock.
+ setTimeout(refresh,0);
+});
 refresh();
