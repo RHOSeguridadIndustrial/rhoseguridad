@@ -4,7 +4,11 @@ const money=cents=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN
 // The redirect is only a lookup key; it never establishes payment success.
 const sessionId=new URL(location.href).searchParams.get('session_id');
 const validAmount=x=>Number.isSafeInteger(x)&&x>=0;
+let operationBusy=false;
+let operationOwner=null;
+function disableOperations(){ $('prepare-test').disabled=true;$('dispatch-test').disabled=true;operationOwner=null; }
 async function refresh(){
+ disableOperations();
  $('result-refresh').disabled=true;$('result-detail').hidden=true;
  $('result-title').textContent='Verificando pago de prueba';
  try{
@@ -28,14 +32,36 @@ async function refresh(){
   $('result-shipping-label').textContent=q.mode==='express'?'Envío express simulado':'Envío estándar simulado';
   $('result-subtotal').textContent=money(q.subtotalCents);$('result-shipping').textContent=money(q.shippingCents);$('result-total').textContent=money(q.totalCents);
   $('result-preparation').replaceChildren(...q.lines.map(i=>{const li=document.createElement('li');li.textContent=`${i.name} · SKU: ${i.sku} · Cantidad: ${i.quantity}`;return li;}));
+  const stage=data.preparation?.state;
+  if(!['pending','prepared','dispatched'].includes(stage)){
+   $('preparation-status').textContent='Preparación de prueba aún no disponible';
+  }else{
+   operationOwner=session.user.id;
+   $('preparation-status').textContent=({pending:'Preparación pendiente · prueba',prepared:'Pedido preparado · prueba',dispatched:'Salida registrada · prueba'})[stage];
+   $('prepare-test').disabled=operationBusy||stage!=='pending';
+   $('dispatch-test').disabled=operationBusy||stage!=='prepared';
+  }
   $('result-detail').hidden=false;
  }catch{$('result-title').textContent='No se pudo verificar la prueba';$('result-status').textContent='Revisa tu sesión de administrador con autenticador y consulta de nuevo. Esta pantalla no confirma un pago.';}
  finally{$('result-refresh').disabled=false;}
 }
-$('result-refresh').addEventListener('click',refresh);
+async function recordOperation(action){
+ if(operationBusy||!operationOwner)return;
+ const owner=operationOwner;operationBusy=true;disableOperations();$('result-refresh').disabled=true;
+ try{
+  const {data:{session},error}=await supabase.auth.getSession();if(error||session?.user.id!==owner)throw Error();
+  const {data,error:failure}=await supabase.functions.invoke('test-order-preparation',{headers:{Authorization:`Bearer ${session.access_token}`},body:{environment:'test',sessionId,action}});
+  const current=await supabase.auth.getSession();if(failure||data?.environment!=='test'||current.data.session?.user.id!==owner)throw Error();
+ }catch{
+  // A lost response may follow a committed action. Re-read before allowing retry.
+ }finally{operationBusy=false;await refresh();}
+}
+$('prepare-test').addEventListener('click',()=>{if(!$('prepare-test').disabled)recordOperation('prepare');});
+$('dispatch-test').addEventListener('click',()=>{if(!$('dispatch-test').disabled)recordOperation('dispatch');});
+$('result-refresh').addEventListener('click',()=>{if(!operationBusy)refresh();});
 supabase.auth.onAuthStateChange((event)=>{
  if(event==='INITIAL_SESSION'||event==='TOKEN_REFRESHED') return;
- $('result-detail').hidden=true;$('result-title').textContent='Verificando sesión';
+ disableOperations();$('result-detail').hidden=true;$('result-title').textContent='Verificando sesión';
  // Defer session reads until the authentication callback releases its lock.
  setTimeout(refresh,0);
 });
