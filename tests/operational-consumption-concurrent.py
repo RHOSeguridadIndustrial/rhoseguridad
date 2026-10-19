@@ -60,7 +60,7 @@ def main():
         insert into consumption_lab.receipts values('pay-web','web','owner',200,'mxn',true,false),('pay-special','special','owner',200,'mxn',true,false);""")
         web = "select consumption_lab.consume('owner','web','pay-web');"
         special = "select consumption_lab.consume('owner','special','pay-special');"
-        locked_web = "begin;select * from consumption_lab.stock order by sku for update;select pg_sleep(3);"+web+'commit;'
+        locked_web = "begin;select pg_advisory_xact_lock(hashtextextended('lab:web',0));select * from consumption_lab.holds where reference='web' for update;select * from consumption_lab.stock order by sku for update;select pg_sleep(3);"+web+'commit;'
         race(locked_web, web)
         assert query('select count(*) from consumption_lab.orders') == '1'
         assert query('select sum(quantity) from consumption_lab.stock') == '2'
@@ -83,3 +83,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
