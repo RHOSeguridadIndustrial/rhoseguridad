@@ -27,14 +27,16 @@ def main():
     if not shutil.which('psql'):
         raise RuntimeError('psql is required; concurrency has not been executed')
 
-    def query(sql):
-        result = subprocess.run(['psql', '-X', '-v', 'ON_ERROR_STOP=1', '-Atq'], input=sql, text=True, capture_output=True, env=env)
+    def query(sql, expected_state=None):
+        result = subprocess.run(['psql', '-X', '-v', 'ON_ERROR_STOP=1', '-v', 'VERBOSITY=sqlstate', '-Atq'], input=sql, text=True, capture_output=True, env=env)
+        if result.returncode and expected_state and ('ERROR:  '+expected_state) in result.stderr:
+            return 'rejected:'+expected_state
         if result.returncode:
             # Do not print connection diagnostics or credential-bearing URLs.
             raise RuntimeError('Local PostgreSQL query failed')
         return result.stdout.strip()
 
-    def race(first, second):
+    def race(first, second, expected_state=None):
         # Observe the first session sleeping AFTER its locks, rather than assuming timing.
         with futures.ThreadPoolExecutor(max_workers=2) as pool:
             a = pool.submit(query, "set application_name='rho_lab_race_first';" + first)
@@ -46,7 +48,7 @@ def main():
                 if time.monotonic() > deadline:
                     raise RuntimeError('Concurrency synchronization timed out')
                 time.sleep(0.05)
-            b = pool.submit(query, second)
+            b = pool.submit(query, second, expected_state)
             return a.result(), b.result()
 
     # Refuse an existing lab; never delete a schema that this run did not create.
@@ -76,11 +78,30 @@ def main():
         assert late.endswith('reconciliation')
         assert query("select quantity from consumption_lab.stock where sku='late'") == '1'
         assert query('select count(*) from consumption_lab.orders') == '2'
-        print(json.dumps({'status': 'passed', 'scope': 'local independent PostgreSQL connections', 'cases': ['simultaneous replay', 'shared multi-SKU holds', 'expiry after waiting for stock lock']}))
+        # Two first-time different-reference consumptions share two inventory rows.
+        query("""insert into consumption_lab.stock values('new-a',2),('new-b',2);
+        insert into consumption_lab.holds values('new-web','owner','web',200,clock_timestamp()+interval '30 minutes','active'),('new-special','owner','special',200,clock_timestamp()+interval '30 minutes','active');
+        insert into consumption_lab.hold_lines values('new-web','new-a',1),('new-web','new-b',1),('new-special','new-a',1),('new-special','new-b',1);
+        insert into consumption_lab.receipts values('pay-new-web','new-web','owner',200,'mxn',true,false),('pay-new-special','new-special','owner',200,'mxn',true,false);""")
+        race("begin;select consumption_lab.consume('owner','new-web','pay-new-web');select pg_sleep(3);commit;", "select consumption_lab.consume('owner','new-special','pay-new-special');")
+        assert query("select sum(quantity) from consumption_lab.stock where sku in ('new-a','new-b')") == '0'
+        assert query("select count(*) from consumption_lab.orders where reference in ('new-web','new-special')") == '2'
+        assert query("select count(*) from consumption_lab.movements where reference in ('new-web','new-special')") == '4'
+        # A concurrent manual decrease cannot take stock promised to another channel.
+        query("""insert into consumption_lab.stock values('manual',3);
+        insert into consumption_lab.holds values('manual-web','owner','web',100,clock_timestamp()+interval '30 minutes','active'),('manual-special','owner','special',100,clock_timestamp()+interval '30 minutes','active');
+        insert into consumption_lab.hold_lines values('manual-web','manual',1),('manual-special','manual',1);
+        insert into consumption_lab.receipts values('pay-manual','manual-web','owner',100,'mxn',true,false);""")
+        _, rejected = race("begin;select consumption_lab.consume('owner','manual-web','pay-manual');select pg_sleep(3);commit;", "update consumption_lab.stock set quantity=0 where sku='manual';", 'P0001')
+        assert rejected == 'rejected:P0001'
+        assert query("select quantity from consumption_lab.stock where sku='manual'") == '2'
+        assert query("select state from consumption_lab.holds where reference='manual-special'") == 'active'
+        assert query('select count(*) from consumption_lab.orders') == '5'
+        assert query('select count(*) from consumption_lab.movements') == '9'
+        print(json.dumps({'status': 'passed', 'scope': 'local independent PostgreSQL connections', 'cases': ['simultaneous replay', 'shared multi-SKU holds', 'expiry after waiting for stock lock', 'two first-time multi-SKU consumptions', 'concurrent manual adjustment rejects reserved stock']}))
     finally:
         query('drop schema consumption_lab cascade;')
 
 
 if __name__ == '__main__':
     main()
-
