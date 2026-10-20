@@ -1,0 +1,27 @@
+name: QW10 isolated checkout retry concurrency
+on:
+  push:
+    branches: [qw10-checkout-retry-lab-20261020]
+permissions:
+  contents: read
+jobs:
+  local-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: rho_lab
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: disposable_lab_fixture
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d rho_lab"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Run synthetic local database concurrency
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_lab_fixture@127.0.0.1:5432/rho_lab
+        run: python3 tests/test-checkout-identity-concurrent.py
