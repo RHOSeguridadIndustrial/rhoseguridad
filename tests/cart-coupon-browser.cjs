@@ -1,0 +1,32 @@
+const {chromium}=require('playwright');
+const fs=require('node:fs/promises');
+const assert=require('node:assert/strict');
+(async()=>{
+ const browser=await chromium.launch({headless:true});
+ const page=await browser.newPage({viewport:{width:390,height:844}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route('**/*',async route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(path==='/')return route.fulfill({contentType:'text/html',body:'<div id="cart-content"><aside class="summary"></aside></div><script type="module" src="/cart-coupon.js"></script>'});
+  if(path==='/cart.js')return route.fulfill({contentType:'text/javascript',body:'window.items=[{price:299,qty:1}];export const getCart=()=>window.items;'});
+  if(path==='/supabase-client.js')return route.fulfill({contentType:'text/javascript',body:'window.user={id:"test",is_anonymous:false};export const supabase={auth:{getUser:async()=>({data:{user:window.user}}),onAuthStateChange:cb=>{window.authChanged=cb}}};'});
+  if(['/cart-coupon.js','/shipping-coupon.js'].includes(path))return route.fulfill({contentType:'text/javascript',body:await fs.readFile('.'+path,'utf8')});
+  return route.abort();
+ });
+ await page.goto('http://rho.test/');
+ await page.getByRole('combobox').selectOption('card');
+ await page.waitForFunction(()=>document.querySelector('[role=status]').textContent.includes('estándar'));
+ await page.evaluate(()=>{window.items=[{price:1200.01,qty:1}];window.dispatchEvent(new Event('rho-cart-changed'));});
+ assert.match(await page.getByRole('status').textContent(),/express/);
+ await page.getByRole('combobox').selectOption('transfer');
+ assert.match(await page.getByRole('status').textContent(),/1,200.01/);
+ await page.evaluate(()=>{window.user=null;window.authChanged();});
+ await page.waitForFunction(()=>document.querySelector('[role=status]').textContent.includes('No hemos podido'));
+ assert.doesNotMatch(await page.getByRole('status').textContent(),/gratis/);
+ await page.evaluate(()=>{document.querySelector('#cart-content').innerHTML='<aside class="summary"></aside>';});
+ await page.waitForSelector('[data-coupon-preview]');
+ assert.equal(await page.getByRole('combobox').inputValue(),'transfer');
+ assert.equal(await page.locator('[data-coupon-preview]').count(),1);
+ assert.deepEqual(errors,[]);
+ await browser.close();console.log('PASS: tarjeta, transferencia, recálculo, cierre de sesión y reconstrucción del carrito');
+})().catch(e=>{console.error(e);process.exit(1)});
