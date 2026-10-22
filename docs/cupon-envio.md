@@ -32,3 +32,23 @@ $99 para órdenes mayores a $299: esa tarifa no está publicada para ese segment
 
 - `node --test tests/shipping-coupon.test.mjs`
 - `node tests/cart-coupon-browser.cjs` (Playwright y Chromium instalados)
+
+## Integración al pedido de prueba — 22 de octubre de 2026
+
+`create-test-checkout` verifica MFA administrativo, usuario Auth no anónimo y
+perfil no desactivado. El precio se consulta en servidor. La cotización guardada
+incluye medio de pago, modalidad, subtotal, envío, total y versión del cupón.
+No se aceptan precios, registro ni cupón enviados por el navegador.
+
+Tarjeta conserva el flujo Stripe de pruebas. Transferencia devuelve una referencia
+TEST y estado awaiting_test_transfer, sin cuenta bancaria, cobro, confirmación de
+pago ni entrega. Ambos caminos reutilizan la reserva inmutable existente; cambiar
+el método con la misma clave se rechaza. Las reservas usan sólo stock de prueba.
+El CP 02000 sigue siendo una dirección ficticia; no es la cobertura real.
+
+La página checkout-prueba.html permite seleccionar ambos caminos. La activación
+real sigue pendiente del validador de domicilio, conciliación de transferencias y
+finalización del flujo de producción. No debe retirarse todavía el aviso público
+de próxima aplicación del cupón al pedido.
+
+Pruebas: `node --test tests/checkout-coupon.test.mjs tests/shipping-coupon.test.mjs`.
