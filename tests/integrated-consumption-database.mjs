@@ -89,7 +89,7 @@ try {
  grant usage on schema consumption_lab to lab_worker;
  grant execute on function consumption_lab.consume(text,text) to lab_worker;`);
  if(process.argv.includes('--export-fixture')) {
-   await writeFile('/tmp/qw10-integrated-fixture.sql',setupSQL.join('\n'));
+   await writeFile('/tmp/qw10-integrated-fixture.sql',setupSQL.join('\n;\n'));
    throw 'fixture-exported';
  }
  await db.exec(`insert into consumption_lab.requests values('r1','owner','cs_test_one',100,'mxn');
