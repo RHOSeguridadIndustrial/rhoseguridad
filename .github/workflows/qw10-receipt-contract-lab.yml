@@ -1,0 +1,49 @@
+name: QW10 receipt contract concurrency
+on:
+  push:
+    branches: [qw10-actor-compatibility-lab-20261022]
+permissions:
+  contents: read
+jobs:
+  local-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: rho_lab
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: disposable_lab_fixture
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d rho_lab"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Run synthetic local database concurrency
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_lab_fixture@127.0.0.1:5432/rho_lab
+        run: python3 tests/consumption-contract-concurrent.py
+      - name: Install pinned local test dependencies
+        run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - name: Export isolated integration fixture
+        run: node tests/integrated-consumption-database.mjs --export-fixture
+      - name: Verify synthetic signed receipts and atomic consumption
+        run: node tests/signed-receipt-integration.mjs
+      - name: Validate shared reservation lifecycle
+        run: node tests/shared-lifecycle-database.mjs
+      - name: Run integrated inventory concurrency
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_lab_fixture@127.0.0.1:5432/rho_lab
+        run: python3 tests/integrated-consumption-concurrent.py
+      - name: Verify shared reservation contention in fresh local database
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_lab_fixture@127.0.0.1:5432/rho_lab
+        run: python3 tests/shared-lifecycle-concurrent.py
+      - name: Verify captured deployed sandbox RPCs and signed adapter
+        run: node tests/deployed-sandbox-contract.mjs
+      - name: Verify captured deployed sandbox contention
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_lab_fixture@127.0.0.1:5432/rho_lab
+        run: python3 tests/deployed-sandbox-concurrent.py

@@ -1,0 +1,812 @@
+{
+  "capturedAt": "2026-10-23T20:07:38Z",
+  "project": "mtpqpxcmngrsivntbgcc",
+  "tables": [
+    {
+      "relname": "lines",
+      "relrowsecurity": true,
+      "relacl": "{postgres=arwdDxtm/postgres,service_role=ar/postgres}",
+      "columns": [
+        {
+          "name": "request_id",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "sku",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "lines_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (request_id, sku)"
+        },
+        {
+          "name": "lines_quantity_check",
+          "type": "c",
+          "definition": "CHECK ((quantity > 0))"
+        },
+        {
+          "name": "lines_request_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (request_id) REFERENCES qw10_test.requests(id)"
+        },
+        {
+          "name": "lines_sku_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (sku) REFERENCES qw10_test.stock(sku)"
+        }
+      ]
+    },
+    {
+      "relname": "movements",
+      "relrowsecurity": true,
+      "relacl": "{postgres=arwdDxtm/postgres,service_role=ar/postgres}",
+      "columns": [
+        {
+          "name": "request_id",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "sku",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "movements_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (request_id, sku)"
+        },
+        {
+          "name": "movements_quantity_check",
+          "type": "c",
+          "definition": "CHECK ((quantity > 0))"
+        },
+        {
+          "name": "movements_request_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (request_id) REFERENCES qw10_test.purchase_orders(request_id)"
+        },
+        {
+          "name": "movements_sku_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (sku) REFERENCES qw10_test.stock(sku)"
+        }
+      ]
+    },
+    {
+      "relname": "preparation_events",
+      "relrowsecurity": true,
+      "relacl": "{postgres=arwdDxtm/postgres,service_role=ar/postgres}",
+      "columns": [
+        {
+          "name": "request_id",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "action",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "actor",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "recorded_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notnull": true,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "preparation_events_action_check",
+          "type": "c",
+          "definition": "CHECK ((action = ANY (ARRAY['prepare'::text, 'dispatch'::text])))"
+        },
+        {
+          "name": "preparation_events_actor_check",
+          "type": "c",
+          "definition": "CHECK ((length(TRIM(BOTH FROM actor)) > 0))"
+        },
+        {
+          "name": "preparation_events_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (request_id, action)"
+        },
+        {
+          "name": "preparation_events_request_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (request_id) REFERENCES qw10_test.requests(id)"
+        }
+      ]
+    },
+    {
+      "relname": "purchase_orders",
+      "relrowsecurity": true,
+      "relacl": "{postgres=arwdDxtm/postgres,service_role=ar/postgres}",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "default": null,
+          "notnull": true,
+          "identity": "a"
+        },
+        {
+          "name": "request_id",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "session_id",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notnull": true,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "purchase_orders_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "purchase_orders_request_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (request_id) REFERENCES qw10_test.requests(id)"
+        },
+        {
+          "name": "purchase_orders_request_id_key",
+          "type": "u",
+          "definition": "UNIQUE (request_id)"
+        },
+        {
+          "name": "purchase_orders_session_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (session_id) REFERENCES qw10_test.receipts(session_id)"
+        },
+        {
+          "name": "purchase_orders_session_id_key",
+          "type": "u",
+          "definition": "UNIQUE (session_id)"
+        }
+      ]
+    },
+    {
+      "relname": "quote_holds",
+      "relrowsecurity": true,
+      "relacl": "{postgres=arwdDxtm/postgres,service_role=ar/postgres}",
+      "columns": [
+        {
+          "name": "reference",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "sku",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "default": "true",
+          "notnull": true,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "quote_holds_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (reference, sku)"
+        },
+        {
+          "name": "quote_holds_quantity_check",
+          "type": "c",
+          "definition": "CHECK ((quantity > 0))"
+        },
+        {
+          "name": "quote_holds_sku_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (sku) REFERENCES qw10_test.stock(sku)"
+        }
+      ]
+    },
+    {
+      "relname": "receipts",
+      "relrowsecurity": true,
+      "relacl": "{postgres=arwdDxtm/postgres,service_role=ar/postgres}",
+      "columns": [
+        {
+          "name": "session_id",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "payment_intent_id",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "request_id",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "amount_cents",
+          "type": "bigint",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "first_event_id",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "recorded_at",
+          "type": "timestamp with time zone",
+          "default": "clock_timestamp()",
+          "notnull": true,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "receipts_payment_intent_id_key",
+          "type": "u",
+          "definition": "UNIQUE (payment_intent_id)"
+        },
+        {
+          "name": "receipts_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (session_id)"
+        },
+        {
+          "name": "receipts_request_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (request_id) REFERENCES qw10_test.requests(id)"
+        },
+        {
+          "name": "receipts_request_id_key",
+          "type": "u",
+          "definition": "UNIQUE (request_id)"
+        },
+        {
+          "name": "receipts_session_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (session_id) REFERENCES qw10_test.requests(session_id)"
+        },
+        {
+          "name": "receipts_state_check",
+          "type": "c",
+          "definition": "CHECK ((state = ANY (ARRAY['paid'::text, 'reconciliation_required'::text])))"
+        }
+      ]
+    },
+    {
+      "relname": "requests",
+      "relrowsecurity": true,
+      "relacl": "{postgres=arwdDxtm/postgres,service_role=arw/postgres}",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "session_id",
+          "type": "text",
+          "default": null,
+          "notnull": false,
+          "identity": ""
+        },
+        {
+          "name": "total_cents",
+          "type": "bigint",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "livemode",
+          "type": "boolean",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "hold_until",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "hold_active",
+          "type": "boolean",
+          "default": "true",
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "owner_id",
+          "type": "text",
+          "default": null,
+          "notnull": false,
+          "identity": ""
+        },
+        {
+          "name": "retry_key",
+          "type": "text",
+          "default": null,
+          "notnull": false,
+          "identity": ""
+        },
+        {
+          "name": "quote",
+          "type": "jsonb",
+          "default": null,
+          "notnull": false,
+          "identity": ""
+        },
+        {
+          "name": "expires_at",
+          "type": "bigint",
+          "default": null,
+          "notnull": false,
+          "identity": ""
+        },
+        {
+          "name": "checkout_identity",
+          "type": "text",
+          "default": null,
+          "notnull": false,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "requests_livemode_check",
+          "type": "c",
+          "definition": "CHECK ((livemode = false))"
+        },
+        {
+          "name": "requests_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "requests_session_id_check",
+          "type": "c",
+          "definition": "CHECK ((session_id ~ '^cs_test_[A-Za-z0-9_]+$'::text))"
+        },
+        {
+          "name": "requests_session_id_key",
+          "type": "u",
+          "definition": "UNIQUE (session_id)"
+        },
+        {
+          "name": "requests_total_cents_check",
+          "type": "c",
+          "definition": "CHECK ((total_cents > 0))"
+        }
+      ]
+    },
+    {
+      "relname": "special_requests",
+      "relrowsecurity": true,
+      "relacl": "{postgres=arwdDxtm/postgres,service_role=ar/postgres}",
+      "columns": [
+        {
+          "name": "id",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "owner_id",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "retry_key",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "sku",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "requested",
+          "type": "integer",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "reserved",
+          "type": "integer",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "additional",
+          "type": "integer",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "special_requests_additional_check",
+          "type": "c",
+          "definition": "CHECK ((additional >= 0))"
+        },
+        {
+          "name": "special_requests_check",
+          "type": "c",
+          "definition": "CHECK ((requested = (reserved + additional)))"
+        },
+        {
+          "name": "special_requests_owner_id_retry_key_key",
+          "type": "u",
+          "definition": "UNIQUE (owner_id, retry_key)"
+        },
+        {
+          "name": "special_requests_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "special_requests_requested_check",
+          "type": "c",
+          "definition": "CHECK ((requested > 0))"
+        },
+        {
+          "name": "special_requests_reserved_check",
+          "type": "c",
+          "definition": "CHECK ((reserved >= 0))"
+        },
+        {
+          "name": "special_requests_sku_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (sku) REFERENCES qw10_test.stock(sku)"
+        }
+      ]
+    },
+    {
+      "relname": "stock",
+      "relrowsecurity": true,
+      "relacl": "{postgres=arwdDxtm/postgres,service_role=rw/postgres}",
+      "columns": [
+        {
+          "name": "sku",
+          "type": "text",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "default": null,
+          "notnull": true,
+          "identity": ""
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "default": "true",
+          "notnull": true,
+          "identity": ""
+        }
+      ],
+      "constraints": [
+        {
+          "name": "stock_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (sku)"
+        },
+        {
+          "name": "stock_quantity_check",
+          "type": "c",
+          "definition": "CHECK ((quantity >= 0))"
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "nspname": "public",
+      "proname": "qw10_test_commit_payment",
+      "definition": "CREATE OR REPLACE FUNCTION public.qw10_test_commit_payment(p_request text, p_session text, p_payment text, p_amount bigint, p_currency text, p_event text)\n RETURNS jsonb\n LANGUAGE sql\n SET search_path TO ''\nAS $function$ select qw10_test.commit_payment(p_request,p_session,p_payment,p_amount,p_currency,false,p_event); $function$\n"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_load_request",
+      "definition": "CREATE OR REPLACE FUNCTION public.qw10_test_load_request(p_session text)\n RETURNS jsonb\n LANGUAGE sql\n SET search_path TO ''\nAS $function$ select jsonb_build_object('id',id,'sessionId',session_id,'totalCents',total_cents,'livemode',livemode) from qw10_test.requests where session_id=p_session and livemode=false and p_session ~ '^cs_test_[A-Za-z0-9_]+$'; $function$\n"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_order_status",
+      "definition": "CREATE OR REPLACE FUNCTION public.qw10_test_order_status(p_owner text, p_session text)\n RETURNS jsonb\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n select jsonb_build_object('environment','test','state',\n   case when p.state='paid' and o.id is not null then 'paid'\n        when p.state='reconciliation_required' then 'reconciliation_required'\n        else 'pending' end,\n   'orderId',case when p.state='paid' then o.id::text else null end,\n   'quote',r.quote,\n   'preparation',jsonb_build_object('state',case\n     when exists(select 1 from qw10_test.preparation_events e where e.request_id=r.id and e.action='dispatch') then 'dispatched'\n     when exists(select 1 from qw10_test.preparation_events e where e.request_id=r.id and e.action='prepare') then 'prepared'\n     else 'pending' end))\n from qw10_test.requests r\n left join qw10_test.receipts p on p.request_id=r.id\n left join qw10_test.purchase_orders o on o.request_id=r.id\n where r.owner_id=p_owner and r.session_id=p_session and r.livemode=false\n and p_session like 'cs_test_%';\n$function$\n"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_prepare",
+      "definition": "CREATE OR REPLACE FUNCTION public.qw10_test_prepare(p_owner text, p_session text, p_action text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare r qw10_test.requests; result jsonb;\nbegin\n if p_owner is null or length(trim(p_owner))=0 or p_action is null or p_action not in ('prepare','dispatch') or p_session is null or p_session !~ '^cs_test_[A-Za-z0-9_]+$' then raise exception 'Invalid test action'; end if;\n select * into r from qw10_test.requests where session_id=p_session and owner_id=p_owner and livemode=false for update;\n if not found then raise exception 'Test order not found'; end if;\n if not exists(select 1 from qw10_test.receipts where request_id=r.id and state='paid') or not exists(select 1 from qw10_test.purchase_orders where request_id=r.id) then raise exception 'Paid test order required'; end if;\n if p_action='dispatch' and not exists(select 1 from qw10_test.preparation_events where request_id=r.id and action='prepare') then raise exception 'Preparation required'; end if;\n insert into qw10_test.preparation_events(request_id,action,actor) values(r.id,p_action,p_owner) on conflict(request_id,action) do nothing;\n select jsonb_build_object('environment','test','state',case when exists(select 1 from qw10_test.preparation_events where request_id=r.id and action='dispatch') then 'dispatched' else 'prepared' end,'events',coalesce(jsonb_agg(jsonb_build_object('action',action,'at',recorded_at) order by recorded_at,action),'[]'::jsonb)) into result from qw10_test.preparation_events where request_id=r.id;\n return result;\nend;$function$\n"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_reserve_v2",
+      "definition": "CREATE OR REPLACE FUNCTION public.qw10_test_reserve_v2(p_owner text, p_retry text, p_quote jsonb, p_identity text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare saved jsonb; created jsonb; identity_json jsonb;\nbegin\n if p_owner is null or length(p_owner) not between 1 and 120 or\n    p_retry is null or p_retry !~ '^[A-Za-z0-9_-]{16,100}$' or\n    p_identity is null or length(p_identity)>20000 then raise exception 'Invalid checkout identity'; end if;\n identity_json:=p_identity::jsonb;\n if jsonb_typeof(identity_json->'items') is distinct from 'array' or\n    jsonb_typeof(identity_json->'address') is distinct from 'object' or\n    identity_json->'address'->>'postalCode' is distinct from '02000' or\n    (select jsonb_agg(jsonb_build_object('sku',l->>'sku','quantity',l->'quantity') order by l->>'sku')\n       from jsonb_array_elements(p_quote->'lines') l) is distinct from identity_json->'items'\n    then raise exception 'Quote input binding mismatch'; end if;\n perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(p_owner||':'||p_retry,0));\n saved:=public.qw10_test_load_reservation(p_owner,p_retry);\n if saved is not null then\n   if saved->>'checkoutIdentity' is distinct from p_identity then raise exception 'Retry changed'; end if;\n   -- Another first attempt may have won with older prices. Return that winner.\n   return saved;\n end if;\n created:=public.qw10_test_reserve(p_owner,p_retry,p_quote);\n update qw10_test.requests set checkout_identity=p_identity\n   where id=created->>'id' and owner_id=p_owner and retry_key=p_retry;\n return public.qw10_test_load_reservation(p_owner,p_retry);\nend; $function$\n"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_special_order",
+      "definition": "CREATE OR REPLACE FUNCTION public.qw10_test_special_order(p_owner text, p_retry text, p_sku text, p_quantity integer)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare r qw10_test.special_requests; available bigint; reserved integer; deadline timestamptz; ref text;\nbegin\n if p_owner is null or length(p_owner) not between 1 and 120 or p_retry is null or p_retry !~ '^[a-zA-Z0-9_-]{16,100}$' or p_sku is null or p_quantity is null or p_quantity not between 1 and 1000000 then raise exception 'Invalid test request';end if;\n perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('special:'||p_owner||':'||p_retry,0));\n select * into r from qw10_test.special_requests where owner_id=p_owner and retry_key=p_retry;\n if found then\n  if r.sku<>p_sku or r.requested<>p_quantity or r.expires_at<=clock_timestamp() then raise exception 'Retry changed or expired';end if;\n else\n  perform 1 from qw10_test.stock where sku=p_sku and active for update;\n  if not found then raise exception 'Unknown test variant';end if;\n  select greatest(0,s.quantity-\n   coalesce((select sum(l.quantity) from qw10_test.lines l join qw10_test.requests h on h.id=l.request_id where l.sku=p_sku and h.hold_active and h.hold_until>clock_timestamp()),0)-\n   coalesce((select sum(h.quantity) from qw10_test.quote_holds h where h.sku=p_sku and h.active and h.expires_at>clock_timestamp()),0)) into available from qw10_test.stock s where s.sku=p_sku;\n  reserved:=least(available,p_quantity);ref:='test-special-'||pg_catalog.gen_random_uuid()::text;deadline:=clock_timestamp()+interval '30 minutes';\n  insert into qw10_test.special_requests values(ref,p_owner,p_retry,p_sku,p_quantity,reserved,p_quantity-reserved,deadline) returning * into r;\n  if reserved>0 then insert into qw10_test.quote_holds values(ref,p_sku,reserved,deadline,true);end if;\n end if;\n return jsonb_build_object('environment','test','reference',r.id,'sku',r.sku,'requested',r.requested,'reserved',r.reserved,'additional',r.additional,'expiresAt',r.expires_at);\nend;$function$\n"
+    },
+    {
+      "nspname": "qw10_test",
+      "proname": "commit_payment",
+      "definition": "CREATE OR REPLACE FUNCTION qw10_test.commit_payment(p_request text, p_session text, p_payment text, p_amount bigint, p_currency text, p_live boolean, p_event text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare r qw10_test.requests; existing qw10_test.receipts; outcome text; order_id bigint;\nbegin\n  if p_live is distinct from false or p_session is null or p_session !~ '^cs_test_[A-Za-z0-9_]+$' then\n    raise exception 'Test environment required';\n  end if;\n  if p_event is null or p_event !~ '^evt_[A-Za-z0-9_]+$'\n    or p_payment is null or p_payment !~ '^pi_[A-Za-z0-9_]+$' then\n    raise exception 'Invalid payment identity';\n  end if;\n  select * into r from qw10_test.requests where id=p_request for update;\n  if not found or r.session_id is distinct from p_session or r.livemode is distinct from p_live\n    or r.total_cents is distinct from p_amount or p_currency is distinct from 'mxn' then\n    raise exception 'Payment binding mismatch';\n  end if;\n  select * into existing from qw10_test.receipts where session_id=p_session;\n  if found then\n    if existing.payment_intent_id<>p_payment or existing.amount_cents<>p_amount then\n      raise exception 'Payment retry conflict';\n    end if;\n    select id into order_id from qw10_test.purchase_orders where request_id=p_request;\n    return jsonb_build_object('status',existing.state,'orderId',order_id,'repeated',true);\n  end if;\n  outcome:=case when r.hold_active and r.hold_until>clock_timestamp()\n    then 'paid' else 'reconciliation_required' end;\n  -- Every stock writer must use these same sorted row locks in production.\n  perform 1 from qw10_test.stock s join qw10_test.lines l on l.sku=s.sku\n    where l.request_id=p_request order by s.sku for update of s;\n  -- Recheck the deadline AFTER waiting for stock locks.\n  if not r.hold_active or r.hold_until<=clock_timestamp() then\n    outcome:='reconciliation_required';\n  end if;\n  if not exists(select 1 from qw10_test.lines where request_id=p_request)\n    or exists(select 1 from qw10_test.lines l join qw10_test.stock s using(sku)\n      where l.request_id=p_request and (not s.active or s.quantity<l.quantity+\n        coalesce((select sum(q.quantity) from qw10_test.quote_holds q\n          where q.sku=l.sku and q.active and q.expires_at>clock_timestamp()),0)+\n        coalesce((select sum(o.quantity) from qw10_test.lines o\n          join qw10_test.requests h on h.id=o.request_id\n          where o.sku=l.sku and h.id<>p_request and h.hold_active\n            and h.hold_until>clock_timestamp()),0))) then\n    outcome:='reconciliation_required';\n  end if;\n  insert into qw10_test.receipts(session_id,payment_intent_id,request_id,amount_cents,state,first_event_id)\n    values(p_session,p_payment,p_request,p_amount,outcome,p_event);\n  if outcome='paid' then\n    insert into qw10_test.purchase_orders(request_id,session_id) values(p_request,p_session)\n      returning id into order_id;\n    update qw10_test.stock s set quantity=s.quantity-l.quantity\n      from qw10_test.lines l where l.request_id=p_request and l.sku=s.sku;\n    insert into qw10_test.movements(request_id,sku,quantity)\n      select p_request,sku,quantity from qw10_test.lines where request_id=p_request;\n    update qw10_test.requests set hold_active=false where id=p_request;\n  else\n    -- Payment is recorded for manual reconciliation; no partial stock deduction.\n    update qw10_test.requests set hold_active=false where id=p_request;\n  end if;\n  return jsonb_build_object('status',outcome,'orderId',order_id,'repeated',false);\nend;\n$function$\n"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_bind",
+      "definition": "CREATE OR REPLACE FUNCTION public.qw10_test_bind(p_request text, p_owner text, p_session text)\n RETURNS boolean\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare r qw10_test.requests;\nbegin\n if p_session is null or p_session !~ '^cs_test_[A-Za-z0-9_]+$' then raise exception 'Test session required'; end if;\n select * into r from qw10_test.requests where id=p_request and owner_id=p_owner and livemode=false for update;\n if not found or not r.hold_active or r.hold_until<=clock_timestamp() then raise exception 'Invalid test hold'; end if;\n if r.session_id is not null and r.session_id<>p_session then raise exception 'Session already bound'; end if;\n update qw10_test.requests set session_id=p_session where id=p_request;\n return true;\nend; $function$\n"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_load_reservation",
+      "definition": "CREATE OR REPLACE FUNCTION public.qw10_test_load_reservation(p_owner text, p_retry text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare r qw10_test.requests;\nbegin\n if p_owner is null or length(p_owner) not between 1 and 120 or\n    p_retry is null or p_retry !~ '^[A-Za-z0-9_-]{16,100}$' then\n   raise exception 'Invalid checkout identity';\n end if;\n select * into r from qw10_test.requests where owner_id=p_owner and retry_key=p_retry;\n if not found then return null; end if;\n -- Old records are not inferred or backfilled from untrusted input.\n if r.checkout_identity is null or r.livemode is distinct from false or\n    not r.hold_active or r.hold_until<=clock_timestamp() or\n    r.expires_at<=extract(epoch from clock_timestamp()) then\n   raise exception 'Unavailable saved test reservation';\n end if;\n return jsonb_build_object('id',r.id,'ownerId',r.owner_id,'retryKey',r.retry_key,\n   'checkoutIdentity',r.checkout_identity,'quote',r.quote,'expiresAt',r.expires_at,'livemode',false);\nend; $function$\n"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_reserve",
+      "definition": "CREATE OR REPLACE FUNCTION public.qw10_test_reserve(p_owner text, p_retry text, p_quote jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare r qw10_test.requests; k text; q bigint; expires bigint;\nbegin\n if p_owner is null or length(p_owner)<1 or length(p_owner)>120 or\n    p_retry is null or p_retry !~ '^[A-Za-z0-9_-]{16,100}$' or\n    p_quote->>'currency' is distinct from 'mxn' or\n    jsonb_typeof(p_quote->'lines') is distinct from 'array' or\n    jsonb_array_length(p_quote->'lines') not between 1 and 100 or\n    (p_quote->>'totalCents')::bigint<=0 then raise exception 'Invalid test quote'; end if;\n -- Serialize this identity before stock locks; retries cannot create two requests.\n perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(p_owner||':'||p_retry,0));\n select * into r from qw10_test.requests where owner_id=p_owner and retry_key=p_retry for update;\n if found then\n   if r.quote is distinct from p_quote or not r.hold_active or r.hold_until<=clock_timestamp()\n     then raise exception 'Retry payload changed or hold expired'; end if;\n   return jsonb_build_object('id',r.id,'quote',r.quote,'expiresAt',r.expires_at,'livemode',false);\n end if;\n if exists(select 1 from jsonb_array_elements(p_quote->'lines') l\n   where l->>'sku' is null or l->>'sku' !~ '^[a-z0-9][a-z0-9-]{1,119}$'\n    or l->>'quantity' is null or l->>'quantity' !~ '^[1-9][0-9]{0,6}$'\n    or (l->>'quantity')::bigint>1000000) or\n   (select count(distinct l->>'sku') from jsonb_array_elements(p_quote->'lines') l)\n     <>jsonb_array_length(p_quote->'lines') then raise exception 'Invalid test lines'; end if;\n perform 1 from qw10_test.stock s where s.sku in\n   (select l->>'sku' from jsonb_array_elements(p_quote->'lines') l) order by s.sku for update;\n for k,q in select l->>'sku',(l->>'quantity')::bigint from jsonb_array_elements(p_quote->'lines') l loop\n   if not exists(select 1 from qw10_test.stock s where s.sku=k and s.active and s.quantity>=q+\n      coalesce((select sum(l.quantity) from qw10_test.lines l join qw10_test.requests h on h.id=l.request_id\n        where l.sku=k and h.hold_active and h.hold_until>clock_timestamp()),0)+\n      coalesce((select sum(h.quantity) from qw10_test.quote_holds h\n        where h.sku=k and h.active and h.expires_at>clock_timestamp()),0))\n      then raise exception 'Insufficient test stock'; end if;\n end loop;\n expires:=floor(extract(epoch from clock_timestamp()+interval '32 minutes'))::bigint;\n insert into qw10_test.requests(id,total_cents,livemode,hold_until,owner_id,retry_key,quote,expires_at)\n   values(pg_catalog.gen_random_uuid()::text,(p_quote->>'totalCents')::bigint,false,\n     to_timestamp(expires)+interval '5 minutes',p_owner,p_retry,p_quote,expires) returning * into r;\n insert into qw10_test.lines(request_id,sku,quantity)\n   select r.id,l->>'sku',(l->>'quantity')::int from jsonb_array_elements(p_quote->'lines') l;\n return jsonb_build_object('id',r.id,'quote',r.quote,'expiresAt',r.expires_at,'livemode',false);\nend; $function$\n"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_special_order_status",
+      "definition": "CREATE OR REPLACE FUNCTION public.qw10_test_special_order_status(p_owner text, p_reference text)\n RETURNS jsonb\n LANGUAGE sql\n SET search_path TO ''\nAS $function$\n with checked as materialized (select clock_timestamp() as at)\n select jsonb_build_object('environment','test','reference',r.id,'sku',r.sku,\n 'requested',r.requested,'reserved',r.reserved,'additional',r.additional,\n 'expiresAt',r.expires_at,'checkedAt',c.at,\n 'state',case when r.expires_at<=c.at then 'expired'\n when r.reserved=0 then 'quote_only'\n when exists(select 1 from qw10_test.quote_holds h where h.reference=r.id and h.sku=r.sku and h.active and h.expires_at>c.at) then 'active'\n else 'inactive' end)\n from qw10_test.special_requests r cross join checked c\n where r.owner_id=p_owner and r.id=p_reference;\n$function$\n"
+    }
+  ],
+  "functionPermissions": [
+    {
+      "nspname": "public",
+      "proname": "qw10_test_bind",
+      "args": "p_request text, p_owner text, p_session text",
+      "prosecdef": false,
+      "owner": "postgres",
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_commit_payment",
+      "args": "p_request text, p_session text, p_payment text, p_amount bigint, p_currency text, p_event text",
+      "prosecdef": false,
+      "owner": "postgres",
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_load_request",
+      "args": "p_session text",
+      "prosecdef": false,
+      "owner": "postgres",
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_load_reservation",
+      "args": "p_owner text, p_retry text",
+      "prosecdef": false,
+      "owner": "postgres",
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_order_status",
+      "args": "p_owner text, p_session text",
+      "prosecdef": false,
+      "owner": "postgres",
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_prepare",
+      "args": "p_owner text, p_session text, p_action text",
+      "prosecdef": false,
+      "owner": "postgres",
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_reserve",
+      "args": "p_owner text, p_retry text, p_quote jsonb",
+      "prosecdef": false,
+      "owner": "postgres",
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_reserve_v2",
+      "args": "p_owner text, p_retry text, p_quote jsonb, p_identity text",
+      "prosecdef": false,
+      "owner": "postgres",
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_special_order",
+      "args": "p_owner text, p_retry text, p_sku text, p_quantity integer",
+      "prosecdef": false,
+      "owner": "postgres",
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_special_order_status",
+      "args": "p_owner text, p_reference text",
+      "prosecdef": false,
+      "owner": "postgres",
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "nspname": "public",
+      "proname": "qw10_test_variant",
+      "args": "p_sku text",
+      "prosecdef": false,
+      "owner": "postgres",
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    {
+      "nspname": "qw10_test",
+      "proname": "commit_payment",
+      "args": "p_request text, p_session text, p_payment text, p_amount bigint, p_currency text, p_live boolean, p_event text",
+      "prosecdef": false,
+      "owner": "postgres",
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+    }
+  ],
+  "metadata": {
+    "indexes": [
+      {
+        "name": "qw10_test_line_sku",
+        "definition": "CREATE INDEX qw10_test_line_sku ON qw10_test.lines USING btree (sku)"
+      },
+      {
+        "name": "qw10_test_owner_retry",
+        "definition": "CREATE UNIQUE INDEX qw10_test_owner_retry ON qw10_test.requests USING btree (owner_id, retry_key)"
+      }
+    ],
+    "triggers": null,
+    "roles": [
+      {
+        "name": "authenticated",
+        "bypassrls": false
+      },
+      {
+        "name": "anon",
+        "bypassrls": false
+      },
+      {
+        "name": "service_role",
+        "bypassrls": true
+      }
+    ],
+    "schema_acl": "{postgres=UC/postgres,service_role=U/postgres}"
+  },
+  "sequencePermissions": [
+    {
+      "relname": "purchase_orders_id_seq",
+      "relacl": "{postgres=rwU/postgres,service_role=rU/postgres}"
+    }
+  ]
+}
