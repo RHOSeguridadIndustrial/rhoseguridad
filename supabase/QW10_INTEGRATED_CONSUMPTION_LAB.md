@@ -21,3 +21,13 @@ Nueve pruebas aprobadas: las seis previas ahora ejecutan consumo con lab_worker,
 El primer intento del arnés esperaba que SET ROLE fuese rechazado desde una sesión originalmente superusuario. Esa expectativa era incorrecta: se corrigió comprobando pg_has_role y los accesos efectivos a tablas. No se cambiaron permisos para forzar la aprobación. El laboratorio no simula una conexión real con credenciales de worker ni valida autenticación del productor de recibos.
 
 La función SECURITY DEFINER aquí es una entrada interna deliberada, propiedad de un rol restringido y sin EXECUTE público; no se desplegó. Pendiente revisión y prueba de sesiones independientes con esta integración, ciclo compartido de reservas y recibos verificados.
+
+## Concurrencia integrada validada — 22 octubre 2026, 21:26:40 CDMX
+
+Seis casos aprobados en PostgreSQL 17 con conexiones independientes: reintento del mismo pedido, dos pedidos por última unidad, reserva manual antes/después del consumo, salida manual antes del consumo y ajuste manual con revisión anterior después del consumo. El arnés exige observar espera real por bloqueo y comprueba stock, órdenes, historial automático, reservas y ausencia de contexto residual. Se ejecutaron las funciones originales de reservas y ajustes; consumo mediante lab_worker y sus permisos restringidos.
+
+- Ejecución aprobada: https://github.com/RHOSeguridadIndustrial/rhoseguridad/actions/runs/39894984428
+- Commit probado: `381510f408c8e4f507a7d8e50fe9e7d1eafa9fb1`. Job `120223210395`: success. Logs: seis PASS de integración y cuatro PASS del modelo previo.
+- Primer intento `39894801716`: falló al cargar el SQL exportado por un separador faltante; se corrigió el exportador sin modificar controles ni resultados esperados.
+
+Esta evidencia actualiza el pendiente de concurrencia indicado arriba para esos seis casos concretos. Continúan pendientes el productor autenticado de recibos, permisos con identidad real del servicio, ciclo compartido de reservas web/especiales y manejo de pagos tardíos sin stock. La prueba usa una copia sintética del esquema del repositorio y autenticación simulada, no el proyecto remoto. No se desplegó ni se habilitó producción.
