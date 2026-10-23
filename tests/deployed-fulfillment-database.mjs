@@ -33,6 +33,14 @@ try{
  }
  assert.equal((await scalar("select pg_has_role('service_role','qw10_fulfillment','MEMBER') member")).member,false);
  pass('backend cannot directly discount stock, insert receipts/movements, or assume executor role');
+ await db.exec('set role service_role');
+ const webQuote={currency:'mxn',totalCents:100,lines:[{sku:'sku-multi',quantity:2}]};
+ const web=(await scalar('select public.qw10_test_reserve($1,$2,$3::jsonb) result',[admin,'lock-helper-web-001',JSON.stringify(webQuote)])).result;
+ const special=(await scalar('select public.qw10_test_special_order($1,$2,$3,$4) result',[admin,'lock-helper-special-001','sku-multi',5])).result;
+ assert.equal(special.reserved,3);assert.equal(special.additional,2);await reset();
+ assert.equal((await scalar("select quantity from qw10_test.stock where sku='sku-multi'")).quantity,5);
+ await db.exec('set role authenticated');await assert.rejects(q('select qw10_test.lock_stock(array[$1])',['sku-multi']),e=>e.code==='42501');await reset();
+ pass('stock lock helper preserves web/special reservation writers without granting backend direct stock updates');
  for(const role of ['anon','authenticated']){
   await db.exec('set role '+role);await assert.rejects(pay('legacy'),e=>e.code==='42501');await reset();
  }
