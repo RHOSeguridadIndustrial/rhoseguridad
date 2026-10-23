@@ -3,6 +3,7 @@ RHO_LOCAL_PG_URL must point to a disposable local database. Never use Supabase.
 """
 import concurrent.futures as futures
 import json
+import re
 import os
 from pathlib import Path
 import shutil
@@ -58,7 +59,10 @@ def main():
 
     query('create database rho_shared_lifecycle_lab')
     env['PGDATABASE']='rho_shared_lifecycle_lab'
-    query('begin;'+Path('/tmp/qw10-integrated-fixture.sql').read_text()+'commit;')
+    # PostgreSQL roles are cluster-wide; previous fixture already created these exact roles.
+    assert query("select count(*) from pg_roles where rolname in ('anon','authenticated','service_role','lab_worker','lab_executor') and not rolcanlogin and not rolbypassrls")=='5'
+    setup = re.sub(r'create role [^;]+;', '', Path('/tmp/qw10-integrated-fixture.sql').read_text(), flags=re.IGNORECASE)
+    query('begin;'+setup+'commit;')
     query((Path(__file__).parent/'fixtures/qw10-shared-lifecycle.sql').read_text())
     admin="select set_config('test.uid','11111111-1111-4111-8111-111111111111',false);select set_config('test.aal','aal2',false);set role authenticated;"
     worker="select set_config('test.uid','',false);set role lab_worker;"
