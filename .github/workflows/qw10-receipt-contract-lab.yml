@@ -31,6 +31,8 @@ jobs:
         run: node tests/integrated-consumption-database.mjs --export-fixture
       - name: Verify synthetic signed receipts and atomic consumption
         run: node tests/signed-receipt-integration.mjs
+      - name: Validate shared reservation lifecycle
+        run: node tests/shared-lifecycle-database.mjs
       - name: Run integrated inventory concurrency
         env:
           RHO_LOCAL_PG_URL: postgresql://postgres:disposable_lab_fixture@127.0.0.1:5432/rho_lab
