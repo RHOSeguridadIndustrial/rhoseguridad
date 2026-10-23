@@ -22,3 +22,9 @@ El adaptador del laboratorio carga el propietario desde la solicitud bloqueada y
 Pendientes: identidad mínima del productor de recibos, entrega y reintentos reales en sandbox, integración del ciclo de reservas web/especiales con el esquema compartido y política de reconciliación de pagos tardíos/sin stock. Las pruebas de concurrencia anteriores se mantienen como evidencia separada. QW10 sigue abierto y producción deshabilitada por alcance.
 
 Referencias consultadas: https://docs.stripe.com/checkout/fulfillment y https://docs.stripe.com/webhooks — firma sobre cuerpo original, recuperación de estado actual e idempotencia del fulfillment.
+
+## Evidencia CI y lectura de control
+
+Ejecutado en GitHub Actions: https://github.com/RHOSeguridadIndustrial/rhoseguridad/actions/runs/39898203390 . Commit `357f3f0b2cfd8bbf1a7bc01daec7295138c7a555`, job `120233435311`, success. Aprobó siete grupos de recibos firmados, seis carreras de integración y cuatro carreras del modelo previo.
+
+Consulta oficial de solo lectura a las 22:03:09 CDMX del 22 octubre 2026: sum(quantity) del inventario real = 50; órdenes de prueba = 5. Es distinto del conteo histórico de 4: la orden #5 ya existía desde 18:45:38 CDMX, livemode=false. Este laboratorio no creó ninguna orden remota. No se atribuye aquí el origen de esa orden.
