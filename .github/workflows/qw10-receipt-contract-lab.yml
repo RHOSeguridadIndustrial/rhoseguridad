@@ -37,3 +37,7 @@ jobs:
         env:
           RHO_LOCAL_PG_URL: postgresql://postgres:disposable_lab_fixture@127.0.0.1:5432/rho_lab
         run: python3 tests/integrated-consumption-concurrent.py
+      - name: Verify shared reservation contention in fresh local database
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_lab_fixture@127.0.0.1:5432/rho_lab
+        run: python3 tests/shared-lifecycle-concurrent.py
