@@ -41,3 +41,9 @@ jobs:
         env:
           RHO_LOCAL_PG_URL: postgresql://postgres:disposable_lab_fixture@127.0.0.1:5432/rho_lab
         run: python3 tests/shared-lifecycle-concurrent.py
+      - name: Verify captured deployed sandbox RPCs and signed adapter
+        run: node tests/deployed-sandbox-contract.mjs
+      - name: Verify captured deployed sandbox contention
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_lab_fixture@127.0.0.1:5432/rho_lab
+        run: python3 tests/deployed-sandbox-concurrent.py
