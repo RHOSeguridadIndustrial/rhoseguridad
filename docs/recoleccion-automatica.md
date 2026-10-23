@@ -1,12 +1,12 @@
 # Selección de proveedor para RHO
 
-Estado: motor de decisión implementado y probado de forma aislada. Sin conexión a
+Estado: motor de decisión y máquina de estados implementados y probados de forma aislada. Sin conexión a
 cotizadores, webhook de pago, inventario ni contratación. No programa recolecciones.
 
-## Reglas aceptadas
+## Reglas de selección
 
 - Trayectos de 3 a 80 km por ruta; destino CDMX. No se amplía cobertura por distancia.
-- Objetivo logístico: envío cobrado al cliente + 8% del subtotal. Porcentaje configurable.
+- Presupuesto propuesto: envío cobrado al cliente + 8% del subtotal. Porcentaje configurable, pendiente de aprobación para contratación real.
 - Usar la fecha límite guardada en el pedido al confirmar el pago; no reiniciar el
   plazo al empacar. El servicio de pedidos debe calcular días hábiles y festivos
   para estándar y conservar la promesa express. Este motor recibe timestamps UTC.
@@ -52,13 +52,38 @@ Flujo pendiente de implementación:
 6. Registrar confirmación, rastreo, incidencias y puntualidad. Un fallo al pedir
    recolección después de comprar guía se reconcilia, no crea otra guía.
 
-Faltantes operativos: CP y domicilio de origen, datos completos del destinatario,
+Origen proporcionado: Av. 16 de Septiembre 197, Santa Inés, Azcapotzalco, CP 02140, CDMX. Guardado en `RHO_ORIGIN`; faltan geocodificación y horario de recolección.
+
+Faltantes operativos: datos completos del destinatario,
 medidas/peso reales, horario de bodega, margen mínimo, selección y acceso API de
 proveedores, reglas para admitir proveedores tras sus pruebas. Las tarifas de
 los tests son sintéticas y no representan cotizaciones comerciales.
 
 ## Verificación
 
-`node --test tests/logistics-selection.test.mjs`
+`node --test tests/logistics-selection.test.mjs tests/pickup-workflow.test.mjs`
 
 No se aplicaron migraciones ni se alteraron políticas publicadas o cobros.
+
+## Avance del 23 de octubre de 2026
+
+`pickup-workflow.mjs` implementa transiciones de pago confirmado → preparación →
+cotización seleccionada → guía confirmada → recolección confirmada. Rechaza eventos
+de otro pedido, revisión o entorno y reconoce eventos duplicados. Una respuesta
+incierta entra a reconciliación: nunca vuelve por sí sola a contratar. Cancelar
+tras iniciar la contratación requiere revisar la cancelación con el proveedor.
+
+El CP viene del contacto del comprador; se valida como texto de cinco dígitos.
+También se requieren domicilio completo, destinatario, teléfono y peso/medidas.
+La ruta debe venir de un cálculo verificado con ambos domicilios; no se convierte
+un CP en kilómetros ni se amplía CDMX por estar dentro de 80 km.
+
+Este módulo todavía NO es una cola desplegada ni un conector de transporte. Su
+consumidor deberá autenticar los eventos, cargar datos canónicos del pedido,
+revalidar tarifas antes de contratar y usar bloqueo transaccional con restricción
+única por entorno/pedido/revisión. Persistir booking_pending/pickup_pending antes
+de enviar; tras reinicio, reconciliar con la clave externa. seenEvents debe
+guardarse en una tabla de eventos única en la implementación persistente.
+
+Validación: 16 pruebas aprobadas con datos ficticios. Sin solicitudes a proveedores,
+sin guías compradas y sin modificaciones a la orden de prueba #5.
