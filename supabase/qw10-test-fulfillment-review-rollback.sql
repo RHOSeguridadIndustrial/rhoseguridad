@@ -1,5 +1,7 @@
 -- Non-destructive rollback. Keep new actor/review evidence and historical data.
 -- Restore the previous test consumer and its exact service grants; leave live stock untouched.
+-- The migration administrator can manage its own executor role without superuser.
+grant qw10_fulfillment to current_user with inherit true, set true;
 CREATE OR REPLACE FUNCTION qw10_test.commit_payment(p_request text, p_session text, p_payment text, p_amount bigint, p_currency text, p_live boolean, p_event text)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -65,7 +67,7 @@ begin
 end;
 $function$
 ;
-alter function qw10_test.commit_payment(text,text,text,bigint,text,boolean,text) owner to postgres;
+alter function qw10_test.commit_payment(text,text,text,bigint,text,boolean,text) owner to current_user;
 alter function qw10_test.commit_payment(text,text,text,bigint,text,boolean,text) security invoker;
 revoke all on function qw10_test.commit_payment(text,text,text,bigint,text,boolean,text) from public,anon,authenticated;
 grant execute on function qw10_test.commit_payment(text,text,text,bigint,text,boolean,text) to service_role;
@@ -75,7 +77,7 @@ grant update on qw10_test.stock to service_role;
 revoke execute on function public.qw10_test_review(text,text,text) from authenticated;
 revoke execute on function private.qw10_test_review(text,text,text) from authenticated;
 
--- Restore original reservation locking before retiring the helper.
+-- Restore the prior reservation bodies and disable the private lock entry point.
 CREATE OR REPLACE FUNCTION public.qw10_test_reserve(p_owner text, p_retry text, p_quote jsonb)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -122,6 +124,7 @@ begin
  return jsonb_build_object('id',r.id,'quote',r.quote,'expiresAt',r.expires_at,'livemode',false);
 end; $function$
 ;
+
 CREATE OR REPLACE FUNCTION public.qw10_test_special_order(p_owner text, p_retry text, p_sku text, p_quantity integer)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -147,4 +150,7 @@ begin
  return jsonb_build_object('environment','test','reference',r.id,'sku',r.sku,'requested',r.requested,'reserved',r.reserved,'additional',r.additional,'expiresAt',r.expires_at);
 end;$function$
 ;
-revoke execute on function qw10_test.lock_stock(text[]) from service_role;
+
+revoke execute on function qw10_test.lock_stock(text[],boolean) from service_role;
+
+grant qw10_fulfillment to current_user with inherit false, set true;

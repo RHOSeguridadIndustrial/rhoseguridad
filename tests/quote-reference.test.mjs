@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import { PGlite } from '@electric-sql/pglite';
 import { createQuoteReferenceHandler } from '../supabase/functions/quote-reference/handler.js';
 
-test('sequential quote references, permissions, retries and cart behavior', async () => {
+test('sequential quote references, permissions, retries and current cart rendering', async () => {
   const db = new PGlite();
   try {
     await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
@@ -60,10 +60,8 @@ test('sequential quote references, permissions, retries and cart behavior', asyn
       if (!elements.has(id)) elements.set(id, { innerHTML: '', value: '', disabled: false, hidden: true, textContent: '', setCustomValidity() {}, reportValidity() {} });
       return elements.get(id);
     };
-    let failReference = false;
     const context = {
       Intl, Number, String, Set, Math, encodeURIComponent,
-      getQuoteReference: async args => { if (failReference) throw new Error('Network error'); return reload.getQuoteReference(args); },
       getCart: () => items, updateQuantity() {}, removeFromCart() {}, updateCartBadges() {},
       document: { getElementById: element, querySelectorAll: () => [] },
       window: { addEventListener() {}, location: { href: '' } }
@@ -71,20 +69,13 @@ test('sequential quote references, permissions, retries and cart behavior', asyn
     const cartScript = fs.readFileSync(new URL('../carrito.html', import.meta.url), 'utf8')
       .match(/<script type="module">([\s\S]*?)<\/script>/)[1].replace(/import\{[^}]+\}from'[^']+';/g, '');
     vm.runInNewContext(cartScript, context);
-    element('guestName').value = request.name;
-    await element('guestQuoteForm').onsubmit({ preventDefault() {} });
-    const url = new URL(context.window.location.href);
-    assert.equal(url.hostname, 'wa.me');
-    assert.equal(url.pathname, '/525545683441');
-    assert.match(url.searchParams.get('text'), /Referencia de solicitud: RHO-00000003/);
-    assert.ok(url.searchParams.get('text').includes('2 pares x Guante japonés con látex — $78.90'));
+    // The guest WhatsApp cart form was retired before QW10. The cart now renders
+    // products; special-order handling lives in the dedicated modules.
+    assert.ok(element('cart-content').innerHTML.includes('Guante japonés con látex'));
+    assert.ok(element('cart-content').innerHTML.includes('Cantidad de pares'));
+    assert.ok(element('cart-content').innerHTML.includes('$78.90'));
     assert.ok(!element('cart-content').innerHTML.includes('RHO-00000003'));
-    context.window.location.href = '';
-    failReference = true;
-    await element('guestQuoteForm').onsubmit({ preventDefault() {} });
     assert.equal(context.window.location.href, '');
-    assert.equal(element('quoteRequestStatus').hidden, false);
-    assert.equal(element('checkout').disabled, false);
 
     await db.exec('reset role');
     const permissions = (await db.query("select has_table_privilege('anon','private.quote_reference_counter','select') as counter_read, has_table_privilege('authenticated','private.quote_request_references','select') as request_read, has_function_privilege('anon','public.allocate_quote_reference(uuid,text)','execute') as allocate")).rows[0];

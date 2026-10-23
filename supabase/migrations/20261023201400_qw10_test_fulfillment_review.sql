@@ -2,8 +2,11 @@
 -- The existing signed webhook is the trusted producer; clients cannot call it.
 -- Tighten the service boundary: fulfillment can only enter through its RPC.
 create role qw10_fulfillment nologin noinherit nobypassrls;
+-- Supabase postgres is CREATEROLE, not superuser. Ownership transfer needs SET.
+grant qw10_fulfillment to current_user with inherit false, set true;
 grant usage on schema qw10_test to qw10_fulfillment;
-grant select on all tables in schema qw10_test to qw10_fulfillment;
+grant select on qw10_test.requests,qw10_test.receipts,qw10_test.purchase_orders,
+ qw10_test.movements,qw10_test.stock,qw10_test.lines,qw10_test.quote_holds to qw10_fulfillment;
 grant update(hold_active) on qw10_test.requests to qw10_fulfillment;
 grant update(quantity) on qw10_test.stock to qw10_fulfillment;
 grant insert on qw10_test.receipts,qw10_test.purchase_orders,qw10_test.movements to qw10_fulfillment;
@@ -74,11 +77,11 @@ begin
  update qw10_test.requests set hold_active=false where id=p_request;
  return jsonb_build_object('status',outcome,'orderId',order_id,'repeated',false);
 end$$;
+revoke all on function qw10_test.commit_payment(text,text,text,bigint,text,boolean,text) from public,anon,authenticated;
+grant execute on function qw10_test.commit_payment(text,text,text,bigint,text,boolean,text) to service_role;
 grant create on schema qw10_test to qw10_fulfillment;
 alter function qw10_test.commit_payment(text,text,text,bigint,text,boolean,text) owner to qw10_fulfillment;
 revoke create on schema qw10_test from qw10_fulfillment;
-revoke all on function qw10_test.commit_payment(text,text,text,bigint,text,boolean,text) from public,anon,authenticated;
-grant execute on function qw10_test.commit_payment(text,text,text,bigint,text,boolean,text) to service_role;
 revoke insert on qw10_test.receipts,qw10_test.purchase_orders,qw10_test.movements from service_role;
 revoke update on qw10_test.stock from service_role;
 -- Immutable evidence is never updated by a client, administrator or backend.
@@ -126,20 +129,20 @@ returns jsonb language sql security invoker set search_path='' as $$select priva
 revoke all on function public.qw10_test_review(text,text,text) from public,anon,service_role;
 grant execute on function public.qw10_test_review(text,text,text) to authenticated;
 
--- Row-locking also requires UPDATE privilege. Keep it inside a no-login executor
--- rather than restoring direct stock UPDATE to the calling backend.
-create function qw10_test.lock_stock(p_skus text[]) returns void
-language plpgsql security definer set search_path='' as $$
-begin
- if current_setting('transaction_isolation')<>'read committed' then raise exception 'Fresh transaction required';end if;
- perform 1 from qw10_test.stock s where s.sku=any(p_skus) order by s.sku for update;
-end$$;
-grant create on schema qw10_test to qw10_fulfillment;
-alter function qw10_test.lock_stock(text[]) owner to qw10_fulfillment;
-revoke create on schema qw10_test from qw10_fulfillment;
-revoke all on function qw10_test.lock_stock(text[]) from public,anon,authenticated;
-grant execute on function qw10_test.lock_stock(text[]) to service_role;
 
+-- Row locking needs an UPDATE privilege in PostgreSQL. Keep that capability
+-- inside this private, fixed-query helper; the service cannot update stock.
+create function qw10_test.lock_stock(p_skus text[],p_active_only boolean)
+returns setof text language sql security definer set search_path='' as $$
+ select s.sku from qw10_test.stock s where s.sku=any(p_skus)
+  and (not p_active_only or s.active) order by s.sku for update
+$$;
+revoke all on function qw10_test.lock_stock(text[],boolean) from public,anon,authenticated;
+grant execute on function qw10_test.lock_stock(text[],boolean) to service_role;
+grant create on schema qw10_test to qw10_fulfillment;
+alter function qw10_test.lock_stock(text[],boolean) owner to qw10_fulfillment;
+revoke create on schema qw10_test from qw10_fulfillment;
+-- The existing reservation functions remain SECURITY INVOKER and service-only.
 CREATE OR REPLACE FUNCTION public.qw10_test_reserve(p_owner text, p_retry text, p_quote jsonb)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -167,7 +170,7 @@ begin
     or (l->>'quantity')::bigint>1000000) or
    (select count(distinct l->>'sku') from jsonb_array_elements(p_quote->'lines') l)
      <>jsonb_array_length(p_quote->'lines') then raise exception 'Invalid test lines'; end if;
- perform qw10_test.lock_stock(array(select l->>'sku' from jsonb_array_elements(p_quote->'lines') l));
+ perform qw10_test.lock_stock(array(select l->>'sku' from jsonb_array_elements(p_quote->'lines') l),false);
  for k,q in select l->>'sku',(l->>'quantity')::bigint from jsonb_array_elements(p_quote->'lines') l loop
    if not exists(select 1 from qw10_test.stock s where s.sku=k and s.active and s.quantity>=q+
       coalesce((select sum(l.quantity) from qw10_test.lines l join qw10_test.requests h on h.id=l.request_id
@@ -185,6 +188,7 @@ begin
  return jsonb_build_object('id',r.id,'quote',r.quote,'expiresAt',r.expires_at,'livemode',false);
 end; $function$
 ;
+
 CREATE OR REPLACE FUNCTION public.qw10_test_special_order(p_owner text, p_retry text, p_sku text, p_quantity integer)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -198,8 +202,8 @@ begin
  if found then
   if r.sku<>p_sku or r.requested<>p_quantity or r.expires_at<=clock_timestamp() then raise exception 'Retry changed or expired';end if;
  else
-  perform qw10_test.lock_stock(array[p_sku]);
-  if not exists(select 1 from qw10_test.stock where sku=p_sku and active) then raise exception 'Unknown test variant';end if;
+  perform qw10_test.lock_stock(array[p_sku],true);
+  if not found then raise exception 'Unknown test variant';end if;
   select greatest(0,s.quantity-
    coalesce((select sum(l.quantity) from qw10_test.lines l join qw10_test.requests h on h.id=l.request_id where l.sku=p_sku and h.hold_active and h.hold_until>clock_timestamp()),0)-
    coalesce((select sum(h.quantity) from qw10_test.quote_holds h where h.sku=p_sku and h.active and h.expires_at>clock_timestamp()),0)) into available from qw10_test.stock s where s.sku=p_sku;

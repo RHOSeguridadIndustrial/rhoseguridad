@@ -23,7 +23,20 @@ try{
  for(const id of ['legacy','good','late','short','inactive','rollback','foreign','reserve','reuse','multi']) await q('insert into qw10_test.stock values($1,5,true)',[`sku-${id}`]);
  await make('legacy');await pay('legacy');await reset();
  const legacy=await q("select * from qw10_test.receipts where request_id='legacy'");
- await db.exec(upgrade);
+ // Apply as a CREATEROLE administrator without superuser, matching Supabase.
+ await db.exec(`create role qw10_migration_admin nologin createrole bypassrls;
+ alter schema qw10_test owner to qw10_migration_admin;
+ grant usage,create on schema public,private to qw10_migration_admin;
+ grant usage on schema auth to qw10_migration_admin;
+ grant references on auth.users to qw10_migration_admin;
+ alter function qw10_test.commit_payment(text,text,text,bigint,text,boolean,text) owner to qw10_migration_admin;
+ alter function public.qw10_test_reserve(text,text,jsonb) owner to qw10_migration_admin;
+ alter function public.qw10_test_special_order(text,text,text,integer) owner to qw10_migration_admin;`);
+ for(const {tablename} of await q("select tablename from pg_tables where schemaname='qw10_test'"))
+  await db.exec(`alter table qw10_test.${tablename} owner to qw10_migration_admin`);
+ await db.exec('set role qw10_migration_admin');
+ assert.equal((await scalar("select rolsuper from pg_roles where rolname=current_user")).rolsuper,false);
+ await db.exec(upgrade);await reset();
  assert.deepEqual(await q("select * from qw10_test.receipts where request_id='legacy'"),legacy);
  assert.equal((await scalar('select count(*)::int n from qw10_test.fulfillment_events')).n,0);
  await db.exec('set role service_role');assert.equal((await pay('legacy')).repeated,true);await reset();
@@ -33,14 +46,6 @@ try{
  }
  assert.equal((await scalar("select pg_has_role('service_role','qw10_fulfillment','MEMBER') member")).member,false);
  pass('backend cannot directly discount stock, insert receipts/movements, or assume executor role');
- await db.exec('set role service_role');
- const webQuote={currency:'mxn',totalCents:100,lines:[{sku:'sku-multi',quantity:2}]};
- const web=(await scalar('select public.qw10_test_reserve($1,$2,$3::jsonb) result',[admin,'lock-helper-web-001',JSON.stringify(webQuote)])).result;
- const special=(await scalar('select public.qw10_test_special_order($1,$2,$3,$4) result',[admin,'lock-helper-special-001','sku-multi',5])).result;
- assert.equal(special.reserved,3);assert.equal(special.additional,2);await reset();
- assert.equal((await scalar("select quantity from qw10_test.stock where sku='sku-multi'")).quantity,5);
- await db.exec('set role authenticated');await assert.rejects(q('select qw10_test.lock_stock(array[$1])',['sku-multi']),e=>e.code==='42501');await reset();
- pass('stock lock helper preserves web/special reservation writers without granting backend direct stock updates');
  for(const role of ['anon','authenticated']){
   await db.exec('set role '+role);await assert.rejects(pay('legacy'),e=>e.code==='42501');await reset();
  }
@@ -103,9 +108,22 @@ try{
   await assert.rejects(db.exec('delete from qw10_test.reconciliation_reviews'),e=>e.code==='42501');await reset();
  }
  pass('automatic and human evidence cannot be altered or deleted by client/backend roles');
+ await db.exec("insert into qw10_test.stock values('sku-flow',3,true)");
+ await db.exec('set role service_role');
+ const special=await scalar("select public.qw10_test_special_order('fixture-owner','special-retry-key-1234','sku-flow',1) as result");
+ assert.equal(special.result.reserved,1);
+ const web=await scalar(`select public.qw10_test_reserve('fixture-owner','web-retry-key-1234','{"currency":"mxn","totalCents":100,"lines":[{"sku":"sku-flow","quantity":1}]}') as result`);
+ const flowId=web.result.id;
+ await q("select public.qw10_test_bind($1,'fixture-owner','cs_test_flow')",[flowId]);
+ assert.equal((await pay(flowId,{p_session:'cs_test_flow',p_payment:'pi_flow',p_event:'evt_flow'})).status,'paid');
+ await assert.rejects(db.exec("update qw10_test.stock set active=false where sku='sku-flow'"),e=>e.code==='42501');await reset();
+ assert.equal((await scalar("select quantity from qw10_test.stock where sku='sku-flow'")).quantity,2);
+ assert.equal((await scalar("select prosecdef from pg_proc where oid='public.qw10_test_reserve(text,text,jsonb)'::regprocedure")).prosecdef,false);
+ pass('web and special reservations retain row locks through a private helper; backend still cannot write stock');
  const evidence=await q('select * from qw10_test.fulfillment_events order by request_id');
  const reviews=await q('select * from qw10_test.reconciliation_reviews order by request_id');
- await db.exec(await readFile(new URL('../supabase/qw10-test-fulfillment-review-rollback.sql',import.meta.url),'utf8'));
+ await db.exec('set role qw10_migration_admin');
+ await db.exec(await readFile(new URL('../supabase/qw10-test-fulfillment-review-rollback.sql',import.meta.url),'utf8'));await reset();
  assert.deepEqual(await q('select * from qw10_test.fulfillment_events order by request_id'),evidence);
  assert.deepEqual(await q('select * from qw10_test.reconciliation_reviews order by request_id'),reviews);
  await db.exec('set role service_role');assert.equal((await pay('good')).repeated,true);await reset();
