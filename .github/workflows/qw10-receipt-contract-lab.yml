@@ -25,3 +25,11 @@ jobs:
         env:
           RHO_LOCAL_PG_URL: postgresql://postgres:disposable_lab_fixture@127.0.0.1:5432/rho_lab
         run: python3 tests/consumption-contract-concurrent.py
+      - name: Install pinned local test dependencies
+        run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - name: Export isolated integration fixture
+        run: node tests/integrated-consumption-database.mjs --export-fixture
+      - name: Run integrated inventory concurrency
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_lab_fixture@127.0.0.1:5432/rho_lab
+        run: python3 tests/integrated-consumption-concurrent.py

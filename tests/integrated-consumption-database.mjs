@@ -1,7 +1,9 @@
 import {PGlite} from '@electric-sql/pglite';
-import {readFile} from 'node:fs/promises';
+import {readFile,writeFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const db=new PGlite(), admin='11111111-1111-4111-8111-111111111111';
+const setupSQL=[];const originalExec=db.exec.bind(db);
+db.exec=async sql=>{const result=await originalExec(sql);setupSQL.push(sql);return result;};
 const load=p=>readFile(new URL(p,import.meta.url),'utf8');
 const q=async s=>(await db.query(s)).rows;let count=0;
 const pass=s=>console.log(`PASS ${++count}: ${s}`);
@@ -86,6 +88,10 @@ try {
  revoke all on function consumption_lab.consume(text,text) from public,anon,authenticated,service_role;
  grant usage on schema consumption_lab to lab_worker;
  grant execute on function consumption_lab.consume(text,text) to lab_worker;`);
+ if(process.argv.includes('--export-fixture')) {
+   await writeFile('/tmp/qw10-integrated-fixture.sql',setupSQL.join('\n'));
+   throw 'fixture-exported';
+ }
  await db.exec(`insert into consumption_lab.requests values('r1','owner','cs_test_one',100,'mxn');
  insert into consumption_lab.lines values('r1','lab-a',2);
  insert into consumption_lab.receipts values('e1','r1','owner','cs_test_one','pi_one',100,'mxn','paid',false);
@@ -147,4 +153,4 @@ try {
  }
  await db.exec('rollback');pass('automatic context rejects metadata, revision and timestamp tampering');
  console.log(`RESULT: ${count} integration checks passed; disposable in-memory fixture only.`);
-} finally {await db.close();}
+} catch(error) {if(error!=='fixture-exported') throw error;console.log('Disposable fixture exported');} finally {await db.close();}
