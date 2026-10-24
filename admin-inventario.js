@@ -60,24 +60,26 @@ function renderHistory(history,people) {
 function edit(sku) {
   activeItem=items.find(i=>i.sku===sku); if(!activeItem) return;
   const form=$('edit-form'), item=activeItem;
-  form.reset(); $('edit-title').textContent=item.name; $('edit-current').textContent=`Existencia actual: ${item.quantity} ${item.unit}. ${labelOf(item)}.`;
+  form.reset(); for(const key of ['minimum','unit','active']) form.elements[key].disabled=false; $('edit-title').textContent=item.name; $('edit-current').textContent=`Existencia actual: ${item.quantity} ${item.unit}. ${labelOf(item)}.`;
+  form.elements.item_name.value=item.name; form.elements.item_name.disabled=true; $('name-label').hidden=true;
   form.elements.quantity.value=''; form.elements.minimum.value=item.minimum_stock; form.elements.unit.value=item.unit; form.elements.active.checked=item.is_active;
   $('edit-message').textContent=''; $('quantity-label').hidden=false; form.elements.quantity.disabled=false;
   $('edit-dialog').showModal(); form.elements.quantity.focus();
 }
 $('edit-form').elements.action.addEventListener('change',e=>{
-  const form=$('edit-form'), details=['details','pending'].includes(e.target.value);
+  const form=$('edit-form'), details=['details','pending','rename'].includes(e.target.value);
+  const rename=e.target.value==='rename'; for(const key of ['minimum','unit','active']) form.elements[key].disabled=rename; $('name-label').hidden=!rename; form.elements.item_name.disabled=!rename;
   $('quantity-label').hidden=details; form.elements.quantity.disabled=details;
   form.elements.quantity.min=['receive','issue'].includes(e.target.value)?'1':'0';
 });
 $('edit-form').addEventListener('submit',async e=>{
   e.preventDefault(); if(!authorized||!activeItem) return;
   const form=e.currentTarget, data=new FormData(form), action=data.get('action');
-  const quantity=['details','pending'].includes(action)?0:Number(data.get('quantity')), minimum=Number(data.get('minimum'));
+  const quantity=['details','pending','rename'].includes(action)?0:Number(data.get('quantity')), minimum=action==='rename'?activeItem.minimum_stock:Number(data.get('minimum'));
   if(!Number.isInteger(quantity)||!Number.isInteger(minimum)||quantity<0||minimum<0) return;
   $('save').disabled=true; $('edit-message').className=''; $('edit-message').textContent='Guardando…';
   try {
-    const {error}=await supabase.rpc('inventory_adjust',{p_sku:activeItem.sku,p_action:action,p_quantity:quantity,p_minimum:minimum,p_unit:data.get('unit'),p_active:form.elements.active.checked,p_reason:data.get('reason').trim(),p_revision:activeItem.revision});
+    const {error}=action==='rename' ? await supabase.rpc('inventory_rename',{p_sku:activeItem.sku,p_name:data.get('item_name').trim(),p_reason:data.get('reason').trim(),p_revision:activeItem.revision}) : await supabase.rpc('inventory_adjust',{p_sku:activeItem.sku,p_action:action,p_quantity:quantity,p_minimum:minimum,p_unit:data.get('unit'),p_active:form.elements.active.checked,p_reason:data.get('reason').trim(),p_revision:activeItem.revision});
     if(error) throw error;
     $('edit-dialog').close(); await load(); $('message').className='success'; $('message').textContent='Movimiento guardado. La disponibilidad ya está actualizada.';
   } catch(error) {

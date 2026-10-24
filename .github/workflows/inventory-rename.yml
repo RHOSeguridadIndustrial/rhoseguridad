@@ -1,0 +1,17 @@
+name: Inventory rename validation
+on:
+  push:
+    branches: [qw10-nombre-inventario-20261024, main]
+    paths: ['admin-inventario.*', 'supabase/inventory-rename.sql', 'tests/inventory-rename-*', '.github/workflows/inventory-rename.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node tests/inventory-rename-database.mjs
+      - run: npx --prefix tests playwright install --with-deps chromium webkit
+      - run: node tests/inventory-rename-browser.cjs
