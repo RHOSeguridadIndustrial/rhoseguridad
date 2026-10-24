@@ -1,14 +1,14 @@
 name: QW10 deployed test fulfillment
 on:
   push:
-    branches: [qw10-cierre-20261023, main]
-    paths: ['supabase/qw10-test-fulfillment-review.sql', 'supabase/migrations/*qw10_test_fulfillment_review.sql', 'tests/deployed-*', 'tests/test-review-model.test.mjs', 'test-review-model.js', '.github/workflows/qw10-test-fulfillment.yml']
+    branches: [qw10-cierre-20261023, qw10-review-validation-20261023, qw10-validacion-20261024, main]
+    paths: ['supabase/qw10-test-fulfillment-review.sql', 'supabase/migrations/*qw10_test_fulfillment_review.sql', 'tests/deployed-*', 'tests/test-review*', 'admin-revision-pruebas*', 'test-review-model.js', '.github/workflows/qw10-test-fulfillment.yml']
 permissions:
   contents: read
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     services:
       postgres:
         image: postgres:17
@@ -34,3 +34,7 @@ jobs:
         env:
           RHO_LOCAL_PG_URL: postgresql://postgres:disposable_fixture_only@127.0.0.1:5432/rho_deployed_fixture
         run: python3 tests/deployed-fulfillment-concurrent.py
+      - name: Install desktop and mobile browser engines
+        run: npx --prefix tests playwright install --with-deps chromium webkit
+      - name: Verify review UI on desktop and mobile WebKit
+        run: node tests/test-review-browser.cjs
