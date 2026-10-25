@@ -6,9 +6,11 @@ const link=document.getElementById('test-open');
 const method=document.getElementById('test-method');
 const help=document.getElementById('test-help');
 const cardHelp=document.getElementById('test-card-help');
+const restart=document.getElementById('test-restart');
+let expiredRetry=null;
 let revision=0;
 function clearResult(){
- revision++;link.hidden=true;link.removeAttribute('href');help.hidden=true;status.textContent='';
+ revision++;expiredRetry=null;restart.hidden=true;link.hidden=true;link.removeAttribute('href');help.hidden=true;status.textContent='';
 }
 function showProblem(kind){
  const problems={
@@ -26,6 +28,24 @@ function showProblem(kind){
  if(href){help.textContent=label;help.href=href;}else help.removeAttribute('href');
 }
 function updateMethod(){cardHelp.hidden=method.value!=='card';}
+function fingerprint(){return JSON.stringify({items:getCart().map(i=>({sku:i.id,quantity:i.qty})),paymentMethod:method.value});}
+restart.addEventListener('click',async()=>{
+ if(restart.disabled||button.disabled||!expiredRetry)return;
+ const expired=expiredRetry,attempt=revision;
+ restart.disabled=true;button.disabled=true;
+ try{
+  const {data:{session},error}=await supabase.auth.getSession();
+  if(attempt!==revision)return;
+  if(error||session?.user.id!==expired.ownerId){clearResult();showProblem('session');return;}
+  if(method.value!=='transfer'||fingerprint()!==expired.fingerprint){clearResult();return;}
+  const storageKey=`rho-test-checkout:${expired.ownerId}`;
+  const saved=JSON.parse(sessionStorage.getItem(storageKey));
+  if(saved?.key!==expired.key||saved.fingerprint!==expired.fingerprint){clearResult();showProblem('unknown');return;}
+  sessionStorage.removeItem(storageKey);
+  clearResult();status.textContent='Ya puedes preparar una nueva transferencia simulada. Se volverán a comprobar los precios y las existencias de prueba.';
+ }catch{if(attempt===revision){clearResult();showProblem('storage');}}
+ finally{restart.disabled=false;button.disabled=false;}
+});
 method.addEventListener('change',()=>{clearResult();updateMethod();});
 updateMethod();
 function render(){
@@ -64,6 +84,18 @@ button.addEventListener('click',async()=>{
   });
   if(attempt!==revision)return;
   if(failure){
+   if(failure.context?.status===410 && paymentMethod==='transfer'){
+    let details;try{details=await failure.context.clone().json();}catch{}
+    if(attempt!==revision)return;
+    const current=await supabase.auth.getSession();
+    if(attempt!==revision)return;
+    if(current.error||current.data.session?.user.id!==session.user.id){clearResult();showProblem('session');return;}
+    if(details?.error==='test_transfer_expired'){
+     expiredRetry={ownerId:session.user.id,key:retry.key,fingerprint};restart.hidden=false;
+     status.textContent='La reserva de esta transferencia simulada venció sin registrar un pago. Puedes iniciar una nueva prueba; la referencia anterior se conserva en el historial.';
+     return;
+    }
+   }
    const kinds={401:'session',409:'conflict',503:'disabled',400:'invalid'};
    showProblem(kinds[failure.context?.status]||'unknown');return;
   }

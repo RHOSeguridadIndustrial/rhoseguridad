@@ -1,4 +1,5 @@
 import {createTestCheckout} from '../_shared/create-test-checkout.js';
+import {ExpiredTestTransfer} from '../_shared/test-checkout-rpc.js';
 export function testCheckoutHandler({authorize,quoteDeps,reserve,loadReservation,bindSession,stripe,configured}) {
  return async req=>{
   const origin=req.headers.get('origin');
@@ -23,7 +24,11 @@ export function testCheckoutHandler({authorize,quoteDeps,reserve,loadReservation
    const result=await createTestCheckout(body,{ownerId:owner,retryKey:body.retryKey,
     stripe,reserve,bindSession,...quoteDeps,loadReservation});
    return respond(result,200);
-  } catch {return respond({error:'test_checkout_not_created'},409);}
+  } catch(error) {
+   if(error instanceof ExpiredTestTransfer && body.paymentMethod==='transfer')
+    return respond({error:'test_transfer_expired'},410);
+   return respond({error:'test_checkout_not_created'},409);
+  }
  };
 }
 
