@@ -1,5 +1,6 @@
 // Pure decision engine. Inputs must be loaded/verified by a trusted order service.
 // A recommendation never purchases a label or books a pickup.
+import {packageFit} from './package-fit.mjs';
 const cents = value => Number.isSafeInteger(value) && value >= 0;
 const instant = value => Number.isSafeInteger(value) && value > 0;
 const text = value => typeof value === 'string' && value.trim().length > 0;
@@ -24,19 +25,27 @@ export function selectProvider(order, quotes, policy = {}, now = Date.now()) {
   const band = distanceBand(order.distanceKm);
   if (!band) return review('distance_out_of_range');
   if (order.deliveryDeadline <= now || order.readyAt > order.deliveryDeadline) return review('deadline_unavailable');
-  const subsidyBps = policy.subsidyBps ?? 800;
-  if (!Number.isInteger(subsidyBps) || subsidyBps < 0 || subsidyBps > 10000 ||
-      !Number.isSafeInteger(order.subtotalCents * subsidyBps)) return review('invalid_budget_policy');
-  const budgetCents = sum([order.customerShippingCents, Math.floor(order.subtotalCents * subsidyBps / 10000)]);
-  if (budgetCents === null) return review('invalid_budget_policy');
   // The minimum remaining contribution is a business decision, never guessed.
   if (!cents(order.grossContributionCents) || !cents(policy.minimumRemainingContributionCents))
-    return review('margin_configuration_required', {budgetCents, distanceBand:band});
+    return review('margin_configuration_required', {distanceBand:band});
   const availableCents = sum([order.grossContributionCents, order.customerShippingCents]);
   if (availableCents === null) return review('invalid_margin');
+  const marginBudgetCents=availableCents-policy.minimumRemainingContributionCents;
+  if(marginBudgetCents<0) return review('insufficient_margin');
+  let budgetCents=marginBudgetCents;
+  // Optional explicit cap only; no implicit 8% subsidy or guessed minimum.
+  if(policy.subsidyBps!==undefined) {
+    const bps=policy.subsidyBps;
+    if(!Number.isInteger(bps)||bps<0||bps>10000||!Number.isSafeInteger(order.subtotalCents*bps))
+      return review('invalid_budget_policy');
+    const cap=sum([order.customerShippingCents,Math.floor(order.subtotalCents*bps/10000)]);
+    if(cap===null) return review('invalid_budget_policy');
+    budgetCents=Math.min(budgetCents,cap);
+  }
   const rejected = [], eligible = [], ids = new Set();
   for (const q of quotes) {
     let reason;
+    const fit=packageFit(order.package,q?.packageRules);
     const key = q && text(q.providerId) && text(q.id) ? JSON.stringify([q.providerId,q.id]) : null;
     if (!q || !key || ids.has(key)) reason = 'invalid_or_duplicate_quote';
     else if (q.orderId !== order.id || q.shipmentRevision !== order.shipmentRevision ||
@@ -45,6 +54,9 @@ export function selectProvider(order, quotes, policy = {}, now = Date.now()) {
              q.expiresAt <= now || q.expiresAt <= q.quotedAt) reason = 'quote_expired_or_invalid';
     else if (q.coverageConfirmed !== true || q.packageAccepted !== true || q.singlePackagePickup !== true)
       reason = 'service_not_eligible';
+    else if(!fit.accepted) reason=fit.reason;
+    else if(!Number.isFinite(q.quotedBillableKg)||q.quotedBillableKg<fit.billableKg)
+      reason='quoted_weight_insufficient';
     else if (q.pickupAvailable !== true || !instant(q.pickupAt) || !instant(q.deliveryAt) ||
              q.pickupAt < Math.max(now,order.readyAt) || q.deliveryAt < q.pickupAt ||
              q.deliveryAt > order.deliveryDeadline) reason = 'deadline_or_pickup_not_met';
@@ -62,6 +74,7 @@ export function selectProvider(order, quotes, policy = {}, now = Date.now()) {
     if (reason) {rejected.push({quoteId:q?.id ?? null,providerId:q?.providerId ?? null,reason});continue;}
     eligible.push({providerId:q.providerId,quoteId:q.id,totalCents,
       carrierCostCents:q.totalCents,deliveryAt:q.deliveryAt,pickupAt:q.pickupAt,
+      billableKg:fit.billableKg,
       onTimeRate:q.onTimeDeliveries/q.completedDeliveries,
       remainingContributionCents:availableCents-totalCents});
   }

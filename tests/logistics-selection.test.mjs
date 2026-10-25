@@ -3,16 +3,18 @@ import assert from 'node:assert/strict';
 import {selectProvider, distanceBand} from '../logistics/select-provider.mjs';
 const now = Date.parse('2026-10-22T18:00:00Z'), hour = 3600000;
 const order = (changes={}) => ({id:'synthetic-order',shipmentRevision:'revision-1',environment:'test',
+ package:{weightKg:1,lengthCm:20,widthCm:10,heightCm:10},
  currency:'MXN',subtotalCents:150000,customerShippingCents:0,packagingCents:1000,
  grossContributionCents:45000,paymentState:'paid',packageReady:true,
  destinationRegion:'MX-CMX',distanceKm:40,readyAt:now,deliveryDeadline:now+24*hour,...changes});
+const rules={verified:true,weightMethod:'max_actual_volumetric',volumetricDivisor:5000,roundingKg:1,maxActualKg:30,maxBillableKg:30,maxLongestCm:100,maxMiddleCm:80,maxShortestCm:60};
 const quote = (changes={}) => ({id:'q1',providerId:'synthetic-a',orderId:'synthetic-order',
  shipmentRevision:'revision-1',environment:'test',currency:'MXN',quotedAt:now-1000,
  expiresAt:now+hour,coverageConfirmed:true,packageAccepted:true,singlePackagePickup:true,
  pickupAvailable:true,pickupAt:now+hour,deliveryAt:now+8*hour,approvedForAutomaticSelection:true,
  completedDeliveries:100,onTimeDeliveries:97,allChargesIncluded:true,
- requiredProtectionIncluded:true,totalCents:9000,...changes});
-const policy={minimumRemainingContributionCents:20000};
+ packageRules:rules,quotedBillableKg:1,requiredProtectionIncluded:true,totalCents:9000,...changes});
+const policy={subsidyBps:800,minimumRemainingContributionCents:20000};
 const run=(o=order(),q=[quote()],p=policy)=>selectProvider(o,q,p,now);
 test('lowest full cost wins even when another arrives faster',()=>{
  const r=run(order(),[quote({deliveryAt:now+3*hour}),quote({id:'q2',providerId:'synthetic-b',totalCents:8000})]);
@@ -33,11 +35,11 @@ test('distance boundaries and CDMX scope',()=>{
  for(const km of [2.99,80.01,NaN,Infinity])assert.equal(run(order({distanceKm:km})).reason,'distance_out_of_range');
  assert.equal(run(order({destinationRegion:'MX-MEX'})).reason,'outside_rho_coverage');
 });
-test('accepted sales budget examples; no guarantee of profitability',()=>{
+test('explicit subsidy cap examples are bounded by remaining margin',()=>{
  for(const [sale,shipping,budget] of [[200,99,115],[500,0,40],[1000,0,80],[1500,0,120],[3000,0,240]])
   assert.equal(run(order({subtotalCents:sale*100,customerShippingCents:shipping*100}),[]).budgetCents,budget*100);
  assert.equal(run(order({subtotalCents:50000})).rejected[0].reason,'over_budget');
- assert.equal(run(order({grossContributionCents:25000})).rejected[0].reason,'insufficient_margin');
+ assert.equal(run(order({grossContributionCents:25000})).rejected[0].reason,'over_budget');
  assert.equal(run(order(),[quote()],{}).reason,'margin_configuration_required');
 });
 test('unpaid, unprepared, cancelled and already shipped never recommend',()=>{
@@ -68,4 +70,22 @@ test('empty quotes require review and recommendation has no side effects',()=>{
  assert.equal(run(order(),[]).reason,'no_eligible_provider');
  const o=Object.freeze(order()),q=Object.freeze(quote());
  assert.equal(run(o,Object.freeze([q])).status,'recommended');
+});
+test('margin budget replaces implicit subsidy and keeps minimum contribution',()=>{
+ const p={minimumRemainingContributionCents:20000};
+ const r=run(order({subtotalCents:50000,grossContributionCents:35000}),[quote()],p);
+ assert.equal(r.status,'recommended');assert.equal(r.budgetCents,15000);
+ assert.equal(r.selected.remainingContributionCents,25000);
+ assert.equal(run(order({grossContributionCents:19999}),[quote()],p).reason,'insufficient_margin');
+ assert.equal(run(order(),[quote()],{}).reason,'margin_configuration_required');
+});
+test('volume and provider-specific rules exclude underquoted or oversized services',()=>{
+ const o=order({package:{weightKg:1,lengthCm:40,widthCm:30,heightCm:20}});
+ assert.equal(run(o,[quote()]).rejected[0].reason,'quoted_weight_insufficient');
+ assert.equal(run(o,[quote({quotedBillableKg:5})]).selected.billableKg,5);
+ assert.equal(run(o,[quote({quotedBillableKg:6,packageRules:{...rules,volumetricDivisor:4000}})]).selected.billableKg,6);
+ assert.equal(run(o,[quote({packageRules:{...rules,maxLongestCm:35}})]).rejected[0].reason,'package_exceeds_service_limits');
+ assert.equal(run(o,[quote({packageRules:{...rules,volumetricDivisor:undefined}})]).rejected[0].reason,'volumetric_divisor_required');
+ assert.equal(run(o,[quote({packageRules:{...rules,weightMethod:'actual'}})]).selected.billableKg,1);
+ assert.equal(run(order({package:undefined})).rejected[0].reason,'package_measurements_required');
 });

@@ -6,7 +6,7 @@ cotizadores, webhook de pago, inventario ni contratación. No programa recolecci
 ## Reglas de selección
 
 - Trayectos de 3 a 80 km por ruta; destino CDMX. No se amplía cobertura por distancia.
-- Presupuesto propuesto: envío cobrado al cliente + 8% del subtotal. Porcentaje configurable, pendiente de aprobación para contratación real.
+- Presupuesto: envío cobrado + contribución de productos antes de logística − contribución mínima aprobada. No hay subsidio porcentual implícito. Un tope porcentual solo se aplica si se configura expresamente y nunca amplía el margen disponible.
 - Usar la fecha límite guardada en el pedido al confirmar el pago; no reiniciar el
   plazo al empacar. El servicio de pedidos debe calcular días hábiles y festivos
   para estándar y conservar la promesa express. Este motor recibe timestamps UTC.
@@ -29,9 +29,10 @@ importes deben normalizarse a una misma base fiscal/contable antes de llamar al
 motor. `minimumRemainingContributionCents` es el mínimo aprobado para ese pedido;
 no tiene valor por defecto. La ausencia de cualquiera impide recomendar.
 
-El 8% es un techo de subsidio, no una garantía de rentabilidad. Una venta de $500
-con envío gratuito tiene presupuesto objetivo $40; si ninguna oferta lo cumple,
-requiere revisión. No se cobra automáticamente un suplemento al comprador.
+El anterior 8% queda como opción explícita de tope, no como valor predeterminado.
+Por ejemplo ficticio, una venta de $500 con contribución previa de $350 y mínimo
+a conservar de $200 permite hasta $150 de logística. El subtotal por sí solo no
+define ese presupuesto. No se cobra automáticamente un suplemento al comprador.
 
 ## Contrato de integración
 
@@ -97,3 +98,22 @@ contrato, las 23 pruebas y los límites. No hay cola desplegada ni contratación
 Se añadió el ejecutor por lotes, adaptador transaccional de pool y validación de
 preparación contra QW10; 31 pruebas locales aprobadas. Rol limitado y RLS probados
 en laboratorio. Conexión, despliegue y proveedores siguen pendientes.
+
+## Peso, volumen y eficiencia
+
+`order.package` requiere peso en kg y largo/ancho/alto del embalaje en cm.
+`quote.packageRules` debe contener reglas verificadas del servicio: límites de
+peso real y facturable, tres dimensiones máximas, redondeo de peso y método de
+facturación. Para `max_actual_volumetric` se exige divisor volumétrico explícito;
+para `actual` no se inventa peso volumétrico. Las dimensiones se ordenan para
+comparar orientaciones equivalentes. No cubre restricciones adicionales como
+perímetro combinado, mercancías peligrosas o embalajes especiales: el adaptador
+debe validarlas antes de marcar `packageAccepted`.
+
+`quotedBillableKg` no puede ser menor que el peso calculado. Si no hay medidas,
+reglas o peso cotizado confiables, se requiere revisión. Los divisores 4000/5000
+en las pruebas son ejemplos sintéticos, no valores adjudicados a proveedores.
+
+Validación actual: 33 pruebas aprobadas, incluyendo presupuesto por margen,
+reglas volumétricas por servicio y descarte de paquetes sobredimensionados.
+No se han recibido cotizaciones de API ni contratado envíos reales.
