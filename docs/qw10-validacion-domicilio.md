@@ -78,3 +78,10 @@ captura de domicilio y este validador en el servidor, congelar la cotización co
 reserva y comprobar un domicilio/servicio de entrega verificable. QW10 sigue abierto;
 se mantienen además pendientes confirmación bancaria real, operación real y Safari
 nativo. No se modificó CARD_PAYMENTS_ENABLED.
+
+## Integración verificada
+
+PR #33 integrada en main `d1d23c130c73165c19882651810e2e8ed16dccad`.
+CI de rama 40163053828 y main 40163078359: 61 pruebas aprobadas.
+GitHub Pages 40163078414 finalizó correctamente. Esto publica el código del
+repositorio; no conecta el nuevo módulo al checkout ni habilita cobertura real.
