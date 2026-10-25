@@ -11,7 +11,7 @@ const client=`export const supabase={auth:{getSession:async()=>({data:{session:f
   const p=new URL(req.url,'http://localhost').pathname;
   res.setHeader('Content-Type',p.endsWith('.js')?'text/javascript':p.endsWith('.css')?'text/css':'text/html');
   if(p==='/supabase-client.js')return res.end(client);
-  if(p==='/admin-security-guard.js')return res.end('export async function requireSecureAdmin(){if(!fixture.owner)throw Error();}');
+  if(p==='/admin-security-guard.js')return res.end('export async function requireSecureAdmin(){if(!fixture.owner)throw Error();fixture.authChanged("SIGNED_IN",{user:{id:fixture.owner}});return {id:fixture.owner};}');
   try{const file=path.resolve(root,'.'+p);if(!file.startsWith(root+path.sep))throw Error();res.end(await fs.readFile(file));}catch{res.writeHead(404);res.end();}
  });
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
@@ -26,6 +26,9 @@ const client=`export const supabase={auth:{getSession:async()=>({data:{session:f
    assert.match(await page.locator('#review-warning').innerText(),/1 pagos siguen en revisión; 1 tienen una nota/);
    assert.match(await page.locator('#records').innerText(),/Nota registrada; el pago sigue en revisión/);
    assert.match(await page.locator('#records').innerText(),/\$123.70/);
+   await page.evaluate(()=>fixture.authChanged('SIGNED_IN',{user:{id:fixture.owner}}));
+   assert.equal(await page.locator('#report').isVisible(),true);
+   assert.equal(await page.locator('#login-help').isVisible(),false);
    assert.equal(await page.locator('textarea').count(),0);assert.equal(await page.locator('input').count(),0);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
    await page.getByRole('button',{name:'Actualizar control'}).click();await page.locator('#report').waitFor({state:'visible'});
@@ -39,14 +42,14 @@ const client=`export const supabase={auth:{getSession:async()=>({data:{session:f
    assert.match(await page.locator('#outcome').innerText(),/1 solicitudes con diferencias/);
    await page.evaluate(()=>{fixture.owner=null;fixture.authChanged('SIGNED_OUT');});
    await page.locator('#app').waitFor({state:'hidden'});assert.equal(await page.locator('#records article').count(),0);
-   console.log('PASS '+engine.name()+': reviewed exception stays pending, exact money, read-only refresh, incident and error clearing');
+   console.log('PASS '+engine.name()+': same-owner sign-in during guard and refocus, reviewed exception stays pending, exact money, read-only refresh, incident and error clearing');
    await open({owner:null});await page.locator('#login-help').waitFor({state:'visible'});assert.equal(await page.evaluate(()=>fixture.calls.length),0);
    await open({error:'42501'});await page.locator('#login-help').waitFor({state:'visible'});assert.equal(await page.locator('#report').isVisible(),false);
    for(const mutate of [d=>d.environment='live',d=>d.totals.receipts=0,d=>d.requests[0].requestId='<img src=x onerror=alert(1)>']){
     const report=structuredClone(sample);mutate(report);await open({report});await page.getByText('No se pudo completar el control.',{exact:false}).waitFor();assert.equal(await page.locator('#records').innerText(),'');
    }
    await open({slow:true});await page.waitForFunction(()=>typeof fixture.finish==='function');
-   await page.evaluate(()=>{fixture.owner='other-owner';fixture.authChanged('SIGNED_OUT');fixture.finish();});
+   await page.evaluate(()=>{fixture.owner='other-owner';fixture.authChanged('SIGNED_IN',{user:{id:fixture.owner}});fixture.finish();});
    await page.waitForFunction(()=>!document.querySelector('#refresh').disabled);assert.equal(await page.locator('#app').isVisible(),false);assert.equal(await page.locator('#records article').count(),0);
    await open({slow:true});await page.waitForFunction(()=>typeof fixture.finish==='function');
    await page.evaluate(()=>{fixture.owner='other-owner';fixture.finish();});

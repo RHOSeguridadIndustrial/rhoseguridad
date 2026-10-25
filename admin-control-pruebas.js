@@ -4,7 +4,7 @@ import {validateIntegrity,integrityIssues} from './test-integrity-model.js?v=202
 const $=id=>document.getElementById(id),el=(tag,text)=>{const e=document.createElement(tag);e.textContent=text;return e;};
 const money=n=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(n/100);
 const date=s=>new Date(s).toLocaleString('es-MX',{timeZone:'America/Mexico_City'});
-let epoch=0,busy=false;
+let epoch=0,busy=false,observedOwner;
 function clear(){ $('report').hidden=true;for(const id of ['checked','outcome','metrics','review-warning','legacy-warning','records'])$(id).replaceChildren(); }
 function lock(){epoch++;clear();$('app').hidden=true;$('message').textContent='';$('login-help').hidden=false;$('access').textContent='Inicia sesión como administrador y completa el autenticador.';}
 function draw(data){
@@ -47,5 +47,11 @@ async function refresh(){
  finally{busy=false;$('refresh').disabled=false;}
 }
 $('refresh').addEventListener('click',refresh);
-supabase.auth.onAuthStateChange(event=>{if(!['INITIAL_SESSION','TOKEN_REFRESHED'].includes(event))lock();});
+supabase.auth.onAuthStateChange((event,session)=>{
+ const owner=session?.user?.id||null,changed=observedOwner!==undefined&&owner!==observedOwner;
+ observedOwner=owner;
+ // SIGNED_IN can reconfirm the same session while the guard runs or on refocus.
+ // Identity changes and sign-out must still discard every in-flight result.
+ if(!owner||changed||!['INITIAL_SESSION','SIGNED_IN','TOKEN_REFRESHED'].includes(event))lock();
+});
 try{const version=epoch;await requireSecureAdmin(supabase);if(version===epoch){$('access').textContent='';$('app').hidden=false;await refresh();}}catch{lock();}
