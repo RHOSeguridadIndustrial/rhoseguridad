@@ -4,35 +4,73 @@ const button=document.getElementById('test-prepare');
 const status=document.getElementById('test-status');
 const link=document.getElementById('test-open');
 const method=document.getElementById('test-method');
-method.addEventListener('change',()=>{link.hidden=true;status.textContent='';});
+const help=document.getElementById('test-help');
+const cardHelp=document.getElementById('test-card-help');
+let revision=0;
+function clearResult(){
+ revision++;link.hidden=true;link.removeAttribute('href');help.hidden=true;status.textContent='';
+}
+function showProblem(kind){
+ const problems={
+  session:['Inicia sesión con tu cuenta de administrador en este navegador y completa la verificación del autenticador. Después vuelve aquí y reintenta.','Verificar acceso de administrador','admin-seguridad.html'],
+  empty:['El carrito está vacío en este navegador. Agrega un artículo antes de preparar la prueba.','Ir al carrito','carrito.html'],
+  conflict:['No se pudo confirmar la preparación. Revisa que los artículos estén habilitados y disponibles en el inventario de prueba y que la reserva siga vigente. Reintenta con los mismos datos para evitar duplicados.','Revisar carrito','carrito.html'],
+  disabled:['El servicio de pruebas no está disponible en este momento. Intenta más tarde.'],
+  invalid:['Los datos de esta prueba no son válidos. Revisa el carrito y utiliza una de las formas de pago disponibles.','Revisar carrito','carrito.html'],
+  storage:['No se pudo conservar la referencia de reintento en este navegador. Permite el almacenamiento del sitio y vuelve a intentarlo.'],
+  unknown:['No se pudo confirmar la preparación. Comprueba tu conexión y reintenta con los mismos datos para evitar duplicados.']
+ };
+ const [message,label,href]=problems[kind]||problems.unknown;
+ status.textContent=message;
+ help.hidden=!href;
+ if(href){help.textContent=label;help.href=href;}else help.removeAttribute('href');
+}
+function updateMethod(){cardHelp.hidden=method.value!=='card';}
+method.addEventListener('change',()=>{clearResult();updateMethod();});
+updateMethod();
 function render(){
  document.getElementById('test-items').replaceChildren(...getCart().map(i=>{
   const li=document.createElement('li');li.textContent=`${i.qty} × ${i.name||i.id}`;return li;
  }));
 }
-render();window.addEventListener('rho-cart-changed',()=>{render();link.hidden=true;});
+render();window.addEventListener('rho-cart-changed',()=>{render();clearResult();});
+supabase.auth.onAuthStateChange(event=>{
+ if(!['INITIAL_SESSION','TOKEN_REFRESHED'].includes(event)){
+  clearResult();if(event==='SIGNED_OUT')showProblem('session');
+ }
+});
 button.addEventListener('click',async()=>{
- button.disabled=true;link.hidden=true;status.textContent='Validando sesión, precios y stock de prueba…';
+ if(button.disabled)return;
+ clearResult();const attempt=revision;
+ button.disabled=true;status.textContent='Validando sesión, precios y stock de prueba…';
  try {
   const {data:{session},error}=await supabase.auth.getSession();
-  if(error||!session) throw Error();
+  if(attempt!==revision)return;
+  if(error||!session){showProblem('session');return;}
   const items=getCart().map(i=>({sku:i.id,quantity:i.qty}));
-  if(!items.length) {status.textContent='Agrega artículos al carrito para hacer la prueba.';return;}
+  if(!items.length){showProblem('empty');return;}
   const paymentMethod=method.value;
   const fingerprint=JSON.stringify({items,paymentMethod});
   const storageKey=`rho-test-checkout:${session.user.id}`;
   let retry;try{retry=JSON.parse(sessionStorage.getItem(storageKey));}catch{}
-  if(retry?.fingerprint!==fingerprint) {
-   retry={fingerprint,key:crypto.randomUUID()};sessionStorage.setItem(storageKey,JSON.stringify(retry));
+  if(retry?.fingerprint!==fingerprint || typeof retry.key!=='string' || !retry.key) {
+   retry={fingerprint,key:crypto.randomUUID()};
+   try{sessionStorage.setItem(storageKey,JSON.stringify(retry));}
+   catch{showProblem('storage');return;}
   }
   const {data,error:failure}=await supabase.functions.invoke('create-test-checkout',{
    headers:{Authorization:`Bearer ${session.access_token}`},
    body:{environment:'test',paymentMethod,retryKey:retry.key,items,address:{postalCode:'02000'}}
   });
-  if(failure) throw failure;
+  if(attempt!==revision)return;
+  if(failure){
+   const kinds={401:'session',409:'conflict',503:'disabled',400:'invalid'};
+   showProblem(kinds[failure.context?.status]||'unknown');return;
+  }
   const current=await supabase.auth.getSession();
-  if(current.data.session?.user.id!==session.user.id || JSON.stringify({items:getCart().map(i=>({sku:i.id,quantity:i.qty})),paymentMethod:method.value})!==fingerprint)
-   throw Error();
+  if(attempt!==revision)return;
+  if(current.data.session?.user.id!==session.user.id){clearResult();showProblem('session');return;}
+  if(JSON.stringify({items:getCart().map(i=>({sku:i.id,quantity:i.qty})),paymentMethod:method.value})!==fingerprint){clearResult();return;}
   if(data.environment!=='test'||!Number.isSafeInteger(data.totalCents)||data.totalCents<=0) throw Error();
   const total=new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(data.totalCents/100);
   const benefit=data.coupon?.applied ? ' Cupón de envío gratis incluido.' : '';
@@ -47,6 +85,6 @@ button.addEventListener('click',async()=>{
     !Number.isSafeInteger(data.totalCents)||data.totalCents<=0) throw Error();
   status.textContent=`Importe simulado, con envío: ${new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(data.totalCents/100)}.${benefit} No se ha realizado ningún pago.`;
   link.href=data.url;link.hidden=false;
- }catch {status.textContent='No se preparó el pago. Verifica tu sesión de administrador con autenticador, los SKU del carrito y las existencias de prueba.';}
+ }catch {if(attempt===revision)showProblem('unknown');}
  finally{button.disabled=false;}
 });
