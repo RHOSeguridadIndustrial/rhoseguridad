@@ -1,0 +1,14 @@
+name: QW10 delivery validation
+on:
+  push:
+    branches: [qw10-delivery-validation-20261024, main]
+    paths: ['supabase/functions/_shared/delivery-*.js', 'supabase/functions/_shared/checkout-quote.js', 'scripts/prepare-delivery-catalog.mjs', 'tests/delivery-address.test.mjs', '.github/workflows/qw10-delivery-validation.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: node --test tests/delivery-address.test.mjs tests/checkout-coupon.test.mjs tests/shipping-coupon.test.mjs tests/checkout-summary.test.mjs tests/checkout-transfer-expiry.test.mjs
