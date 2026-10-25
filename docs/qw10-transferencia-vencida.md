@@ -77,3 +77,18 @@ enlace de acceso administrativo. La sesión previa había vencido; el recorrido
 autenticado del botón nuevo en la web publicada aún requiere restablecerla.
 Las pruebas de interfaz usan identidades sintéticas y no acreditan Safari nativo
 en un iPhone. QW10 integral continúa abierto.
+
+## Recorrido remoto autenticado completado — 24 de octubre de 2026
+
+Después de restablecer el acceso mediante el formulario seguro y el autenticador,
+se verificó el aviso de reserva vencida en checkout-prueba.html. Se pulsó
+«Iniciar nueva prueba de transferencia» y después Preparar. La web generó
+TEST-5c7e72c6-d770-4d9a-89fe-84735ad551fe por 123.70 MXN para una N95 (1 pieza).
+El segundo intento conservó esa misma referencia.
+
+Consulta remota posterior: una solicitud por clave de reintento, paymentMethod
+transfer, livemode false, sin sesión Stripe; cero recibos, órdenes y movimientos
+para la nueva solicitud. Stock de prueba N95 8, inventario real total 50 y cero
+órdenes operativas. La nueva reserva temporal vence a las 20:59:45 CDMX.
+Este resultado completa la comprobación autenticada de recuperación y reintento
+en el navegador remoto. No es conciliación bancaria ni aceptación de Safari nativo.
