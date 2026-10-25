@@ -9,8 +9,11 @@ window.calls.push(body);if(window.mode==='slow')await new Promise(resolve=>windo
 if(window.mode==='network')return {error:{message:'DO NOT SHOW RAW ERROR'}};
 if(['expired','unknown410'].includes(window.mode))return {error:{context:new Response(JSON.stringify({error:window.mode==='expired'?'test_transfer_expired':'other_error'}),{status:410})}};
 if(Number.isInteger(window.mode))return {error:{context:{status:window.mode}}};
-if(body.paymentMethod==='transfer')return {data:{environment:'test',paymentMethod:'transfer',status:'awaiting_test_transfer',reference:'TEST-fixture',totalCents:16319}};
-return {data:{environment:'test',sessionId:'cs_test_fixture',url:window.mode==='unsafe'?'https://evil.invalid/c/pay/cs_test_fixture':'https://checkout.stripe.com/c/pay/cs_test_fixture',totalCents:16319}};
+const price=window.mode==='coupon'?29900:6419,shipping=price<29900?9900:0;
+const summary={currency:'mxn',lines:[{sku:'fixture-helmet',name:window.mode==='text'?'<img src=x onerror=window.xss=1>':'Casco del servidor',quantity:1,unitPriceCents:price,lineTotalCents:price}],
+subtotalCents:price,shippingCents:shipping,totalCents:window.mode==='badSummary'?1:price+shipping,mode:'standard',coupon:{applied:shipping===0,registered:true},expiresAt:1792900000};
+if(body.paymentMethod==='transfer')return {data:{environment:'test',paymentMethod:'transfer',status:'awaiting_test_transfer',reference:'TEST-fixture',...summary}};
+return {data:{environment:'test',paymentMethod:'card',sessionId:'cs_test_fixture',url:window.mode==='unsafe'?'https://evil.invalid/c/pay/cs_test_fixture':'https://checkout.stripe.com/c/pay/cs_test_fixture',...summary}};
 }}};`;
 const cart=`window.items=[{id:'fixture-helmet',name:'Casco de prueba',qty:1}];export const getCart=()=>window.items;`;
 (async()=>{
@@ -29,6 +32,7 @@ const cart=`window.items=[{id:'fixture-helmet',name:'Casco de prueba',qty:1}];ex
    page.on('pageerror',e=>errors.push(e.message));
    await page.goto('http://127.0.0.1:'+server.address().port+'/checkout-prueba.html');
    const submit=page.locator('#test-prepare'),status=page.locator('#test-status'),help=page.locator('#test-help'),link=page.locator('#test-open');
+   const summary=page.locator('#test-summary');
    async function run(mode,expected){await page.evaluate(m=>window.mode=m,mode);await submit.click();await page.getByText(expected,{exact:false}).waitFor();assert.equal(await submit.isEnabled(),true);}
    await page.evaluate(()=>window.owner=null);
    await run('success','Inicia sesión con tu cuenta');
@@ -47,6 +51,10 @@ const cart=`window.items=[{id:'fixture-helmet',name:'Casco de prueba',qty:1}];ex
    assert.ok(!(await status.innerText()).includes('DO NOT SHOW'));
    const beforeKey=await page.evaluate(()=>calls.at(-1).retryKey);
    await run('success','Transferencia simulada preparada: $163.19');
+   assert.equal(await summary.isVisible(),true);
+   assert.match(await summary.innerText(),/Casco del servidor/);assert.match(await summary.innerText(),/\$64.19/);
+   assert.match(await summary.innerText(),/\$99.00/);assert.match(await summary.innerText(),/No aplicado/);
+   assert.match(await summary.innerText(),/hora de Ciudad de México/);
    assert.equal(await page.evaluate(()=>calls.at(-1).retryKey),beforeKey);
    await submit.click();await page.getByText('Transferencia simulada preparada:',{exact:false}).waitFor();
    assert.equal(await page.evaluate(()=>calls.at(-1).retryKey),beforeKey);
@@ -57,6 +65,7 @@ const cart=`window.items=[{id:'fixture-helmet',name:'Casco de prueba',qty:1}];ex
    assert.equal(await page.evaluate(()=>calls.at(-1).retryKey),beforeKey);
    const restart=page.locator('#test-restart');
    await run('unknown410','Comprueba tu conexión');assert.equal(await restart.isVisible(),false);
+   assert.equal(await summary.isVisible(),false);
    await run('expired','La reserva de esta transferencia simulada venció');
    assert.equal(await restart.isVisible(),true);assert.equal(await page.evaluate(()=>calls.at(-1).retryKey),beforeKey);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
@@ -80,9 +89,17 @@ const cart=`window.items=[{id:'fixture-helmet',name:'Casco de prueba',qty:1}];ex
    assert.equal(await page.locator('#test-card-help').isVisible(),true);
    await run('expired','Comprueba tu conexión');assert.equal(await restart.isVisible(),false);
    await run('unsafe','No se pudo confirmar la preparación');assert.equal(await link.isVisible(),false);
+   assert.equal(await summary.isVisible(),false);
+   await run('badSummary','No se pudo confirmar la preparación');assert.equal(await link.isVisible(),false);assert.equal(await summary.isVisible(),false);
+   await run('coupon','Importe simulado, con envío: $299.00');
+   assert.match(await summary.innerText(),/Envío gratis aplicado/);assert.match(await summary.innerText(),/\$0.00/);
+   await run('text','Importe simulado, con envío:');
+   assert.match(await summary.innerText(),/<img src=x/);assert.equal(await summary.locator('img').count(),0);
+   assert.equal(await page.evaluate(()=>window.xss),undefined);
    await run('success','Importe simulado, con envío:');assert.equal(await link.getAttribute('href'),'https://checkout.stripe.com/c/pay/cs_test_fixture');
    await page.evaluate(()=>{window.owner=null;window.authEvent('SIGNED_OUT');});
    assert.equal(await link.isVisible(),false);assert.equal(await link.getAttribute('href'),null);
+   assert.equal(await summary.isVisible(),false);assert.equal(await summary.innerText(),'');
    assert.match(await status.innerText(),/Inicia sesión/);
    // A response that arrives after sign-out must not restore a private link or success message.
    await page.evaluate(()=>{window.owner='fixture-admin';window.mode='slow';});await submit.click();
@@ -95,6 +112,15 @@ const cart=`window.items=[{id:'fixture-helmet',name:'Casco de prueba',qty:1}];ex
    await page.getByLabel('Forma de pago').selectOption('transfer');await page.evaluate(()=>window.finish());
    await page.waitForFunction(()=>!document.querySelector('#test-prepare').disabled);
    assert.equal(await status.innerText(),'');assert.equal(await link.isVisible(),false);
+   assert.equal(await summary.isVisible(),false);
+   // A changed cart clears prior totals, including a response arriving later.
+   await run('success','Transferencia simulada preparada:');
+   await page.evaluate(()=>{window.mode='slow';delete window.finish;});await submit.click();
+   await page.waitForFunction(()=>typeof window.finish==='function');
+   await page.evaluate(()=>{window.items[0].qty=2;window.dispatchEvent(new Event('rho-cart-changed'));window.finish();});
+   await page.waitForFunction(()=>!document.querySelector('#test-prepare').disabled);
+   assert.equal(await summary.isVisible(),false);assert.equal(await status.innerText(),'');
+   await page.evaluate(()=>{window.items[0].qty=1;window.dispatchEvent(new Event('rho-cart-changed'));});
    await run('success','Transferencia simulada preparada:');
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
    assert.ok(await page.locator('#test-method').evaluate(e=>e.getBoundingClientRect().height>=44));

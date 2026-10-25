@@ -1,8 +1,8 @@
 name: Checkout recovery validation
 on:
   push:
-    branches: [qw10-checkout-ayuda-20261024, qw10-transferencia-vencida-20261024, main]
-    paths: ['checkout-prueba.*', 'tests/checkout-help-browser.cjs', 'tests/checkout-transfer-expiry*', 'supabase/qw10-test-transfer-expiry.sql', 'supabase/functions/create-test-checkout/*', 'supabase/functions/_shared/test-checkout-rpc.js', '.github/workflows/checkout-help.yml']
+    branches: [qw10-checkout-ayuda-20261024, qw10-transferencia-vencida-20261024, qw10-desglose-20261024, main]
+    paths: ['checkout-prueba.*', 'checkout-summary.js', 'tests/checkout-summary.test.mjs', 'supabase/functions/_shared/create-test-checkout.js', 'tests/checkout-help-browser.cjs', 'tests/checkout-transfer-expiry*', 'supabase/qw10-test-transfer-expiry.sql', 'supabase/functions/create-test-checkout/*', 'supabase/functions/_shared/test-checkout-rpc.js', '.github/workflows/checkout-help.yml']
 permissions:
   contents: read
 jobs:
@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
-      - run: node --test tests/checkout-coupon.test.mjs tests/shipping-coupon.test.mjs tests/checkout-transfer-expiry.test.mjs
+      - run: node --test tests/checkout-coupon.test.mjs tests/shipping-coupon.test.mjs tests/checkout-transfer-expiry.test.mjs tests/checkout-summary.test.mjs
       - run: node tests/checkout-transfer-expiry-database.mjs
       - run: npx --prefix tests playwright install --with-deps chromium webkit
       - run: node tests/checkout-help-browser.cjs

@@ -1,5 +1,6 @@
 import {supabase} from './supabase-client.js?v=20260913-loyalty';
 import {getCart} from './cart.js?v=20260914-account-isolation';
+import {checkoutSummary} from './checkout-summary.js?v=20261024-summary';
 const button=document.getElementById('test-prepare');
 const status=document.getElementById('test-status');
 const link=document.getElementById('test-open');
@@ -7,10 +8,36 @@ const method=document.getElementById('test-method');
 const help=document.getElementById('test-help');
 const cardHelp=document.getElementById('test-card-help');
 const restart=document.getElementById('test-restart');
+const summary=document.getElementById('test-summary');
+const money=value=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(value/100);
 let expiredRetry=null;
 let revision=0;
 function clearResult(){
  revision++;expiredRetry=null;restart.hidden=true;link.hidden=true;link.removeAttribute('href');help.hidden=true;status.textContent='';
+ summary.hidden=true;summary.replaceChildren();
+}
+function showSummary(value){
+ const heading=document.createElement('h3');heading.id='test-summary-title';heading.textContent='Desglose de la prueba';
+ const list=document.createElement('ul');
+ for(const line of value.lines){
+  const item=document.createElement('li'),price=document.createElement('span');
+  item.textContent=`${line.quantity} × ${line.name}`;
+  price.className='note';price.textContent=`${money(line.unitPriceCents)} por unidad · ${money(line.lineTotalCents)}`;
+  item.append(price);list.append(item);
+ }
+ const totals=document.createElement('dl');
+ const rows=[['Productos · IVA incluido',money(value.subtotalCents)],
+  [`Envío ${value.mode==='express'?'exprés':'estándar'} simulado`,money(value.shippingCents)],
+  ['Cupón de envío',value.couponApplied===true?'Envío gratis aplicado':value.couponApplied===false?'No aplicado':'Sin cupón registrado'],
+  ['Total de prueba · MXN',money(value.totalCents)]];
+ for(const [label,amount] of rows){
+  const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');
+  dt.textContent=label;dd.textContent=amount;row.append(dt,dd);totals.append(row);
+ }
+ const expiry=document.createElement('p');expiry.className='note';
+ const date=new Intl.DateTimeFormat('es-MX',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Mexico_City'}).format(new Date(value.expiresAt*1000));
+ expiry.textContent=`Vigencia de esta preparación: ${date} (hora de Ciudad de México). El servidor verificará la reserva al confirmar el pago simulado.`;
+ summary.replaceChildren(heading,list,totals,expiry);summary.hidden=false;
 }
 function showProblem(kind){
  const problems={
@@ -101,13 +128,14 @@ button.addEventListener('click',async()=>{
   }
   const current=await supabase.auth.getSession();
   if(attempt!==revision)return;
-  if(current.data.session?.user.id!==session.user.id){clearResult();showProblem('session');return;}
+  if(current.error||current.data.session?.user.id!==session.user.id){clearResult();showProblem('session');return;}
   if(JSON.stringify({items:getCart().map(i=>({sku:i.id,quantity:i.qty})),paymentMethod:method.value})!==fingerprint){clearResult();return;}
-  if(data.environment!=='test'||!Number.isSafeInteger(data.totalCents)||data.totalCents<=0) throw Error();
-  const total=new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(data.totalCents/100);
+  const details=checkoutSummary(data,items);
+  const total=money(details.totalCents);
   const benefit=data.coupon?.applied ? ' Cupón de envío gratis incluido.' : '';
   if(paymentMethod==='transfer') {
    if(data.paymentMethod!=='transfer'||data.status!=='awaiting_test_transfer'||!/^TEST-[a-zA-Z0-9_-]{1,100}$/.test(data.reference||''))throw Error();
+   showSummary(details);
    status.textContent=`Transferencia simulada preparada: ${total}.${benefit} Referencia de prueba: ${data.reference}. No transfieras dinero: no se ha registrado ningún pago ni entrega.`;
    return;
   }
@@ -115,6 +143,8 @@ button.addEventListener('click',async()=>{
   if(data.environment!=='test'||!/^cs_test_[A-Za-z0-9_]+$/.test(data.sessionId||'')||
     url.origin!=='https://checkout.stripe.com'||url.username||url.password||url.pathname!==`/c/pay/${data.sessionId}`||
     !Number.isSafeInteger(data.totalCents)||data.totalCents<=0) throw Error();
+  if(data.paymentMethod!=='card')throw Error();
+  showSummary(details);
   status.textContent=`Importe simulado, con envío: ${new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(data.totalCents/100)}.${benefit} No se ha realizado ningún pago.`;
   link.href=data.url;link.hidden=false;
  }catch {if(attempt===revision)showProblem('unknown');}
