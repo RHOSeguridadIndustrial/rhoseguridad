@@ -31,13 +31,14 @@ function validateSavedQuote(quote,input) {
  if(checkoutIdentity({items:quote.lines,address:input.address,paymentMethod:input.paymentMethod})!==checkoutIdentity(input)) throw Error('Saved cart mismatch');
 }
 export async function createTestCheckout(input, {ownerId, retryKey, stripe,
-  reserve, bindSession, loadVariant, validateCoverage, loadReservation, registered=false, now=()=>Date.now()}) {
+  reserve, bindSession, loadVariant, validateCoverage, loadReservation, registered=false, quoteBuilder, now=()=>Date.now()}) {
   if (typeof ownerId!=='string'||!ownerId ||
       !/^[a-zA-Z0-9_-]{16,100}$/.test(retryKey||'')) throw Error('Invalid checkout identity');
   const identity=checkoutIdentity(input);
   const saved=loadReservation ? await loadReservation({ownerId,retryKey}) : null;
   if(saved && (saved.ownerId!==ownerId||saved.retryKey!==retryKey||saved.checkoutIdentity!==identity)) throw Error('Retry changed');
-  let quote=saved?.quote || await quoteCheckout(input,{loadVariant,validateCoverage,registered});
+  let quote=saved?.quote || await (quoteBuilder?quoteBuilder(input):quoteCheckout(input,{loadVariant,validateCoverage,registered}));
+  if(quoteBuilder && quote.delivery?.assurance!=='postal_catalog_only') throw Error('Missing delivery snapshot');
   if(saved) validateSavedQuote(quote,input);
   // Authenticated owner comes from the server, never input.ownerId.
   const request=saved || await reserve({ownerId,retryKey,quote,checkoutIdentity:identity,livemode:false});
@@ -53,7 +54,7 @@ export async function createTestCheckout(input, {ownerId, retryKey, stripe,
       JSON.stringify(canonical(request.quote))!==JSON.stringify(canonical(quote)) ||
       !Number.isSafeInteger(request.expiresAt) || request.expiresAt*1000<=now()) throw Error('Invalid test reservation');
   const summary={currency:quote.currency,lines:quote.lines,subtotalCents:quote.subtotalCents,
-    shippingCents:quote.shippingCents,mode:quote.mode,coupon:quote.coupon ?? null,expiresAt:request.expiresAt};
+    shippingCents:quote.shippingCents,mode:quote.mode,coupon:quote.coupon ?? null,expiresAt:request.expiresAt,...(quote.delivery?{delivery:quote.delivery}:{})};
   if((input.paymentMethod ?? 'card')==='transfer') {
     if(quote.paymentMethod!=='transfer') throw Error('Payment method mismatch');
     return {environment:'test',paymentMethod:'transfer',requestId:request.id,reference:`TEST-${request.id}`,status:'awaiting_test_transfer',totalCents:quote.totalCents,...summary};

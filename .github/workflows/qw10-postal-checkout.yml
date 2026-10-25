@@ -1,0 +1,18 @@
+name: QW10 postal checkout
+on:
+  push:
+    branches: [qw10-postal-checkout-20261025, main]
+    paths: ['checkout-address.js', 'checkout-prueba.*', 'supabase/functions/create-test-checkout/*', 'supabase/functions/_shared/*', 'supabase/qw10-test-delivery-catalog.sql', 'tests/postal-*', 'tests/checkout-help-browser.cjs', '.github/workflows/qw10-postal-checkout.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/delivery-address.test.mjs tests/postal-checkout.test.mjs tests/checkout-coupon.test.mjs tests/checkout-summary.test.mjs tests/shipping-coupon.test.mjs tests/checkout-transfer-expiry.test.mjs
+      - run: node tests/postal-catalog-database.mjs
+      - run: npx --prefix tests playwright install --with-deps chromium webkit
+      - run: node tests/checkout-help-browser.cjs

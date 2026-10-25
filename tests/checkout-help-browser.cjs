@@ -9,8 +9,9 @@ window.calls.push(body);if(window.mode==='slow')await new Promise(resolve=>windo
 if(window.mode==='network')return {error:{message:'DO NOT SHOW RAW ERROR'}};
 if(['expired','unknown410'].includes(window.mode))return {error:{context:new Response(JSON.stringify({error:window.mode==='expired'?'test_transfer_expired':'other_error'}),{status:410})}};
 if(Number.isInteger(window.mode))return {error:{context:{status:window.mode}}};
+if(body.action==='postal_lookup')return {data:{environment:'test',postalCode:body.postalCode,status:body.postalCode==='99999'?'outside_coverage':'postal_options',catalogSha256:'a'.repeat(64),options:body.postalCode==='99999'?[]:[{postalCode:body.postalCode,municipalityCode:'002',settlementCode:'0353',municipality:'Alcaldía de prueba',settlement:'Colonia de prueba'}]}};
 const price=window.mode==='coupon'?29900:6419,shipping=price<29900?9900:0;
-const summary={currency:'mxn',lines:[{sku:'fixture-helmet',name:window.mode==='text'?'<img src=x onerror=window.xss=1>':'Casco del servidor',quantity:1,unitPriceCents:price,lineTotalCents:price}],
+const summary={...(body.deliveryMode?{delivery:{status:'postal_match',assurance:'postal_catalog_only',catalogSha256:'a'.repeat(64),address:{...body.address,municipality:'Alcaldía de prueba',settlement:'Colonia de prueba'}}}:{}),currency:'mxn',lines:[{sku:'fixture-helmet',name:window.mode==='text'?'<img src=x onerror=window.xss=1>':'Casco del servidor',quantity:1,unitPriceCents:price,lineTotalCents:price}],
 subtotalCents:price,shippingCents:shipping,totalCents:window.mode==='badSummary'?1:price+shipping,mode:'standard',coupon:{applied:shipping===0,registered:true},expiresAt:1792900000};
 if(body.paymentMethod==='transfer')return {data:{environment:'test',paymentMethod:'transfer',status:'awaiting_test_transfer',reference:'TEST-fixture',...summary}};
 return {data:{environment:'test',paymentMethod:'card',sessionId:'cs_test_fixture',url:window.mode==='unsafe'?'https://evil.invalid/c/pay/cs_test_fixture':'https://checkout.stripe.com/c/pay/cs_test_fixture',...summary}};
@@ -125,6 +126,40 @@ const cart=`window.items=[{id:'fixture-helmet',name:'Casco de prueba',qty:1}];ex
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
    assert.ok(await page.locator('#test-method').evaluate(e=>e.getBoundingClientRect().height>=44));
    assert.ok(await page.locator('#test-method').evaluate(e=>parseFloat(getComputedStyle(e).fontSize)>=16));
+   // Actual catalog-mode UI, synthetic server: no customer data or real reservations.
+   await page.getByLabel('Validación de domicilio').selectOption('catalog');
+   await page.getByLabel('Código postal',{exact:true}).fill('99999');
+   await page.getByRole('button',{name:'Consultar código postal',exact:true}).click();
+   await page.getByText('Este código postal no está incluido',{exact:false}).waitFor();
+   assert.equal(await page.locator('#test-settlement').isEnabled(),false);
+   await page.getByLabel('Código postal',{exact:true}).fill('02000');
+   await page.getByRole('button',{name:'Consultar código postal',exact:true}).click();
+   await page.getByText('Selecciona la colonia.',{exact:false}).waitFor();
+   await page.getByLabel('Alcaldía y colonia').selectOption('002:0353');
+   await page.getByLabel('Calle de prueba',{exact:true}).fill('Calle Ficticia');
+   await page.getByLabel('Número exterior de prueba',{exact:true}).fill('123');
+   await run('success','Transferencia simulada preparada:');
+   assert.match(await summary.innerText(),/Calle Ficticia 123/);
+   assert.match(await summary.innerText(),/Coincidencia postal; sin entrega real/);
+   const postalKey=await page.evaluate(()=>calls.at(-1).retryKey);
+   assert.equal(await page.evaluate(()=>calls.at(-1).deliveryMode),'catalog');
+   assert.equal(await page.evaluate(()=>JSON.stringify(sessionStorage).includes('Calle Ficticia')),false);
+   await run('success','Transferencia simulada preparada:');
+   assert.equal(await page.evaluate(()=>calls.at(-1).retryKey),postalKey);
+   await page.getByLabel('Número exterior de prueba',{exact:true}).fill('456');
+   assert.equal(await summary.isVisible(),false);
+   await run('success','Transferencia simulada preparada:');
+   assert.notEqual(await page.evaluate(()=>calls.at(-1).retryKey),postalKey);
+   await page.evaluate(()=>{window.mode='slow';delete window.finish;});await submit.click();
+   await page.waitForFunction(()=>typeof window.finish==='function');
+   await page.getByLabel('Calle de prueba',{exact:true}).fill('Otra Calle Ficticia');
+   await page.evaluate(()=>window.finish());await page.waitForFunction(()=>!document.querySelector('#test-prepare').disabled);
+   assert.equal(await summary.isVisible(),false);
+   await page.getByLabel('Código postal',{exact:true}).fill('02001');
+   assert.equal(await page.locator('#test-settlement').isEnabled(),false);
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+   await page.evaluate(()=>{window.owner=null;window.authEvent('SIGNED_OUT');});
+   assert.equal(await page.locator('#test-street').inputValue(),'');
    assert.deepEqual(errors,[]);
    console.log('PASS checkout help, retries, auth changes, late replies, safe links and layout: '+engine.name());
   }finally{await browser.close()}
