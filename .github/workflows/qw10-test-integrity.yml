@@ -1,0 +1,18 @@
+name: QW10 test integrity control
+on:
+  push:
+    branches: [qw10-control-pruebas-20261024, main]
+    paths: ['admin-control-pruebas.*', 'test-integrity-model.js', 'tests/test-integrity*', 'supabase/qw10-test-integrity*', 'supabase/migrations/*qw10_test_integrity.sql', '.github/workflows/qw10-test-integrity.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/test-integrity-model.test.mjs
+      - run: node tests/test-integrity-database.mjs
+      - run: npx --prefix tests playwright install --with-deps chromium webkit
+      - run: node tests/test-integrity-browser.cjs

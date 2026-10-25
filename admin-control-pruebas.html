@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<title>Control de pruebas | RHO</title><link rel="stylesheet" href="admin-control-pruebas.css?v=20261024-1"></head>
+<body><header><strong>RHO · Administración</strong><nav><a href="admin.html">Panel</a><a href="admin-revision-pruebas.html">Revisión de pagos</a><a href="checkout-prueba.html">Compra de prueba</a></nav></header>
+<main><p class="eyebrow">RECIBOS · ÓRDENES · MOVIMIENTOS</p><h1>Control de pruebas</h1>
+<p class="notice">Consulta tus solicitudes de prueba y detecta diferencias entre recibos, órdenes, movimientos y salidas. Este control usa registros internos: no confirma transferencias bancarias ni una conciliación con Stripe.</p>
+<p id="access" role="status">Verificando acceso administrativo…</p><p id="login-help" hidden><a href="admin-seguridad.html?next=admin-control-pruebas.html">Verificar acceso con autenticador</a></p>
+<section id="app" hidden aria-label="Control interno de pruebas"><button id="refresh" type="button">Actualizar control</button><p id="message" role="status" aria-live="polite"></p>
+<div id="report" hidden><p id="checked" class="muted"></p><p id="outcome" role="status"></p><div id="metrics" class="metrics"></div>
+<p id="review-warning" class="notice" hidden></p><p id="legacy-warning" class="muted" hidden></p><p id="limit-warning" class="notice" hidden>Los totales incluyen todas tus solicitudes. Se muestran hasta 100 detalles, priorizando las diferencias y los pagos en revisión.</p>
+<h2>Detalle por solicitud</h2><div id="records"></div></div></section></main>
+<script type="module" src="admin-control-pruebas.js?v=20261024-1"></script></body></html>
