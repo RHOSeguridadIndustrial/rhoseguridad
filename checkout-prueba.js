@@ -136,7 +136,8 @@ button.addEventListener('click',async()=>{
   if(paymentMethod==='transfer') {
    if(data.paymentMethod!=='transfer'||data.status!=='awaiting_test_transfer'||!/^TEST-[a-zA-Z0-9_-]{1,100}$/.test(data.reference||''))throw Error();
    showSummary(details);
-   status.textContent=`Transferencia simulada preparada: ${total}.${benefit} Referencia de prueba: ${data.reference}. No transfieras dinero: no se ha registrado ningún pago ni entrega.`;
+   status.textContent=`Transferencia simulada preparada: ${total}.${benefit} Referencia de prueba: ${data.reference}. No transfieras dinero: consulta por separado el estado de la confirmación simulada.`;
+   help.textContent='Consultar transferencia de prueba';help.href='admin-transfer-pruebas.html?request='+encodeURIComponent(data.reference.slice(5));help.hidden=false;
    return;
   }
   const url=new URL(data.url);

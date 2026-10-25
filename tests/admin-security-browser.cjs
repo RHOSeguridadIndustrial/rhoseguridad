@@ -34,6 +34,8 @@ export const supabase={
  await page.evaluate(()=>sessionStorage.removeItem('testVerified'));
  await page.addInitScript(()=>window.testFactors=true);
  await page.goto(origin+'/admin-seguridad.html?next=admin-precios.html');await page.getByLabel('Código de tu autenticador',{exact:true}).waitFor();assert.equal(await page.locator('#setup').isVisible(),false);
+ await page.goto(origin+'/admin-seguridad.html?next=admin-transfer-pruebas.html');await page.getByLabel('Código de tu autenticador',{exact:true}).fill('123456');await page.getByRole('button',{name:'Verificar y continuar'}).click();await page.waitForURL(origin+'/admin-transfer-pruebas.html');
+ await page.goto(origin+'/admin-seguridad.html?next=https://evil.example');await page.getByRole('link',{name:'Entrar al panel'}).waitFor();assert.equal(await page.getByRole('link',{name:'Entrar al panel'}).getAttribute('href'),'admin.html');
  await page.addInitScript(()=>window.testRole='customer');await page.goto(origin+'/admin-seguridad.html');await page.waitForURL(origin+'/index.html');
  assert.deepEqual(errors,[]);console.log('PASS enrollment, code error/success, secret cleanup, safe redirects, existing-factor challenge, non-admin rejection and mobile layout');
  }finally{await browser.close();server.close();}
