@@ -49,3 +49,31 @@ Fuentes revisadas:
 
 La revisión del changelog identificó el retiro futuro de cifrados CBC antiguos.
 Esta mejora conserva las versiones y autenticación existentes; no cambia TLS.
+
+## Publicación verificada — 24 de octubre de 2026, 20:18 CDMX
+
+Se integró [PR #28](https://github.com/RHOSeguridadIndustrial/rhoseguridad/pull/28),
+commit b026733c25558d122e3ebf5b36078a8838090aff. Se aplicó la migración
+20261025021744_qw10_test_transfer_expiry y se desplegó create-test-checkout versión
+6 conservando la autenticación administrativa con MFA. GitHub Pages aprobó la
+ejecución 40153933607.
+
+La ejecución CI 40153830036 aprobó 18 pruebas de endpoint/cupón, siete grupos de
+base y los recorridos de Chromium y WebKit móvil. La repetición en main,
+40153933797, también aprobó. Se comprobó la recuperación explícita, conservación
+de la clave ante respuesta incierta, protección de una clave local más reciente,
+y bloqueo al cambiar método/cuenta.
+
+La verificación remota ejecutó la función sobre las transferencias simuladas
+vencidas existentes y confirmó PQT01. Se conservaron SECURITY INVOKER y los
+permisos de ejecución exclusivos de postgres y service_role. Estado posterior:
+15 solicitudes, siete recibos, seis órdenes y seis movimientos de prueba;
+cero órdenes operativas e inventario real total 50. No se modificaron referencias,
+recibos ni existencias durante esa verificación. El asesor de seguridad no añadió
+avisos respecto del control previo.
+
+La página publicada respondió correctamente al intento sin sesión, mostrando el
+enlace de acceso administrativo. La sesión previa había vencido; el recorrido
+autenticado del botón nuevo en la web publicada aún requiere restablecerla.
+Las pruebas de interfaz usan identidades sintéticas y no acreditan Safari nativo
+en un iPhone. QW10 integral continúa abierto.
