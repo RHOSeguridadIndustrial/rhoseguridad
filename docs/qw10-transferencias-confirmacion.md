@@ -73,3 +73,13 @@ sobre inventario/órdenes reales. Las quince funciones existentes auditadas cons
 sus hashes; inventario real 50, órdenes reales cero. El asesor no agregó advertencias
 de seguridad. El índice por administrador se validó localmente y la copia de
 migración debe coincidir byte por byte con el SQL canónico.
+
+Control autenticado posterior, 24/10/2026 22:36 CDMX: 12 solicitudes propias,
+6 recibos, 5 órdenes, 4 salidas y cero diferencias internas. Se conservan un pago
+anterior en revisión (123.70 MXN), tres recibos anteriores sin evento de auditoría
+y cinco transferencias sin recibo. La comprobación global de producción mantiene
+50 unidades y cero órdenes; el ejecutor no tiene acceso al inventario real.
+
+Cierre de verificación del avance: commit 9f81a54, CI 40162510486 aprobada
+(modelo, base, cuatro contenciones, Chromium/WebKit, MFA y checkout), y Pages
+40162510299 publicada correctamente.
