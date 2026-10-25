@@ -55,11 +55,31 @@ export function pickupStore({withTransaction,environment='test'}) {
   },
   async applyEvent(event) {
    if(event?.environment!==environment) throw Error('Event environment mismatch');
+   if(event.type==='package_prepared') throw Error('Use verified preparation entry point');
    return withTransaction(async tx=>{
     // Applying an event cannot manufacture an unpaid/unrecognized order.
     const {rows}=await tx.query(`select state from rho_pickup.jobs where environment=$1 and order_id=$2 for update`,[environment,event.orderId]);
     if(!rows.length) throw Error('Paid order is not queued');
     return apply(tx,rows[0].state,event);
+   });
+  },
+  // actorId must come from a freshly verified administrator session/MFA.
+  // shipment must combine canonical order address, measured package and a
+  // server-verified route. Never pass an unvalidated browser JSON object.
+  async recordPreparation({orderId,revision,eventId,actorId,shipment}) {
+   if(typeof actorId!=='string'||!actorId.trim()) throw Error('Verified administrator required');
+   return withTransaction(async tx=>{
+    const {rows}=await tx.query(`select j.state from rho_pickup.jobs j
+     join qw10_test.purchase_orders o on o.id::text=j.order_id
+     join qw10_test.requests r on r.id=o.request_id and r.session_id=o.session_id
+     join qw10_test.receipts p on p.request_id=r.id and p.session_id=o.session_id
+     join qw10_test.preparation_events e on e.request_id=r.id and e.action='prepare' and e.actor=$3
+     where j.environment=$1 and j.order_id=$2 and r.owner_id=$3 and r.livemode=false
+      and p.state='paid' and p.amount_cents=r.total_cents
+      and not exists(select 1 from qw10_test.preparation_events d where d.request_id=r.id and d.action='dispatch')
+     for update of j`,[environment,orderId,actorId]);
+    if(rows.length!==1) throw Error('Verified paid preparation required');
+    return apply(tx,rows[0].state,{id:eventId,type:'package_prepared',orderId,revision,environment,actorId,shipment});
    });
   },
   async list({status,limit=100}) {

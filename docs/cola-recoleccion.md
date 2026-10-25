@@ -34,17 +34,15 @@ no se reenvía. Las claves externas permanecen guardadas después de reiniciar.
 exclusiva del pool, abrir BEGIN, ejecutar fn con query(sql,params), hacer COMMIT
 o ROLLBACK ante error, y liberar la conexión. No se pueden hacer estas consultas
 como peticiones REST independientes ni compartir la conexión entre trabajadores.
-El adaptador de conexión y el programador de ejecución aún no están implementados.
+`postgres-transaction.mjs` implementa ese contrato para un pool compatible con node-postgres, con tiempos límite y sin reintentar commits inciertos. Falta proporcionar el pool y configurar el programador de ejecución.
 
 ## Acceso y límites
 
 El esquema privado activa RLS y no otorga permisos de cliente ni de servicio.
-Antes de desplegar se requiere un rol de trabajador con privilegios mínimos y
-políticas explícitas, sin exponer credenciales al navegador. El módulo rechaza
+`pickup-worker-role-draft.sql` define un rol NOLOGIN sin BYPASSRLS y políticas explícitas de laboratorio; permite leer fuentes QW10 y actualizar estado, sin modificar pagos ni borrar trabajos. Antes de desplegar falta provisionar la conexión del trabajador sin exponer credenciales al navegador. El módulo rechaza
 `environment:'live'`. No se modificaron la base remota, inventario ni pagos.
 
-Faltan: conexión de servidor, despliegue de esquema, disparo periódico, enlace con
-preparación autenticada, revalidación de pago/cancelación/tarifas antes de contratar,
+Faltan: pool y credenciales de servidor, despliegue de esquema/rol, disparo periódico, endpoint de preparación con sesión/MFA vigente, revalidación de pago/cancelación/tarifas antes de contratar,
 conectores de transporte, horario, medidas reales y presupuesto aprobado.
 Los datos fuente de las pruebas son sintéticos y reproducen solo las columnas
 consultadas del contrato QW10; no equivalen a aceptación en el sandbox desplegado.
@@ -55,12 +53,31 @@ Desde la raíz del repositorio, instalar las dependencias bloqueadas de tests:
 
 ```sh
 npm ci --prefix tests
-node --test tests/logistics-selection.test.mjs tests/pickup-workflow.test.mjs tests/pickup-store.test.mjs
+node --test tests/logistics-selection.test.mjs tests/pickup-workflow.test.mjs tests/pickup-store.test.mjs tests/pickup-worker.test.mjs
 ```
 
-Resultado: 23 pruebas aprobadas (incluido el contenedor de seis subpruebas SQL).
+Resultado: 31 pruebas aprobadas (incluido el contenedor de ocho subpruebas SQL).
 PGlite 0.3.14 ejecutó PostgreSQL con datos en un directorio temporal, cierre y
 reapertura reales. Se probaron filtros de pago, reintentos, cambios de contenido,
 reversión transaccional ante fallo, recuperación de guía y denegación de acceso.
 No se certifica concurrencia multiconexión: falta verificar las esperas por bloqueo
 en PostgreSQL con dos trabajadores antes de desplegar.
+
+## Ejecutor y preparación
+
+`pickupWorker({store,enabled:true}).runOnce()` ingiere lotes acotados de pagos.
+Por defecto está deshabilitado. Evita solapamientos en la misma instancia, libera
+el estado ocupado ante fallos y acepta AbortSignal entre lotes. La unicidad y los
+bloqueos de base de datos son los controles entre distintas instancias. Aún falta
+la prueba de concurrencia con conexiones independientes.
+
+`recordPreparation()` comprueba pago, importe, propietario, evento de preparación
+y ausencia de despacho en QW10 antes de avanzar. `applyEvent()` ya no permite
+inyectar directamente `package_prepared`. El endpoint futuro debe autenticar al
+administrador con MFA y construir domicilio/ruta desde fuentes verificadas;
+este método de servidor no es un endpoint público ni valida por sí mismo un JWT.
+
+Las pruebas SQL se ejecutaron con `rho_pickup_worker`, sin BYPASSRLS. Se verificó
+que puede procesar la cola, pero no cambiar recibos, borrar trabajos/eventos ni
+reasignar pedidos. Las pruebas del adaptador de pool usan dobles controlados;
+no se ha conectado un pool al proyecto remoto ni programado tareas de servidor.

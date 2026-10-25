@@ -93,3 +93,7 @@ sin guías compradas y sin modificaciones a la orden de prueba #5.
 Se agregó persistencia transaccional de laboratorio y un productor que lee pagos
 canónicos de QW10. Consulte [Cola de recolección](cola-recoleccion.md) para el
 contrato, las 23 pruebas y los límites. No hay cola desplegada ni contratación real.
+
+Se añadió el ejecutor por lotes, adaptador transaccional de pool y validación de
+preparación contra QW10; 31 pruebas locales aprobadas. Rol limitado y RLS probados
+en laboratorio. Conexión, despliegue y proveedores siguen pendientes.
