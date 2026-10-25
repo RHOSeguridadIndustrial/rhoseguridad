@@ -30,3 +30,11 @@ Verificación local inicial: 66 pruebas de módulo/endpoint/regresiones y prueba
 RLS, permisos del getter y deshabilitación. La CI incluye Chromium y WebKit móvil.
 Publicación, migración, carga del catálogo y prueba remota pendientes de verificación.
 No se activan cobros, reservas operativas ni entregas reales.
+
+Migración 20261025050045 aplicada. Catálogo CDMX cargado únicamente en el servidor;
+el hash almacenado coincide con el texto. Lectura de tabla/getter denegada a
+clientes. SHA-256 del artefacto normalizado:
+a6bdd1ceb50d7b85ee8c4f851d3427f5d4513b7facdebc22b198f5c3bd24390c.
+Revisión: 2026-10-25T05:00:33.991Z; límite interno: 2026-11-24T05:00:33.991Z.
+La primera CI detectó ambigüedad en la etiqueta del selector de colonia. Se separó
+la etiqueta de las opciones para que el control tenga un nombre accesible preciso.
