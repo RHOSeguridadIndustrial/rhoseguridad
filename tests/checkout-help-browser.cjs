@@ -58,7 +58,7 @@ const cart=`window.items=[{id:'fixture-helmet',name:'Casco de prueba',qty:1}];ex
    assert.equal(await page.evaluate(()=>calls.at(-1).retryKey),beforeKey);
    await submit.click();await page.getByText('Transferencia simulada preparada:',{exact:false}).waitFor();
    assert.equal(await page.evaluate(()=>calls.at(-1).retryKey),beforeKey);
-   assert.equal(await help.isVisible(),false);assert.equal(await link.isVisible(),false);
+   assert.equal(await help.isVisible(),true);assert.equal(await help.getAttribute('href'),'admin-transfer-pruebas.html?request=fixture');assert.equal(await link.isVisible(),false);
    // An uncertain request retains the retry key across reloads.
    await page.reload();await page.getByLabel('Forma de pago').selectOption('transfer');
    await run('success','Transferencia simulada preparada:');

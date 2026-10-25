@@ -58,6 +58,12 @@ try{
  await auth();await assert.rejects(call('confirm','reuse','BANKTEST-RECOVER1',100),/synthetic failure/);assert.deepEqual(await snapshot(),clean);
  await db.exec('drop trigger synthetic_failure on qw10_test.movements;drop function qw10_test.fail_transfer()');await auth();assert.equal((await call('confirm','reuse','BANKTEST-RECOVER1',100)).transfer.state,'paid');
  pass('reference cannot settle another request; a failed movement rolls all evidence and stock back');
+ await reset();await q("update qw10_test.requests set session_id='cs_test_card_compat' where id='card'");await db.exec('set role service_role');
+ assert.equal((await one("select public.qw10_test_commit_payment('card','cs_test_card_compat','pi_card_compat',100,'mxn','evt_card_compat') data")).data.status,'paid');
+ await q("select public.qw10_test_prepare($1,'cs_test_card_compat','prepare')",[owner]);await reset();
+ assert.equal((await one("select actor_name from qw10_test.fulfillment_events where request_id='card'")).actor_name,'stripe-test-orders');
+ await auth();
+ pass('existing signed-card database adapter and preparation remain compatible with the extended receipt schema');
  const integrity=(await one('select public.qw10_test_integrity() data')).data;assert.equal(integrity.totals.inconsistent,0);assert.equal(integrity.totals.legacyEvidence,0);
  await reset();assert.equal((await one('select sum(quantity)::int n from public.inventory_items')).n,50);
  for(const role of ['anon','authenticated','service_role']){await db.exec('set role '+role);await assert.rejects(q('insert into qw10_test.transfer_confirmations default values'),e=>e.code==='42501');await reset();}

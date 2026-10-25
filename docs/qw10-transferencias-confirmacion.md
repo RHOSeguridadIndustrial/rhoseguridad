@@ -40,7 +40,7 @@ y auditoría; no borra ni recrea evidencia.
 
 ## Verificación
 
-Tres grupos de modelo y ocho grupos de base aprobados localmente. Se prepara CI
+Tres grupos de modelo y nueve grupos de base aprobados localmente. Se prepara CI
 con cuatro contenciones reales en PostgreSQL desechable: misma solicitud, referencia
 compartida, vencimiento durante espera y reserva especial concurrente. Se incluyen
 Chromium/WebKit móvil, recuperación de acceso, errores inciertos, cambio de cuenta,
