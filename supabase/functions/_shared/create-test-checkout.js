@@ -52,7 +52,8 @@ export async function createTestCheckout(input, {ownerId, retryKey, stripe,
       request.quote?.totalCents!==quote.totalCents ||
       JSON.stringify(canonical(request.quote))!==JSON.stringify(canonical(quote)) ||
       !Number.isSafeInteger(request.expiresAt) || request.expiresAt*1000<=now()) throw Error('Invalid test reservation');
-  const summary={subtotalCents:quote.subtotalCents,shippingCents:quote.shippingCents,mode:quote.mode,coupon:quote.coupon ?? null};
+  const summary={currency:quote.currency,lines:quote.lines,subtotalCents:quote.subtotalCents,
+    shippingCents:quote.shippingCents,mode:quote.mode,coupon:quote.coupon ?? null,expiresAt:request.expiresAt};
   if((input.paymentMethod ?? 'card')==='transfer') {
     if(quote.paymentMethod!=='transfer') throw Error('Payment method mismatch');
     return {environment:'test',paymentMethod:'transfer',requestId:request.id,reference:`TEST-${request.id}`,status:'awaiting_test_transfer',totalCents:quote.totalCents,...summary};
