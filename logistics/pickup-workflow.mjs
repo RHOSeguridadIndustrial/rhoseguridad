@@ -7,7 +7,7 @@ export function shipmentDataIssues(data) {
  const issues=[];
  const d=data?.destination;
  if(!d || !['street','number','neighborhood','municipality','recipient','phone'].every(k=>nonempty(d[k])) ||
-    !/^\d{5}$/.test(d.postalCode||'')) issues.push('incomplete_destination');
+    typeof d.postalCode!=='string' || !/^\d{5}$/.test(d.postalCode)) issues.push('incomplete_destination');
  if(d?.region!=='MX-CMX' || d?.country!=='MX') issues.push('outside_rho_coverage');
  const p=data?.package;
  if(!p || !['weightKg','lengthCm','widthCm','heightCm'].every(k=>Number.isFinite(p[k])&&p[k]>0))
@@ -37,7 +37,8 @@ export function advancePickup(job,event) {
    requireState('waiting_preparation','review_required');
    if(job.labelId || job.operationKey) throw Error('Existing carrier operation requires reconciliation');
    const issues=shipmentDataIssues(event.shipment);
-   next.status=issues.length?'review_required':'ready_to_quote';next.issues=issues;break;
+   next.status=issues.length?'review_required':'ready_to_quote';next.issues=issues;
+   next.shipment=structuredClone(event.shipment);break;
  }
  case 'quote_selected': {
    requireState('ready_to_quote');const d=event.decision;

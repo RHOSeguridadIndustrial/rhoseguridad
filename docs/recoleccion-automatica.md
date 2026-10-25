@@ -87,3 +87,9 @@ guardarse en una tabla de eventos única en la implementación persistente.
 
 Validación: 16 pruebas aprobadas con datos ficticios. Sin solicitudes a proveedores,
 sin guías compradas y sin modificaciones a la orden de prueba #5.
+
+## Avance del 24 de octubre de 2026
+
+Se agregó persistencia transaccional de laboratorio y un productor que lee pagos
+canónicos de QW10. Consulte [Cola de recolección](cola-recoleccion.md) para el
+contrato, las 23 pruebas y los límites. No hay cola desplegada ni contratación real.
