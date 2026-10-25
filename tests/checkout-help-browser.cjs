@@ -7,6 +7,7 @@ let listener=()=>{};window.authEvent=event=>listener(event);
 export const supabase={auth:{getSession:async()=>({data:{session:window.owner?{user:{id:window.owner},access_token:'synthetic'}:null}}),onAuthStateChange(fn){listener=fn;}},functions:{invoke:async(name,{body})=>{
 window.calls.push(body);if(window.mode==='slow')await new Promise(resolve=>window.finish=resolve);
 if(window.mode==='network')return {error:{message:'DO NOT SHOW RAW ERROR'}};
+if(['expired','unknown410'].includes(window.mode))return {error:{context:new Response(JSON.stringify({error:window.mode==='expired'?'test_transfer_expired':'other_error'}),{status:410})}};
 if(Number.isInteger(window.mode))return {error:{context:{status:window.mode}}};
 if(body.paymentMethod==='transfer')return {data:{environment:'test',paymentMethod:'transfer',status:'awaiting_test_transfer',reference:'TEST-fixture',totalCents:16319}};
 return {data:{environment:'test',sessionId:'cs_test_fixture',url:window.mode==='unsafe'?'https://evil.invalid/c/pay/cs_test_fixture':'https://checkout.stripe.com/c/pay/cs_test_fixture',totalCents:16319}};
@@ -54,8 +55,30 @@ const cart=`window.items=[{id:'fixture-helmet',name:'Casco de prueba',qty:1}];ex
    await page.reload();await page.getByLabel('Forma de pago').selectOption('transfer');
    await run('success','Transferencia simulada preparada:');
    assert.equal(await page.evaluate(()=>calls.at(-1).retryKey),beforeKey);
+   const restart=page.locator('#test-restart');
+   await run('unknown410','Comprueba tu conexión');assert.equal(await restart.isVisible(),false);
+   await run('expired','La reserva de esta transferencia simulada venció');
+   assert.equal(await restart.isVisible(),true);assert.equal(await page.evaluate(()=>calls.at(-1).retryKey),beforeKey);
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+   await submit.click();await page.getByText('La reserva de esta transferencia simulada venció',{exact:false}).waitFor();
+   assert.equal(await page.evaluate(()=>calls.at(-1).retryKey),beforeKey);
+   const callCount=await page.evaluate(()=>calls.length);
+   await restart.click();await page.getByText('Ya puedes preparar una nueva transferencia simulada.',{exact:false}).waitFor();
+   assert.equal(await page.evaluate(()=>calls.length),callCount);assert.equal(await restart.isVisible(),false);
+   await run('success','Transferencia simulada preparada:');
+   const freshKey=await page.evaluate(()=>calls.at(-1).retryKey);assert.notEqual(freshKey,beforeKey);
+   await run('network','Comprueba tu conexión');assert.equal(await restart.isVisible(),false);
+   await run('success','Transferencia simulada preparada:');assert.equal(await page.evaluate(()=>calls.at(-1).retryKey),freshKey);
+   // Do not erase a newer retry key created in this tab while recovery was displayed.
+   await run('expired','La reserva de esta transferencia simulada venció');
+   await page.evaluate(()=>{const k='rho-test-checkout:fixture-admin',v=JSON.parse(sessionStorage.getItem(k));v.key='newer-key';sessionStorage.setItem(k,JSON.stringify(v));});
+   await restart.click();await page.getByText('Comprueba tu conexión',{exact:false}).waitFor();
+   assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('rho-test-checkout:fixture-admin')).key),'newer-key');
+   await run('expired','La reserva de esta transferencia simulada venció');
    await page.getByLabel('Forma de pago').selectOption('card');
+   assert.equal(await restart.isVisible(),false);
    assert.equal(await page.locator('#test-card-help').isVisible(),true);
+   await run('expired','Comprueba tu conexión');assert.equal(await restart.isVisible(),false);
    await run('unsafe','No se pudo confirmar la preparación');assert.equal(await link.isVisible(),false);
    await run('success','Importe simulado, con envío:');assert.equal(await link.getAttribute('href'),'https://checkout.stripe.com/c/pay/cs_test_fixture');
    await page.evaluate(()=>{window.owner=null;window.authEvent('SIGNED_OUT');});
