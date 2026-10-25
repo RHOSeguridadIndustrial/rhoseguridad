@@ -2,7 +2,7 @@ name: QW10 test transfer confirmation
 on:
   push:
     branches: [qw10-transfer-confirmation-20261024, main]
-    paths: ['admin-transfer-pruebas.*', 'test-transfer-model.js', 'tests/test-transfer*', 'supabase/qw10-test-transfer-confirmation*', 'supabase/migrations/*qw10_test_transfer_confirmation.sql', 'admin-security.js', 'admin-seguridad.html', 'checkout-prueba.*', '.github/workflows/qw10-test-transfer.yml']
+    paths: ['admin-transfer-pruebas.*', 'test-transfer-model.js', 'tests/test-transfer*', 'supabase/qw10-test-transfer-*', 'supabase/migrations/*qw10_test_transfer_confirmation.sql', 'admin-security.js', 'admin-seguridad.html', 'checkout-prueba.*', '.github/workflows/qw10-test-transfer.yml']
 permissions:
   contents: read
 jobs:

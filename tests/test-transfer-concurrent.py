@@ -24,7 +24,7 @@ def main():
     sql('create database rho_transfer_isolated')
     env['PGDATABASE'] = 'rho_transfer_isolated'
     try:
-        setup='\n'.join(Path(p).read_text() for p in ['tests/fixtures/qw10-deployed-schema.sql','supabase/qw10-test-fulfillment-review.sql','supabase/qw10-test-integrity.sql','supabase/qw10-test-transfer-confirmation.sql'])
+        setup='\n'.join(Path(p).read_text() for p in ['tests/fixtures/qw10-deployed-schema.sql','supabase/qw10-test-fulfillment-review.sql','supabase/qw10-test-integrity.sql','supabase/qw10-test-transfer-confirmation.sql','supabase/qw10-test-transfer-identity.sql'])
         sql('begin;'+setup+'commit;')
         owner='11111111-1111-4111-8111-111111111111'
         sql("insert into auth.users values('"+owner+"');")

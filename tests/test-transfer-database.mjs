@@ -25,6 +25,9 @@ try{
  await db.exec("create table public.inventory_items(quantity integer);insert into public.inventory_items values(50)");
  const old=await q("select p.oid,pg_get_functiondef(p.oid) definition from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('private','qw10_test','public')");
  await db.exec(await readFile('supabase/qw10-test-transfer-confirmation.sql','utf8'));
+ await db.exec('revoke usage on schema auth from qw10_transfer_executor');
+ await db.exec(await readFile('supabase/qw10-test-transfer-identity.sql','utf8'));
+ assert.equal((await one("select has_schema_privilege('qw10_transfer_executor','auth','usage') allowed")).allowed,false);
  for(const f of old)assert.equal((await one('select pg_get_functiondef($1) definition',[f.oid])).definition,f.definition);
  assert.equal((await one("select prosecdef from pg_proc where oid='public.qw10_test_transfer(text,text,text,bigint)'::regprocedure")).prosecdef,false);
  pass('existing card, reservation, MFA and review functions remain unchanged; public wrapper is invoker');

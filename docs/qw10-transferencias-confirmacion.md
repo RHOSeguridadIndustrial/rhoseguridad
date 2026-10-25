@@ -40,12 +40,24 @@ y auditoría; no borra ni recrea evidencia.
 
 ## Verificación
 
-Tres grupos de modelo y nueve grupos de base aprobados localmente. Se prepara CI
-con cuatro contenciones reales en PostgreSQL desechable: misma solicitud, referencia
-compartida, vencimiento durante espera y reserva especial concurrente. Se incluyen
-Chromium/WebKit móvil, recuperación de acceso, errores inciertos, cambio de cuenta,
-validación del importe y secuencia de preparación/salida. Publicación y recorrido
-autenticado remotos pendientes antes de dar este avance por validado.
+La CI 40159455234 del cambio y 40161955813 de main aprobaron modelo,
+base de datos, cuatro contenciones PostgreSQL reales, Chromium/WebKit, retorno
+MFA y regresiones de checkout. GitHub Pages 40161955367 publicó el panel.
+
+La comprobación autenticada detectó `permission denied for schema auth`:
+el rol de migraciones no puede conceder USAGE sobre el esquema administrado
+por Supabase. La migración 20261025043509_qw10_test_transfer_identity resuelve
+solo el actor autenticado mediante una función privada SECURITY DEFINER,
+restringida al ejecutor de transferencias, que exige private.is_admin().
+El ejecutor mantiene su acceso limitado a las tablas de pruebas. La regresión
+reproduce la ausencia de USAGE sobre auth y aprueba los nueve grupos de base.
+
+Recorrido publicado verificado el 24/10/2026 (CDMX):
+- Confirmación ficticia: 22:35:28; solicitud e1914b9c-d0ad-4371-abbb-d7bd0234652b.
+- Importe: 123.70 MXN; referencia BANKTEST-A8F5440741F947E18F19D710905E82F7.
+- Orden de prueba #7, un recibo y un movimiento; N95 de prueba de 8 a 7 unidades.
+- Preparación: 22:35:42; salida simulada: 22:35:49.
+No hubo consulta bancaria, cobro ni entrega real.
 
 La fuente oficial de códigos postales volvió a agotar el tiempo de consulta; no se
 incorporaron rangos inferidos como cobertura. Continúan pendientes cobertura y
