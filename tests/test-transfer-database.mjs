@@ -19,6 +19,7 @@ async function make(id,{who=owner,method='transfer',qty=1,expired=false,second=f
 }
 async function snapshot(){await reset();const out={};for(const {tablename} of await q("select tablename from pg_tables where schemaname='qw10_test' order by tablename"))out[tablename]=await q(`select to_jsonb(t) row from qw10_test.${tablename} t order by to_jsonb(t)::text`);return out;}
 try{
+ assert.equal(await readFile('supabase/migrations/20261025034544_qw10_test_transfer_confirmation.sql','utf8'),await readFile('supabase/qw10-test-transfer-confirmation.sql','utf8'));
  for(const p of ['tests/fixtures/qw10-deployed-schema.sql','supabase/qw10-test-fulfillment-review.sql','supabase/qw10-test-integrity.sql'])await db.exec(await readFile(p,'utf8'));
  await q('insert into auth.users values($1),($2)',[owner,foreign]);
  await db.exec("create table public.inventory_items(quantity integer);insert into public.inventory_items values(50)");

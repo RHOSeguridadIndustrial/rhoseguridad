@@ -23,6 +23,7 @@ create table qw10_test.transfer_confirmations (
  recorded_by uuid not null references auth.users(id),
  recorded_at timestamptz not null default clock_timestamp()
 );
+create index transfer_confirmations_recorded_by on qw10_test.transfer_confirmations(recorded_by);
 alter table qw10_test.transfer_confirmations enable row level security;
 revoke all on qw10_test.transfer_confirmations from public,anon,authenticated,service_role;
 

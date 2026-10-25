@@ -51,3 +51,13 @@ La fuente oficial de códigos postales volvió a agotar el tiempo de consulta; n
 incorporaron rangos inferidos como cobertura. Continúan pendientes cobertura y
 domicilio verificables, fuente de confirmación bancaria real, operación real y
 aceptación funcional en Safari nativo. No equivale al cierre integral del QW10.
+
+
+Migración `20261025034544_qw10_test_transfer_confirmation` aplicada después de CI
+40159280974 aprobada (modelo, nueve grupos de base, cuatro contenciones reales,
+interfaz Chromium/WebKit, retorno MFA y regresiones de checkout). Se verificó
+rechazo sin identidad, RPC público invoker y ausencia de permisos del ejecutor
+sobre inventario/órdenes reales. Las quince funciones existentes auditadas conservan
+sus hashes; inventario real 50, órdenes reales cero. El asesor no agregó advertencias
+de seguridad. El índice por administrador se validó localmente y la copia de
+migración debe coincidir byte por byte con el SQL canónico.
