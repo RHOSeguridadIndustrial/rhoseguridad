@@ -35,10 +35,23 @@ real. El servidor conserva la validación final de la reserva.
   reintento con precio congelado, carrito distinto, importes inconsistentes,
   datos incompletos y moneda incorrecta.
 - Siete grupos de base para la recuperación de transferencia vencida.
-- Chromium de escritorio y WebKit móvil en CI: pendientes al preparar este cambio.
-  Casos añadidos: desglose pagado/gratis, rechazo de suma incorrecta, texto seguro,
+- Chromium de escritorio y WebKit móvil a 390×844: aprobados en CI de la rama
+  [40155019306](https://github.com/RHOSeguridadIndustrial/rhoseguridad/actions/runs/40155019306)
+  y de main [40155129909](https://github.com/RHOSeguridadIndustrial/rhoseguridad/actions/runs/40155129909).
+  Incluyen desglose pagado/gratis, rechazo de suma incorrecta, texto seguro,
   limpieza al cerrar sesión y respuesta tardía tras cambiar carrito.
-- Comprobación remota y publicación: pendientes al preparar este cambio.
+- PR [#29](https://github.com/RHOSeguridadIndustrial/rhoseguridad/pull/29)
+  integrado, commit `88f347b4f7b6c5877ba80523682d4116752032c5`.
+  `create-test-checkout` versión 7 desplegada antes de publicar la interfaz;
+  se conservaron autenticación administrativa/MFA y verify_jwt=false previo.
+  Publicación [40155129872](https://github.com/RHOSeguridadIndustrial/rhoseguridad/actions/runs/40155129872) aprobada.
+- Comprobación remota con MFA renovado, 24 de octubre de 2026, 20:45 CDMX:
+  una N95 a $24.70, envío estándar simulado $99.00, cupón no aplicado, total
+  $123.70 MXN y vigencia visible hasta las 20:54 CDMX. Conservó la referencia
+  `TEST-5c7e72c6-d770-4d9a-89fe-84735ad551fe` y una sola solicitud por clave.
+  La consulta de base confirmó cero recibos, órdenes y movimientos para esa
+  referencia. Inventario real: 50; órdenes reales: cero. Totales del entorno
+  de prueba sin cambios: 16 solicitudes, seis órdenes y seis movimientos.
 
 ## Alcance
 
