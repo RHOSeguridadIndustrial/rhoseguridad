@@ -1,0 +1,35 @@
+name: QW10 test transfer confirmation
+on:
+  push:
+    branches: [qw10-transfer-confirmation-20261024, main]
+    paths: ['admin-transfer-pruebas.*', 'test-transfer-model.js', 'tests/test-transfer*', 'supabase/qw10-test-transfer-confirmation*', 'supabase/migrations/*qw10_test_transfer_confirmation.sql', 'admin-security.js', 'admin-seguridad.html', 'checkout-prueba.*', '.github/workflows/qw10-test-transfer.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: rho_transfer_fixture
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: disposable_fixture_only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d rho_transfer_fixture"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/test-transfer-model.test.mjs
+      - run: node tests/test-transfer-database.mjs
+      - name: Verify actual database contention
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_fixture_only@127.0.0.1:5432/rho_transfer_fixture
+        run: python3 tests/test-transfer-concurrent.py
+      - run: npx --prefix tests playwright install --with-deps chromium webkit
+      - run: node tests/test-transfer-browser.cjs
+      - run: node tests/admin-security-browser.cjs
+      - run: node tests/checkout-help-browser.cjs
