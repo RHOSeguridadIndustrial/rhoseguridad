@@ -1,3 +1,4 @@
+import {deliverySnapshot} from './delivery-snapshot.js?v=20261025-fulfillment';
 export function transferAmount(value){
  if(typeof value!=='string'||!/^\d{1,12}(\.\d{1,2})?$/.test(value.trim()))throw Error('Invalid amount');
  const [whole,decimal='']=value.trim().split('.'),cents=Number(whole)*100+Number(decimal.padEnd(2,'0'));
@@ -21,7 +22,8 @@ export function transferRecord(r){
    !Number.isSafeInteger(l.quantity)||l.quantity<1||l.quantity>1000000||!Number.isSafeInteger(l.unitPriceCents)||l.unitPriceCents<=0||!Number.isSafeInteger(l.lineTotalCents)||l.lineTotalCents!==l.quantity*l.unitPriceCents)throw Error('Invalid line');
   seen.add(l.sku);subtotal+=l.lineTotalCents;
  }
- if(!Number.isSafeInteger(subtotal)||subtotal>r.totalCents)throw Error('Invalid total');return r;
+ if(!Number.isSafeInteger(subtotal)||subtotal>r.totalCents)throw Error('Invalid total');
+ deliverySnapshot(r.delivery);return r;
 }
 export function transferList(data){
  if(data?.environment!=='test'||typeof data.limited!=='boolean'||!Array.isArray(data.transfers)||data.transfers.length>100)throw Error('Invalid report');

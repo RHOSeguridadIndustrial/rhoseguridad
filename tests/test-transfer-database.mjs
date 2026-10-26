@@ -19,6 +19,7 @@ async function make(id,{who=owner,method='transfer',qty=1,expired=false,second=f
 }
 async function snapshot(){await reset();const out={};for(const {tablename} of await q("select tablename from pg_tables where schemaname='qw10_test' order by tablename"))out[tablename]=await q(`select to_jsonb(t) row from qw10_test.${tablename} t order by to_jsonb(t)::text`);return out;}
 try{
+ assert.equal(await readFile('supabase/migrations/20261026030851_qw10_test_transfer_delivery.sql','utf8'),await readFile('supabase/qw10-test-transfer-delivery.sql','utf8'));
  assert.equal(await readFile('supabase/migrations/20261025034544_qw10_test_transfer_confirmation.sql','utf8'),await readFile('supabase/qw10-test-transfer-confirmation.sql','utf8'));
  for(const p of ['tests/fixtures/qw10-deployed-schema.sql','supabase/qw10-test-fulfillment-review.sql','supabase/qw10-test-integrity.sql'])await db.exec(await readFile(p,'utf8'));
  await q('insert into auth.users values($1),($2)',[owner,foreign]);
@@ -27,20 +28,26 @@ try{
  await db.exec(await readFile('supabase/qw10-test-transfer-confirmation.sql','utf8'));
  await db.exec('revoke usage on schema auth from qw10_transfer_executor');
  await db.exec(await readFile('supabase/qw10-test-transfer-identity.sql','utf8'));
+ await db.exec(await readFile('supabase/qw10-test-transfer-delivery.sql','utf8'));
  assert.equal((await one("select has_schema_privilege('qw10_transfer_executor','auth','usage') allowed")).allowed,false);
  for(const f of old)assert.equal((await one('select pg_get_functiondef($1) definition',[f.oid])).definition,f.definition);
  assert.equal((await one("select prosecdef from pg_proc where oid='public.qw10_test_transfer(text,text,text,bigint)'::regprocedure")).prosecdef,false);
- pass('existing card, reservation, MFA and review functions remain unchanged; public wrapper is invoker');
+ assert.equal((await one("select prosecdef from pg_proc where oid='qw10_test.transfer_snapshot(text,text)'::regprocedure")).prosecdef,false);
+ for(const role of ['anon','authenticated','service_role'])assert.equal((await one("select has_function_privilege($1,'qw10_test.transfer_snapshot(text,text)','execute') allowed",[role])).allowed,false);
+ pass('existing card, reservation, MFA and review functions remain unchanged; wrappers and snapshot remain invokers with restricted access');
  for(const role of ['anon','service_role']){await db.exec('set role '+role);await assert.rejects(call('list'),e=>e.code==='42501');await reset();}
  for(const [uid,aal] of [['','aal2'],[owner,'aal1'],[foreign,'aal2']]){await auth(uid,aal);await assert.rejects(call('list'),e=>e.code==='42501');await reset();}
  await make('own');await make('foreign',{who:foreign});await make('card',{method:'card'});
+ const frozenDelivery={status:'postal_match',assurance:'postal_catalog_only',address:{street:'Synthetic street',postalCode:'02000'},catalogSha256:'a'.repeat(64)};
+ await q("update qw10_test.requests set quote=quote||jsonb_build_object('delivery',$1::jsonb) where id='own'",[frozenDelivery]);
  await auth();assert.deepEqual((await call('list')).transfers.map(r=>r.requestId),['own']);
+ assert.deepEqual((await call('list')).transfers[0].delivery,frozenDelivery);
  for(const id of ['foreign','card','missing'])await assert.rejects(call('confirm',id,'BANKTEST-NOTVALID1',100),/Transfer unavailable/);
  await assert.rejects(call('confirm','own','BANKTEST-NOTVALID1',99),/Confirmation mismatch/);
  await assert.rejects(call('confirm','own','REALBANK123',100),/Confirmation mismatch/);
  await assert.rejects(call('dispatch','own'),/Confirmed transfer order required/);
  pass('MFA and ownership required; card requests, wrong amount/reference and unpaid preparation rejected');
- let result=await call('confirm','own','BANKTEST-ORIGINAL1',100);assert.equal(result.transfer.state,'paid');assert.equal(result.transfer.orderId,1);
+ let result=await call('confirm','own','BANKTEST-ORIGINAL1',100);assert.equal(result.transfer.state,'paid');assert.equal(result.transfer.orderId,1);assert.deepEqual(result.transfer.delivery,frozenDelivery);
  const before=await snapshot();await auth();assert.equal((await call('confirm','own','BANKTEST-ORIGINAL1',100)).repeated,true);
  await assert.rejects(call('confirm','own','BANKTEST-CHANGED11',100),/retry conflict/);assert.deepEqual(await snapshot(),before);
  const receipt=await one("select * from qw10_test.receipts where request_id='own'");assert.equal(receipt.payment_intent_id,null);assert.match(receipt.session_id,/^tr_test_[a-f0-9]{32}$/);
@@ -49,10 +56,10 @@ try{
  pass('one explicit transfer receipt, order, movement and audit record; exact retry does not duplicate');
  await auth();await assert.rejects(call('dispatch','own'),/Preparation required/);
  await call('prepare','own');await call('prepare','own');await call('dispatch','own');await call('dispatch','own');await call('prepare','own');
- assert.equal((await call('list')).transfers[0].preparation,'dispatched');await reset();
+ assert.equal((await call('list')).transfers[0].preparation,'dispatched');assert.deepEqual((await call('list')).transfers[0].delivery,frozenDelivery);await reset();
  assert.equal((await one("select count(*)::int n from qw10_test.preparation_events where request_id='own'")).n,2);
  pass('preparation precedes dispatch; repeats are idempotent and never move state backwards');
- await make('late',{expired:true});await auth();result=await call('confirm','late','BANKTEST-LATE0001',100);assert.equal(result.transfer.state,'reconciliation_required');assert.equal(result.transfer.orderId,null);
+ await make('late',{expired:true});await auth();result=await call('confirm','late','BANKTEST-LATE0001',100);assert.equal(result.transfer.state,'reconciliation_required');assert.equal(result.transfer.orderId,null);assert.equal(result.transfer.delivery,null);
  await assert.rejects(call('prepare','late'),/Confirmed transfer order required/);await reset();assert.equal((await one("select quantity from qw10_test.stock where sku='sku-late'")).quantity,4);
  await make('multi',{qty:2,second:true});await q("insert into qw10_test.quote_holds values('competing','sku-multi-b',2,now()+interval '1 hour',true)");
  await auth();result=await call('confirm','multi','BANKTEST-MULTI001',300);assert.equal(result.transfer.state,'reconciliation_required');await reset();assert.deepEqual(await q("select quantity from qw10_test.stock where sku like 'sku-multi%' order by sku"),[{quantity:4},{quantity:2}]);
