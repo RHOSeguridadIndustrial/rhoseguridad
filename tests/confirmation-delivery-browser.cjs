@@ -29,7 +29,7 @@ const client=`export const supabase={auth:{getSession:async()=>({data:{session:f
   for(const bad of [{...result,quote:{...result.quote,delivery:{...delivery,assurance:'physical_verified'}}},{...result,state:'reconciliation_required'},{...result,state:'pending'}]){
    await open({result:bad});await page.waitForFunction(()=>!document.getElementById('result-refresh').disabled);
    assert.equal(await page.locator('#result-delivery').textContent(),'');assert.equal(await page.locator('#result-detail').isVisible(),false);
-   assert.equal(await page.getByRole('button',{name:'Marcar preparado · prueba'}).isEnabled(),false);
+   assert.equal(await page.locator('#prepare-test').isEnabled(),false);
   }
   await open({slow:true});await page.waitForFunction(()=>typeof fixture.finish==='function');
   await page.evaluate(()=>{fixture.owner=null;fixture.authChanged('SIGNED_OUT',null);fixture.finish();});await page.getByText('Verifica tu sesión de administrador',{exact:true}).waitFor();
