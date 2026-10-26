@@ -26,15 +26,41 @@ Cambiar el domicilio cambia la clave; el servidor rechaza reusar la anterior con
 otro domicilio. La cotización conserva su domicilio y procedencia en qw10_test.
 Una coincidencia postal no confirma existencia física de calle/número ni entrega.
 
-Verificación local inicial: 66 pruebas de módulo/endpoint/regresiones y prueba de
-RLS, permisos del getter y deshabilitación. La CI incluye Chromium y WebKit móvil.
-Publicación, migración, carga del catálogo y prueba remota pendientes de verificación.
-No se activan cobros, reservas operativas ni entregas reales.
+Verificación: 66 pruebas de módulo/endpoint/regresiones, permisos de base de datos
+y navegación Chromium/WebKit aprobadas. La CI de la rama fue 40164030053.
+PR 34 integrado en main como 62059af7981b602cbf852c2675582d924892cd65;
+publicación Pages 40258107611 aprobada. Sobre ese commit también aprobaron
+40258107703 (checkout postal), 40258107812 (domicilio), 40258107752
+(recuperación de checkout) y 40258107665 (transferencias de prueba).
 
 Migración 20261025050045 aplicada. Catálogo CDMX cargado únicamente en el servidor;
 el hash almacenado coincide con el texto. Lectura de tabla/getter denegada a
 clientes. SHA-256 del artefacto normalizado:
 a6bdd1ceb50d7b85ee8c4f851d3427f5d4513b7facdebc22b198f5c3bd24390c.
 Revisión: 2026-10-25T05:00:33.991Z; límite interno: 2026-11-24T05:00:33.991Z.
-La primera CI detectó ambigüedad en la etiqueta del selector de colonia. Se separó
-la etiqueta de las opciones para que el control tenga un nombre accesible preciso.
+create-test-checkout versión 8 activo; autenticación de administrador y MFA
+comprobadas por la función. Las etiquetas de domicilio y colonia tienen nombres
+accesibles independientes de las opciones del selector.
+
+## Prueba remota del formulario publicado
+
+Validada el 25/10/2026 en hora de CDMX (26/10/2026 UTC), después de iniciar sesión
+y verificar el autenticador en el navegador en la nube:
+
+- Consulta de CP 02000: devolvió Azcapotzalco / Centro de Azcapotzalco.
+- Domicilio ficticio: Calle Ficticia 123. El resumen mostró colonia, alcaldía y CP.
+- Un N95: $24.70; envío estándar simulado: $99.00; total: $123.70 MXN.
+- Preparar dos veces conservó una sola referencia de transferencia simulada.
+- Base de datos: una sola solicitud para la misma clave de reintento; domicilio
+  conservado en la cotización y en la identidad de la solicitud; livemode=false.
+- Evidencia de procedencia: postal_match, postal_catalog_only y hashes de origen
+  y catálogo guardados en la cotización.
+- Órdenes reales: 0; suma de inventario real: 50 antes y después. Stock N95 de
+  pruebas: 7 antes y después. No se confirmó ni despachó esta transferencia.
+
+No se activan cobros, reservas operativas ni entregas reales.
+create-card-checkout versión 6 mantiene CARD_PAYMENTS_ENABLED=false.
+Este avance completa la consulta y conservación del domicilio postal en pruebas;
+no cierra todo QW10. Siguen pendientes la validación física/operativa de entrega,
+la confirmación bancaria real, el flujo de inventario y despacho de producción
+y la aceptación en Safari nativo de iPhone. WebKit de CI no acredita esta última.
