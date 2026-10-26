@@ -1,0 +1,16 @@
+name: Cotizador virtual validation
+on:
+  pull_request:
+    paths: ['cotizador.*', 'quote-model.js', 'shipping-coupon.js', 'tests/quote-model.test.mjs', '.github/workflows/cotizador.yml']
+  push:
+    branches: [main, feat/cotizador-virtual-20261025]
+    paths: ['cotizador.*', 'quote-model.js', 'shipping-coupon.js', 'tests/quote-model.test.mjs', '.github/workflows/cotizador.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: node --check cotizador.js && node --test tests/quote-model.test.mjs tests/shipping-coupon.test.mjs tests/purchase-channel.test.mjs
