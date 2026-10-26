@@ -1,0 +1,19 @@
+name: QW10 delivery through fulfillment
+on:
+  push:
+    branches: [qw10-delivery-fulfillment-20261025, main]
+    paths: ['delivery-snapshot.js', 'confirmacion-prueba.*', 'admin-transfer-pruebas.*', 'test-transfer-model.js', 'supabase/qw10-test-transfer-delivery.sql', 'tests/delivery-snapshot*', 'tests/confirmation-delivery*', 'tests/test-transfer*', 'tests/fixtures/delivery-snapshot.json', '.github/workflows/qw10-delivery-fulfillment.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/delivery-snapshot.test.mjs tests/test-transfer-model.test.mjs tests/delivery-address.test.mjs
+      - run: node tests/test-transfer-database.mjs
+      - run: npx --prefix tests playwright install --with-deps chromium webkit
+      - run: node tests/test-transfer-browser.cjs
+      - run: node tests/confirmation-delivery-browser.cjs

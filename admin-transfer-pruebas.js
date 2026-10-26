@@ -1,6 +1,7 @@
 import {supabase} from './supabase-client.js?v=20261007-inventory';
 import {requireSecureAdmin} from './admin-security-guard.js?v=20261007-1';
-import {transferAmount,transferRecord,transferList} from './test-transfer-model.js?v=20261024-1';
+import {transferAmount,transferRecord,transferList} from './test-transfer-model.js?v=20261025-fulfillment';
+import {deliverySnapshotText} from './delivery-snapshot.js?v=20261025-fulfillment';
 const $=id=>document.getElementById(id),el=(tag,text)=>{const e=document.createElement(tag);e.textContent=text;return e;};
 const money=n=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(n/100);
 const date=n=>new Date(n*1000).toLocaleString('es-MX',{timeZone:'America/Mexico_City'});
@@ -19,6 +20,7 @@ function draw(data){
   const names={awaiting_confirmation:'Sin confirmación simulada',paid:'Confirmación simulada registrada',reconciliation_required:'Confirmación simulada en revisión'};
   article.append(el('h2',`${money(r.totalCents)} · Transferencia simulada`),el('p','Referencia de preparación: TEST-'+r.requestId));
   const list=el('ul','');for(const l of r.items)list.append(el('li',`${l.quantity} × ${l.name} · ${money(l.lineTotalCents)}`));article.append(list);
+  const delivery=el('p',deliverySnapshotText(r.delivery));delivery.className='delivery';article.append(delivery);
   const state=el('p',names[r.state]);state.className='status';article.append(state);
   if(r.state==='awaiting_confirmation'){
    const expiry=el('p',r.expired?'La reserva está vencida o inactiva. Una confirmación simulada quedará en revisión, sin orden ni descuento de existencias.':`Vigente hasta ${date(r.expiresAt)} (CDMX). El servidor volverá a comprobar la reserva.`);expiry.className='expiry';article.append(expiry);
