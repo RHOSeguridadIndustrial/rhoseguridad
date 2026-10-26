@@ -42,7 +42,7 @@ export async function createDeliveryValidator({catalogText,pinnedSha256,now=()=>
    entries.set(key(r),{municipality:r.municipality,settlement:r.settlement});
   }
   if(municipalities.size!==16)return unavailable;
-  return input=>{
+  const validate=input=>{
    if(now()<checked||now()>=expires)return unavailable();
    const address=normalizeDeliveryAddress(input);
    if(!address)return {status:'invalid_address'};
@@ -51,5 +51,12 @@ export async function createDeliveryValidator({catalogText,pinnedSha256,now=()=>
    return {status:'postal_match',assurance:'postal_catalog_only',catalogSha256:digest,sourceSha256:catalog.sourceSha256,
     verifiedAt:catalog.verifiedAt,validUntil:catalog.validUntil,address:{...address,...match}};
   };
+  validate.lookup=postalCode=>{
+   if(now()<checked||now()>=expires)return unavailable();
+   if(typeof postalCode!=='string'||!/^\d{5}$/.test(postalCode))return {status:'invalid_address'};
+   const options=catalog.entries.filter(r=>r.postalCode===postalCode).map(r=>({...r}));
+   return {status:options.length?'postal_options':'outside_coverage',postalCode,options,catalogSha256:digest};
+  };
+  return validate;
  }catch{return unavailable;}
 }

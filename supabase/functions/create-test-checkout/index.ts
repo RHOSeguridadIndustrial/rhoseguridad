@@ -3,6 +3,8 @@ import {createClient} from 'npm:@supabase/supabase-js@2.112.4';
 import {requireAdminSession} from '../_shared/admin-auth.js';
 import {testCheckoutHandler} from './handler.js';
 import {testCheckoutRpc} from '../_shared/test-checkout-rpc.js';
+import {createDeliveryValidator} from '../_shared/delivery-address.js';
+import {createDeliveryQuote} from '../_shared/delivery-quote.js';
 const url=Deno.env.get('SUPABASE_URL')!;
 const service=createClient(url,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
 const key=Deno.env.get('STRIPE_TEST_RESTRICTED_KEY')||'';
@@ -15,6 +17,13 @@ Deno.serve(testCheckoutHandler({configured:/^rk_test_/.test(key),
   if(error || !data.user?.id || data.user.is_anonymous) return null;
   const {data:profile,error:profileError}=await service.from('profiles').select('id,deactivated_at').eq('id',data.user.id).maybeSingle();
   return profileError || !profile || profile.deactivated_at ? null : data.user.id;
+ },
+ loadDelivery:async()=>{
+  const config=await rpc('qw10_test_delivery_catalog',{});
+  if(!config)return null;
+  const validate=await createDeliveryValidator(config);
+  if(!validate.lookup)return null;
+  return {lookup:validate.lookup,validate,quote:await createDeliveryQuote({...config,registered:true,loadVariant:(sku:string)=>rpc('qw10_test_variant',{p_sku:sku})})};
  },
  quoteDeps:{registered:true,loadVariant:(sku:string)=>rpc('qw10_test_variant',{p_sku:sku}),
   validateCoverage:async(address:any)=>address?.postalCode==='02000'},

@@ -3,3 +3,5 @@
 #test-method{display:block;width:100%;min-height:44px;margin-top:8px;padding:10px;font:inherit;border:1px solid #aebaca;border-radius:8px;background:#fff;color:inherit}#test-status{line-height:1.5;overflow-wrap:anywhere}#test-help:not([hidden]),#test-open:not([hidden]){display:inline-block;margin-top:8px;padding:10px 0;min-height:44px}#test-card-help{line-height:1.5}
 
 #test-summary{margin-top:22px;border-top:1px solid #dfe6ec;padding-top:8px}#test-summary li span{display:block;margin-top:6px}#test-summary dl div:last-child{font-weight:700;border-top:1px solid #dfe6ec;padding-top:14px}#test-summary dd{overflow-wrap:anywhere}
+
+#test-delivery-mode,#test-settlement{display:block;width:100%;min-height:44px;margin-top:8px;padding:10px;font:inherit;border:1px solid #aebaca;border-radius:8px;background:#fff;color:inherit}#test-address[hidden]{display:none}#test-postal-status{line-height:1.5}input,select{font-size:16px}
