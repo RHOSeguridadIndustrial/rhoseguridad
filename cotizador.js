@@ -85,7 +85,7 @@ function renderLines() {
     const label = node('label', 'Cantidad', 'line-quantity'), input = node('input');
     input.type = 'number'; input.min = '1'; input.max = String(MAX_QUANTITY); input.step = '1'; input.inputMode = 'numeric'; input.value = quantity;
     input.setAttribute('aria-label', `Cantidad de ${product?.name || sku}`);
-    input.addEventListener('input', () => { selected.set(sku, input.value); input.setAttribute('aria-invalid', String(!input.validity.valid || input.value === '')); updateLine(row, sku); renderSummary(); });
+    input.addEventListener('input', () => { selected.set(sku, input.value); $('action-status').textContent = ''; input.setAttribute('aria-invalid', String(!input.validity.valid || input.value === '')); updateLine(row, sku); renderSummary(); });
     label.append(input); row.append(copy, label); container.append(row); updateLine(row, sku);
   }
 }
