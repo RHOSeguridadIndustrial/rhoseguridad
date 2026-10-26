@@ -37,7 +37,9 @@ Revisión de solo lectura del **26 de octubre de 2026 a las 12:30 CDMX**:
 
 El 26 de octubre de 2026 se completó el inicio de sesión administrativo y el autenticador mediante el formulario seguro. El panel publicado `admin-revision-pruebas.html` mostró **«0 sin resolver · 1 casos recientes»** y **«Reembolso de prueba confirmado»**, con importe 123.70 MXN y referencias de reembolso/evento coincidentes con Stripe y la base. Esta comprobación fue realizada por el asistente en Chrome en la nube; no acredita Safari nativo de iPhone. El panel de control interno conserva métricas basadas en el estado original del recibo: su importe «en revisión» no debe interpretarse como ausencia del reembolso; la resolución se acredita en el panel de revisión y en la evidencia anterior.
 
-QW10 sigue abierto para la aceptación funcional en Safari nativo de iPhone y los criterios operativos reales (confirmación bancaria, inventario y despacho). Tampoco se acredita la meta posterior de siete días estables. El éxito de esta consulta no prueba por sí solo la renovación de todos los permisos de escritura del conector Stripe.
+El usuario aportó el 26 de octubre de 2026 la captura `IMG_5491.jpeg` desde su iPhone (hora visible 1:03). Muestra «0 sin resolver · 1 casos recientes», «Reembolso de prueba confirmado» y $123.70 MXN, con las mismas referencias de solicitud, reembolso y aviso. Se registra como evidencia de visualización móvil del resultado. La captura muestra un visor web integrado de iOS; no permite certificar por sí sola Safari independiente, pulsación de Actualizar, compra completa o recorrido de entrega en el dispositivo.
+
+QW10 sigue abierto para los criterios operativos reales (confirmación bancaria, inventario y despacho) y las pruebas móviles funcionales restantes. Tampoco se acredita la meta posterior de siete días estables. El éxito de esta consulta no prueba por sí solo la renovación de todos los permisos de escritura del conector Stripe.
 
 ## Reversión
 
