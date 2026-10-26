@@ -35,7 +35,7 @@ Revisión de solo lectura del **26 de octubre de 2026 a las 12:30 CDMX**:
 
 ## Pendientes de aceptación
 
-La navegación al panel publicado de revisión redirige a inicio de sesión; queda pendiente comprobar su presentación con una sesión administrativa vigente. El panel de control interno conserva métricas basadas en el estado original del recibo: su importe «en revisión» no debe interpretarse como ausencia del reembolso; la resolución se acredita en el panel de revisión y en la evidencia anterior.
+El 26 de octubre de 2026 se completó el inicio de sesión administrativo y el autenticador mediante el formulario seguro. El panel publicado `admin-revision-pruebas.html` mostró **«0 sin resolver · 1 casos recientes»** y **«Reembolso de prueba confirmado»**, con importe 123.70 MXN y referencias de reembolso/evento coincidentes con Stripe y la base. Esta comprobación fue realizada por el asistente en Chrome en la nube; no acredita Safari nativo de iPhone. El panel de control interno conserva métricas basadas en el estado original del recibo: su importe «en revisión» no debe interpretarse como ausencia del reembolso; la resolución se acredita en el panel de revisión y en la evidencia anterior.
 
 QW10 sigue abierto para la aceptación funcional en Safari nativo de iPhone y los criterios operativos reales (confirmación bancaria, inventario y despacho). Tampoco se acredita la meta posterior de siete días estables. El éxito de esta consulta no prueba por sí solo la renovación de todos los permisos de escritura del conector Stripe.
 
