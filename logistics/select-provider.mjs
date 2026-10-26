@@ -72,7 +72,7 @@ export function selectProvider(order, quotes, policy = {}, now = Date.now()) {
     if (!reason && totalCents > budgetCents) reason = 'over_budget';
     if (!reason && availableCents - totalCents < policy.minimumRemainingContributionCents) reason = 'insufficient_margin';
     if (reason) {rejected.push({quoteId:q?.id ?? null,providerId:q?.providerId ?? null,reason});continue;}
-    eligible.push({providerId:q.providerId,quoteId:q.id,totalCents,
+    eligible.push({providerId:q.providerId,quoteSourceId:q.quoteSourceId??null,quoteId:q.id,totalCents,
       carrierCostCents:q.totalCents,deliveryAt:q.deliveryAt,pickupAt:q.pickupAt,
       billableKg:fit.billableKg,
       onTimeRate:q.onTimeDeliveries/q.completedDeliveries,

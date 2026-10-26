@@ -117,3 +117,26 @@ en las pruebas son ejemplos sintéticos, no valores adjudicados a proveedores.
 Validación actual: 33 pruebas aprobadas, incluyendo presupuesto por margen,
 reglas volumétricas por servicio y descarte de paquetes sobredimensionados.
 No se han recibido cotizaciones de API ni contratado envíos reales.
+
+## Coordinador de cotizaciones — 26 de octubre de 2026
+
+`collect-quotes.mjs` consulta de uno a cinco adaptadores en paralelo, con cinco
+segundos de espera por defecto y máximo configurable de 30 segundos. Propaga
+AbortSignal, no reintenta y no compra guías. El transporte HTTP de cada adaptador
+debe respetar la cancelación; el coordinador limita su espera aun si no la respeta.
+Cada adaptador debe normalizar y verificar los datos del servicio antes de devolver
+cotizaciones, y asignar `quoteSourceId` al identificador de su conexión. El resultado
+seleccionado conserva ese origen para distinguir ofertas del mismo transportista
+recibidas mediante diferentes plataformas.
+
+Una respuesta fallida o incompleta devuelve `incomplete_comparison`, aunque otros
+proveedores hayan respondido. No se afirma ahorro global ni se contrata con esa
+comparación. Un resultado vacío válido indica que esa fuente no tiene oferta.
+Los precios se revalidan con la hora al terminar la consulta. Los errores públicos
+no incluyen mensajes internos del adaptador, tokens ni respuestas privadas.
+
+Pruebas: 39 aprobadas con los cinco archivos `logistics-selection.test.mjs`,
+`pickup-workflow.test.mjs`, `pickup-store.test.mjs`, `pickup-worker.test.mjs` y
+`collect-quotes.test.mjs` bajo tests/. Incluyen concurrencia de consultas simuladas,
+timeout, aislamiento de fallos, cancelación y vencimiento durante la espera.
+Son adaptadores ficticios: Envia.com y Skydropx todavía NO están conectados.
