@@ -1,0 +1,22 @@
+.rho-recommendations{box-sizing:border-box;max-width:1120px;margin:24px auto;padding:24px;background:#fff;border:1px solid #dfe6ec;border-radius:20px;color:#071a35;font-family:Arial,sans-serif}
+.rho-recommendations[hidden],.rho-recommendations [hidden]{display:none!important}
+.rho-recommendations__eyebrow{display:block;color:#326800;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px}
+.rho-recommendations h2{margin:0 0 8px;font-size:24px;line-height:1.2}
+.rho-recommendations__intro,.rho-recommendations__status{font-size:15px;line-height:1.55;margin:8px 0 18px;color:#526276}
+.rho-recommendations__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.rho-recommendations__card{min-width:0;display:flex;flex-direction:column;border:1px solid #dfe6ec;border-radius:14px;padding:16px;background:#fff}
+.rho-recommendations__card img{display:block;width:100%;height:145px;object-fit:contain;border-radius:8px;margin:0 0 12px}
+.rho-recommendations__card h3{font-size:16px;line-height:1.4;margin:0 0 10px;overflow-wrap:anywhere}
+.rho-recommendations__card p{font-size:13px;line-height:1.45;margin:4px 0}
+.rho-recommendations__reason{color:#326800;font-weight:700}
+.rho-recommendations__card .rho-recommendations__price{font-size:21px;font-weight:800;margin-top:12px}
+.rho-recommendations__muted{color:#526276}
+.rho-recommendations__button{display:inline-block;box-sizing:border-box;border:1px solid #326800;border-radius:10px;padding:12px 14px;background:#326800;color:#fff!important;font:700 14px Arial,sans-serif;text-decoration:none!important;text-align:center;cursor:pointer;min-height:44px}
+.rho-recommendations__card .rho-recommendations__button{margin-top:auto;padding-top:12px}
+.rho-recommendations__card .rho-recommendations__stock{margin:8px 0 16px}
+.rho-recommendations__button:disabled{opacity:.65;cursor:wait}
+.rho-recommendations__button:focus-visible{outline:3px solid #071a35;outline-offset:3px}
+.rho-recommendations__footer{margin:18px 0 0;font-size:12px;line-height:1.5;color:#526276}
+@media(max-width:600px){.rho-recommendations{margin:16px 12px;padding:18px}.rho-recommendations h2{font-size:22px}.rho-recommendations__grid{grid-template-columns:1fr;gap:12px}.rho-recommendations__card{padding:12px}.rho-recommendations__card img{height:112px}.rho-recommendations__card h3{font-size:14px}.rho-recommendations__card .rho-recommendations__price{font-size:18px}}
+@media(max-width:360px){.rho-recommendations__grid{grid-template-columns:1fr}}
+#account .rho-recommendations{margin:16px 0}
