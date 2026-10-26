@@ -1,0 +1,51 @@
+name: Respaldo semanal del sitio RHO
+on:
+  schedule:
+    # Jueves 01:00 America/Mexico_City = jueves 07:00 UTC.
+    - cron: '0 7 * * 4'
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/rho-weekly-backup.yml'
+permissions:
+  contents: read
+concurrency:
+  group: rho-weekly-site-backup
+  cancel-in-progress: false
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Crear y verificar copia
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/rho-backup"
+          dest="$RUNNER_TEMP/rho-backup"
+          git archive --format=zip HEAD -o "$dest/sitio.zip"
+          unzip -t "$dest/sitio.zip" > /dev/null
+          git bundle create "$dest/historial.bundle" --all
+          git bundle verify "$dest/historial.bundle"
+          {
+            echo "RHO - respaldo de archivos versionados del sitio"
+            TZ=America/Mexico_City date --iso-8601=seconds
+            git rev-parse HEAD
+            echo "Incluye archivos, imagenes y configuracion versionados e historial Git."
+            echo "Excluye datos Supabase, Auth, Storage, secretos y configuraciones externas."
+            echo "Restauracion en carpeta nueva: unzip sitio.zip"
+            echo "Historial: git clone historial.bundle rho-restaurado"
+            echo "Verificar antes: sha256sum -c SHA256SUMS"
+          } > "$dest/LEEME.txt"
+          (cd "$dest" && sha256sum sitio.zip historial.bundle LEEME.txt > SHA256SUMS && sha256sum -c SHA256SUMS)
+          echo "Backup de archivos e historial verificado. Base de datos NO incluida." >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RHO-sitio-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/rho-backup/
+          if-no-files-found: error
+          retention-days: 90
