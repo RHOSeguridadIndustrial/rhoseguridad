@@ -1,10 +1,11 @@
 import {paymentWebhook} from './payment-webhook.js';
 import {confirmPayment} from './payment-confirmation.js';
+import {recordRefund,refundEvents} from './refund-confirmation.js';
 
 // Server-only composition. Database adapter remains a deployment prerequisite.
 // Explicit opt-in prevents accidentally activating the legacy payment functions.
 export function paymentRuntime({Stripe, apiKey, signingSecret, enabled = false,
-  loadRequest, commitPaid, cryptoProvider}) {
+  loadRequest, commitPaid, commitRefund, cryptoProvider}) {
   const configured = enabled === true && /^rk_test_/.test(apiKey || '') &&
     /^whsec_/.test(signingSecret || '') && typeof loadRequest === 'function' &&
     typeof commitPaid === 'function';
@@ -14,7 +15,7 @@ export function paymentRuntime({Stripe, apiKey, signingSecret, enabled = false,
   return paymentWebhook({configured:true,
     verifyEvent:(raw, signature)=>stripe.webhooks.constructEventAsync(
       raw, signature, signingSecret, undefined, cryptoProvider),
-    handleEvent:event=>confirmPayment(event, {
+    handleEvent:event=>refundEvents.has(event?.type)?recordRefund(event,{commitRefund}):confirmPayment(event, {
       livemode:false,
       retrieveSession:id=>stripe.checkout.sessions.retrieve(id),
       loadRequest, commitPaid

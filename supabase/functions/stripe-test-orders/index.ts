@@ -16,5 +16,8 @@ Deno.serve(paymentRuntime({Stripe,
   loadRequest:(sessionId:string)=>rpc('qw10_test_load_request',{p_session:sessionId}),
   commitPaid:(p:any)=>rpc('qw10_test_commit_payment',{
     p_request:p.requestId,p_session:p.sessionId,p_payment:p.paymentIntentId,
-    p_amount:p.amountCents,p_currency:p.currency,p_event:p.eventId})
+    p_amount:p.amountCents,p_currency:p.currency,p_event:p.eventId}),
+  commitRefund:(p:any)=>rpc('qw10_test_record_refund',{
+    p_event:p.eventId,p_refund:p.refundId,p_payment:p.paymentIntentId,p_amount:p.amountCents,
+    p_currency:p.currency,p_status:p.status,p_type:p.eventType,p_created:p.eventCreated,p_live:p.livemode})
 }));

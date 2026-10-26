@@ -23,13 +23,13 @@ async function main(){
    let page=await context.newPage();const errors=[];
    await context.route('**/*',route=>{if(new URL(route.request().url()).origin!==base)return route.abort();return route.continue();});
    async function open(overrides={}){await page.close();page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(data=>{window.fixture=data;},{session:true,owner:'fixture-owner',environment:'test',cases:[structuredClone(record)],calls:[],...overrides});await page.goto(base+'/admin-revision-pruebas.html');}
-   await open();await page.locator('#app').waitFor({state:'visible'});assert.match(await page.locator('#summary').textContent(),/1 pendientes/);
+   await open();await page.locator('#app').waitFor({state:'visible'});assert.match(await page.locator('#summary').textContent(),/1 sin resolver/);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
    const area=page.locator('textarea');assert.equal(await area.getAttribute('minlength'),'12');
    const note='Revisión sintética: <script>window.unwanted=true</script> sin surtido real.';
    await area.fill(note);await page.getByRole('button',{name:'Registrar revisión'}).click();
    await page.getByText('Revisión registrada',{exact:true}).waitFor();assert.equal(await page.locator('textarea').count(),0);
-   assert.equal(await page.evaluate(()=>window.unwanted),undefined);assert.match(await page.locator('#summary').textContent(),/0 pendientes/);
+   assert.equal(await page.evaluate(()=>window.unwanted),undefined);assert.match(await page.locator('#summary').textContent(),/1 sin resolver/);
    const calls=await page.evaluate(()=>fixture.calls);assert.ok(calls.every(c=>c.name==='qw10_test_review'));assert.equal(calls.filter(c=>c.args.p_action==='review').length,1);
    assert.deepEqual(calls.find(c=>c.args.p_action==='review').args,{p_action:'review',p_request:record.request_id,p_note:note});
    await page.evaluate(()=>{fixture.owner='different-owner';fixture.authChanged('SIGNED_OUT');});await page.locator('#app').waitFor({state:'hidden'});assert.equal(await page.locator('#cases article').count(),0);
@@ -37,6 +37,18 @@ async function main(){
    await open({loseResponse:true});await page.locator('#app').waitFor({state:'visible'});await page.locator('textarea').fill('Prueba de respuesta perdida al guardar.');await page.getByRole('button',{name:'Registrar revisión'}).click();
    await page.getByText('No se completó la operación.',{exact:false}).waitFor();await page.getByRole('button',{name:'Actualizar casos'}).click();await page.getByText('Revisión registrada',{exact:true}).waitFor();assert.equal(await page.locator('textarea').count(),0);
    console.log(`PASS ${++groups}: ${type.name()} lost committed response recovers by read without duplicate mutation`);
+   const refund={refund_id:'re_fixture',event_id:'evt_fixture',amount_cents:29100,currency:'mxn',status:'succeeded',event_created:1792800000,recorded_at:'2026-10-25T20:00:00Z'};
+   await open({cases:[{...record,reviewed:true,note:'Nota previa de la prueba.',reviewed_at:'2026-10-24T20:00:00Z',resolution:{state:'refunded',limited:false,refunds:[refund]}}]});
+   await page.getByText('Reembolso de prueba confirmado',{exact:true}).waitFor();assert.match(await page.locator('#summary').textContent(),/0 sin resolver/);
+   assert.match(await page.locator('#cases').textContent(),/re_fixture/);assert.match(await page.locator('#cases').textContent(),/evt_fixture/);
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+   assert.equal(await page.locator('textarea').count(),0);
+   await page.evaluate(()=>{fixture.cases[0].resolution={state:'unresolved',limited:false,refunds:[{...fixture.cases[0].resolution.refunds[0],status:'failed'}]};});
+   await page.getByRole('button',{name:'Actualizar casos'}).click();await page.getByText('Resolución pendiente',{exact:true}).waitFor();
+   assert.match(await page.locator('#summary').textContent(),/1 sin resolver/);assert.equal(await page.getByText('Reembolso de prueba confirmado',{exact:true}).count(),0);
+   await open({cases:[{...record,resolution:{state:'refunded',limited:false,refunds:[{...refund,amount_cents:1}]}}]});
+   await page.locator('#login-help').waitFor({state:'visible'});assert.equal(await page.locator('#cases article').count(),0);
+   console.log(`PASS ${++groups}: ${type.name()} signed refund resolution, later failure reopening, and malformed proof blocking`);
    await open({cases:[]});await page.getByText('No hay pagos de prueba pendientes de revisión.').waitFor();assert.equal(await page.locator('textarea').count(),0);
    await open({session:false});await page.locator('#login-help').waitFor({state:'visible'});assert.equal(await page.evaluate(()=>fixture.calls.length),0);
    await open({environment:'live'});await page.locator('#login-help').waitFor({state:'visible'});assert.equal(await page.locator('#cases article').count(),0);
