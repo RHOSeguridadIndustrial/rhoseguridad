@@ -6,9 +6,9 @@
 </style></head><body>
 <header><strong>RHO · Administración</strong><a href="admin.html">Panel</a><a href="checkout-prueba.html">Compra de prueba</a><a href="admin-control-pruebas.html">Control de pruebas</a></header>
 <main><h1>Revisión de pagos de prueba</h1>
-<p class="notice">Aquí aparecen los pagos simulados cuya reserva venció o cuyo inventario no permitió generar una orden. Registrar la revisión conserva tu nota; no confirma entregas, reembolsos ni cobros reales.</p>
+<p class="notice">Aquí aparecen los pagos simulados cuya reserva venció o cuyo inventario no permitió generar una orden. Registrar la revisión conserva tu nota. La resolución por reembolso requiere un aviso firmado de Stripe por el importe total. Todo este panel corresponde a pruebas, sin cobros ni entregas reales.</p>
 <p id="access" role="status">Verificando acceso de administrador…</p>
 <p id="login-help" hidden><a href="login.html">Iniciar sesión</a> · <a href="admin-seguridad.html">Verificar autenticador</a></p>
 <section id="app" hidden aria-label="Casos de revisión"><div class="toolbar"><button id="refresh" type="button">Actualizar casos</button><span id="summary"></span></div>
 <p id="message" role="status" aria-live="polite"></p><div id="cases"></div></section>
-</main><script type="module" src="admin-revision-pruebas.js?v=20261023-1"></script></body></html>
+</main><script type="module" src="admin-revision-pruebas.js?v=20261025-refund"></script></body></html>
