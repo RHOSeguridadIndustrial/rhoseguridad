@@ -18,7 +18,26 @@ Migración aplicada: `20261026034836_qw10_test_refunds.sql`. Función `stripe-te
 
 Caso reservado para la prueba remota: solicitud `3ab60af6-ef86-40b7-a4c0-c11690761bfd`, pago simulado por 12,370 centavos MXN, reserva inactiva, sin orden ni movimiento. El recibo original y la nota permanecen intactos. Inventario real total: 50; órdenes reales: 0. Antes de ejecutar el reembolso: cero avisos de reembolso y resolución `unresolved`.
 
-**Bloqueo pendiente:** Stripe rechazó la actualización de suscripciones del endpoint `we_1UR03RRpe0k2YzxPZ07v9GNV` porque la conexión necesita renovar permisos. Todavía NO se añadieron los eventos de reembolso al endpoint y NO se solicitó ningún reembolso. Se requiere renovar la conexión del entorno de prueba RHO, añadir solo los tres eventos mencionados conservando Checkout, ejecutar un reembolso de prueba por 12,370 centavos y comprobar su aviso firmado y la resolución. La sesión administrativa del navegador también venció; la pantalla publicada aún requiere comprobación con sesión real. QW10 permanece abierto.
+## Evidencia remota confirmada
+
+El bloqueo anterior de suscripción quedó superado: el endpoint `we_1UR03RRpe0k2YzxPZ07v9GNV` contiene los tres eventos de reembolso y conserva los dos de Checkout. Stripe sandbox registra el reembolso `re_3UUBmcRpe0k2YzxP0FQBjbjF`, vinculado a `pi_3UUBmcRpe0k2YzxP0UVdcAHD`, por 12,370 centavos MXN y estado `succeeded`. No debe repetirse.
+
+RHO conserva el evento `evt_3UUBmcRpe0k2YzxP0cRvkEq7`, recibido el **25 de octubre de 2026 a las 22:23:54 CDMX** (2026-10-26T04:23:54.837948Z). La proyección devuelve `refunded`. Este registro acredita el aviso recibido por el consumidor firmado existente; no un movimiento de dinero real.
+
+Revisión de solo lectura del **26 de octubre de 2026 a las 12:30 CDMX**:
+- Cero órdenes y cero movimientos para la solicitud de excepción.
+- Inventario operativo total: 50 unidades; órdenes operativas: cero.
+- Stock N95 de prueba: 6 unidades, igual al control posterior a la orden #8.
+- El recibo original conserva `reconciliation_required` y su única nota de revisión; la resolución se consulta por separado.
+- `anon` y `authenticated` no pueden ejecutar la RPC de registro de reembolsos.
+- `service_role` no puede insertar directamente en la tabla de evidencia.
+- Estas comprobaciones no crearon otro reembolso ni modificaron datos operativos.
+
+## Pendientes de aceptación
+
+La navegación al panel publicado de revisión redirige a inicio de sesión; queda pendiente comprobar su presentación con una sesión administrativa vigente. El panel de control interno conserva métricas basadas en el estado original del recibo: su importe «en revisión» no debe interpretarse como ausencia del reembolso; la resolución se acredita en el panel de revisión y en la evidencia anterior.
+
+QW10 sigue abierto para la aceptación funcional en Safari nativo de iPhone y los criterios operativos reales (confirmación bancaria, inventario y despacho). Tampoco se acredita la meta posterior de siete días estables. El éxito de esta consulta no prueba por sí solo la renovación de todos los permisos de escritura del conector Stripe.
 
 ## Reversión
 
