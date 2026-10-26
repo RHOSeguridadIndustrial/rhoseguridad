@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Cotiza productos de seguridad industrial RHO: elige artículos y cantidades, consulta precios con IVA y guarda tu cotización preliminar.">
+  <title>Cotizador virtual | RHO Seguridad Industrial</title>
+  <link rel="stylesheet" href="cotizador.css?v=20261025-1">
+</head>
+<body>
+  <a class="skip-link" href="#cotizador">Ir al cotizador</a>
+  <header class="quote-header">
+    <a href="index.html" aria-label="RHO Seguridad Industrial, inicio"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial" width="124" height="72"></a>
+    <nav aria-label="Navegación principal"><a href="index.html">Inicio</a><a href="portafolio.html">Productos</a><a href="cuenta.html">Cuenta</a><a href="carrito.html">Carrito</a></nav>
+  </header>
+  <main id="cotizador" class="quote-page">
+    <div class="quote-heading"><div><p class="eyebrow">RHO · SEGURIDAD INDUSTRIAL</p><h1>Cotiza tu equipo.</h1><p>Elige tus artículos, ajusta las cantidades y consulta el importe al momento.</p></div><span class="quote-tag">Precios en MXN · IVA incluido</span></div>
+    <div class="quote-layout">
+      <div class="quote-workspace">
+        <section class="panel catalog-panel" aria-labelledby="catalog-title">
+          <div class="section-heading"><h2 id="catalog-title"><span>1</span> Selecciona tus productos</h2><button id="refresh" class="text-button" type="button">Actualizar catálogo</button></div>
+          <div class="filters"><label>Buscar artículo<input id="search" type="search" maxlength="120" placeholder="Nombre, marca, talla o color"></label><label>Categoría<select id="category"><option value="">Todas las categorías</option></select></label></div>
+          <p id="catalog-status" class="small" role="status" aria-live="polite">Consultando precios y existencias…</p>
+          <div id="catalog-list" class="catalog-list"></div>
+        </section>
+        <section class="panel selection-panel" aria-labelledby="selection-title">
+          <div class="section-heading"><h2 id="selection-title"><span>2</span> Tu selección</h2><button id="import-cart" class="text-button" type="button">Usar mi carrito</button></div>
+          <p id="empty-selection" class="empty-state">Agrega un producto para comenzar tu cotización.</p>
+          <div id="quote-lines"></div>
+          <p id="action-status" class="small" role="status" aria-live="polite"></p>
+        </section>
+        <section class="panel details-panel" aria-labelledby="details-title">
+          <h2 id="details-title"><span>3</span> Personaliza tu cotización</h2>
+          <p class="small">Datos opcionales para tu documento. No se envían al escribirlos.</p>
+          <div class="field-grid"><label>Nombre<input id="customer" autocomplete="name" maxlength="100"></label><label>Empresa<input id="company" autocomplete="organization" maxlength="120"></label><label>Destino previsto<select id="destination"><option value="">Selecciona un destino</option><option value="cdmx">Ciudad de México</option><option value="other">Otra ubicación</option></select></label><label>Forma de pago prevista<select id="payment"><option value="">Selecciona una opción</option><option value="card">Tarjeta de crédito o débito</option><option value="transfer">Transferencia bancaria</option></select></label></div>
+          <p id="registration-status" class="small">Consultando tu registro RHO…</p>
+          <p class="small"><a href="cuenta.html">Entrar a mi cuenta</a> · <a href="registro.html">Registrarme</a> · <a href="envios-entregas.html">Política de envío</a></p>
+        </section>
+      </div>
+      <aside class="panel summary-panel" aria-labelledby="summary-title">
+        <p class="eyebrow">TU COTIZACIÓN</p><h2 id="summary-title">Resumen</h2>
+        <dl class="summary-values"><div><dt>Productos sin IVA</dt><dd id="net">—</dd></div><div><dt>IVA de productos (16%)</dt><dd id="tax">—</dd></div><div class="products-total"><dt>Productos con IVA</dt><dd id="products-total">—</dd></div><div><dt>Envío estimado, IVA incluido</dt><dd id="shipping">Por calcular</dd></div></dl>
+        <div class="grand-total"><span>Total estimado</span><strong id="total">—</strong><small>MXN</small></div>
+        <p id="quote-status" class="quote-notice" role="status" aria-live="polite">Agrega al menos un artículo.</p>
+        <button id="print" class="primary-button" type="button" disabled>Imprimir / guardar PDF</button>
+        <a id="special-order" class="secondary-button" hidden target="_blank" rel="noopener noreferrer">Cotizar pedido especial por WhatsApp</a>
+        <p id="special-help" class="small" hidden>Se abrirá un mensaje para que lo revises y lo envíes.</p>
+        <p class="small terms"><strong>Cotización preliminar.</strong> Precios y existencias consultados al momento, sujetos a confirmación al realizar el pedido. No reserva mercancía. RHO confirma domicilio, cobertura y entrega antes del pago.</p>
+        <p id="checked-at" class="small"></p>
+      </aside>
+    </div>
+    <noscript><p class="quote-notice">Activa JavaScript para consultar el catálogo y calcular tu cotización. También puedes visitar <a href="portafolio.html">Productos</a>.</p></noscript>
+  </main>
+  <section id="print-document" aria-label="Cotización para imprimir"></section>
+  <footer>RHO Seguridad Industrial · <a href="datos-contacto.html">Contacto</a> · <a href="aviso-privacidad.html">Aviso de privacidad</a></footer>
+  <script type="module" src="cotizador.js?v=20261025-1"></script>
+</body>
+</html>
