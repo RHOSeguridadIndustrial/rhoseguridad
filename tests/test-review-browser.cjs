@@ -6,11 +6,11 @@ const fs=require('node:fs/promises');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const record={request_id:'fixture-review-001',session_id:'cs_test_fixture_review',amount_cents:29100,reason:'reservation_expired',reviewed:false,recorded_at:'2026-10-23T20:00:00Z',items:[{sku:'fixture-cono',quantity:1}]};
-const client=`export const supabase={auth:{async getSession(){return {data:{session:window.fixture.session?{user:{id:window.fixture.owner}}:null}}},onAuthStateChange(fn){window.fixture.authChanged=fn}},async rpc(name,args){window.fixture.calls.push({name,args});if(window.fixture.fail)return {error:{code:'503',message:'fixture unavailable'}};if(args.p_action==='review'){const c=window.fixture.cases.find(c=>c.request_id===args.p_request);c.reviewed=true;c.note=args.p_note;c.reviewed_at='2026-10-23T20:01:00Z';if(window.fixture.loseResponse){window.fixture.loseResponse=false;return {error:{code:'503'}}}return {data:{environment:'test',status:'reviewed',requestId:c.request_id}}}return {data:{environment:window.fixture.environment,cases:JSON.parse(JSON.stringify(window.fixture.cases))}}}};`;
+const client=`export const supabase={auth:{async getSession(){return {data:{session:window.fixture.session?{user:{id:window.fixture.owner}}:null}}},onAuthStateChange(fn){window.fixture.authChanged=fn;queueMicrotask(()=>fn('INITIAL_SESSION',window.fixture.session?{user:{id:window.fixture.owner}}:null));}},async rpc(name,args){window.fixture.calls.push({name,args});if(window.fixture.fail)return {error:{code:'503',message:'fixture unavailable'}};if(args.p_action==='review'){const c=window.fixture.cases.find(c=>c.request_id===args.p_request);c.reviewed=true;c.note=args.p_note;c.reviewed_at='2026-10-23T20:01:00Z';if(window.fixture.loseResponse){window.fixture.loseResponse=false;return {error:{code:'503'}}}return {data:{environment:'test',status:'reviewed',requestId:c.request_id}}}const data={environment:window.fixture.environment,cases:JSON.parse(JSON.stringify(window.fixture.cases))};if(window.fixture.slow){window.fixture.slow=false;await new Promise(resolve=>window.fixture.finish=resolve);}return {data}}};`;
 async function main(){
  const server=http.createServer(async(req,res)=>{
   try{const url=new URL(req.url,'http://localhost');if(url.pathname==='/supabase-client.js'){res.setHeader('content-type','text/javascript');res.end(client);return;}
-   if(url.pathname==='/admin-security-guard.js'){res.setHeader('content-type','text/javascript');res.end('export async function requireSecureAdmin(){if(!window.fixture.session)throw Error("session required");}');return;}
+   if(url.pathname==='/admin-security-guard.js'){res.setHeader('content-type','text/javascript');res.end('export async function requireSecureAdmin(){if(!window.fixture.session)throw Error("session required");window.fixture.authChanged("SIGNED_IN",{user:{id:window.fixture.owner}});}');return;}
    const file=path.resolve(root,'.'+url.pathname);if(!file.startsWith(root+path.sep))throw Error();
    res.setHeader('content-type',file.endsWith('.html')?'text/html':'text/javascript');res.end(await fs.readFile(file));
   }catch{res.statusCode=404;res.end('Not found');}
@@ -25,6 +25,9 @@ async function main(){
    async function open(overrides={}){await page.close();page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(data=>{window.fixture=data;},{session:true,owner:'fixture-owner',environment:'test',cases:[structuredClone(record)],calls:[],...overrides});await page.goto(base+'/admin-revision-pruebas.html');}
    await open();await page.locator('#app').waitFor({state:'visible'});assert.match(await page.locator('#summary').textContent(),/1 sin resolver/);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+   await page.evaluate(()=>{fixture.authChanged('SIGNED_IN',{user:{id:fixture.owner}});fixture.authChanged('TOKEN_REFRESHED',{user:{id:fixture.owner}});});
+   assert.equal(await page.locator('#app').isVisible(),true);assert.equal(await page.locator('#cases article').count(),1);
+
    const area=page.locator('textarea');assert.equal(await area.getAttribute('minlength'),'12');
    const note='Revisión sintética: <script>window.unwanted=true</script> sin surtido real.';
    await area.fill(note);await page.getByRole('button',{name:'Registrar revisión'}).click();
@@ -52,6 +55,16 @@ async function main(){
    await open({cases:[]});await page.getByText('No hay pagos de prueba pendientes de revisión.').waitFor();assert.equal(await page.locator('textarea').count(),0);
    await open({session:false});await page.locator('#login-help').waitFor({state:'visible'});assert.equal(await page.evaluate(()=>fixture.calls.length),0);
    await open({environment:'live'});await page.locator('#login-help').waitFor({state:'visible'});assert.equal(await page.locator('#cases article').count(),0);
+   for(const event of ['SIGNED_IN','TOKEN_REFRESHED']){
+    await open();await page.locator('#app').waitFor({state:'visible'});
+    await page.evaluate(event=>{fixture.owner='other-owner';fixture.authChanged(event,{user:{id:fixture.owner}});},event);
+    assert.equal(await page.locator('#app').isVisible(),false);assert.equal(await page.locator('#cases article').count(),0);
+   }
+   await open({slow:true});await page.waitForFunction(()=>typeof fixture.finish==='function');
+   await page.evaluate(()=>{fixture.owner='other-owner';fixture.authChanged('SIGNED_IN',{user:{id:fixture.owner}});fixture.finish();});
+   await page.locator('#login-help').waitFor({state:'visible'});
+   assert.equal(await page.locator('#app').isVisible(),false);assert.equal(await page.locator('#cases article').count(),0);
+   console.log(`PASS ${++groups}: ${type.name()} same-owner continuity, changed-owner token refresh and late startup response clearing`);
    assert.deepEqual(errors,[]);console.log(`PASS ${++groups}: ${type.name()} empty, no-session and wrong-environment states never expose review controls`);
    await context.close();
   }finally{await browser.close();}

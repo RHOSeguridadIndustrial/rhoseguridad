@@ -44,3 +44,10 @@ QW10 sigue abierto para los criterios operativos reales (confirmación bancaria,
 ## Reversión
 
 Retirar únicamente los tres eventos de reembolso del endpoint de Stripe, conservando los dos eventos de Checkout, y restaurar los cuatro archivos de la función `stripe-test-orders` de su versión 2. La tabla de evidencia se conserva; no se elimina ni reescribe historial. Restaurar el panel anterior solo si fuese necesario, teniendo presente que sus notas no demuestran resolución de pagos.
+
+## Continuidad de sesión en revisión — 27 de octubre de 2026
+
+El panel conserva los casos al reconfirmar SIGNED_IN o renovar TOKEN_REFRESHED
+para la misma identidad. Un cierre o cambio de cuenta elimina los casos e invalida
+respuestas pendientes, también durante el arranque. La consulta sigue exigiendo
+el guard administrativo, MFA y las restricciones del RPC. No cambia datos ni permisos.
