@@ -1,7 +1,7 @@
 name: QW10 test integrity control
 on:
   push:
-    branches: [qw10-control-pruebas-20261024, qw10-control-auth-20261024, main]
+    branches: [qw10-control-pruebas-20261024, qw10-control-auth-20261024, qw10-clarify-receipt-status, main]
     paths: ['admin-control-pruebas.*', 'test-integrity-model.js', 'tests/test-integrity*', 'supabase/qw10-test-integrity*', 'supabase/migrations/*qw10_test_integrity.sql', '.github/workflows/qw10-test-integrity.yml']
 permissions:
   contents: read
