@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src &#x27;self&#x27;; script-src &#x27;self&#x27; https://cdn.jsdelivr.net &#x27;sha256-i4gD70kvMZola5ohtUM4v0ZjjwEpmFswsvJz9Xk7Jhk=&#x27;; style-src &#x27;self&#x27; &#x27;unsafe-inline&#x27; https://fonts.googleapis.com; font-src &#x27;self&#x27; https://fonts.gstatic.com; img-src &#x27;self&#x27; data:; connect-src &#x27;self&#x27; https://mtpqpxcmngrsivntbgcc.supabase.co wss://mtpqpxcmngrsivntbgcc.supabase.co https://cdn.jsdelivr.net; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;self&#x27;; frame-src &#x27;none&#x27;">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -31,8 +33,9 @@ form.addEventListener('submit',async event=>{
     if(error || !data.user) throw error || new Error('Sin usuario');
     status.className='note ok';status.textContent='Sesión iniciada. Abriendo tu cuenta…';
     await routeUser(data.user);
-  } catch {status.className='note error';status.textContent='No fue posible acceder. Revisa tus datos y conexión.';button.disabled=false;}
+  } catch (error) {status.className='note error';status.textContent=error?.code==='email_not_confirmed'?'Confirma tu correo con el enlace recibido antes de iniciar sesión.':'No fue posible acceder. Revisa tus datos y conexión.';button.disabled=false;}
 });
 try { const {data:{user}}=await supabase.auth.getUser();if(user)await routeUser(user); } catch {}
 </script>
 <script src="./footer.js?v=20261001-imageguard"></script></body></html>
+

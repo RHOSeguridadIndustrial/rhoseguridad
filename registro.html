@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src &#x27;self&#x27;; script-src &#x27;self&#x27; https://cdn.jsdelivr.net &#x27;sha256-lF/o4fUQYifMZuAIrysdFAZc+Dcbk7xldklgDfIK68I=&#x27;; style-src &#x27;self&#x27; &#x27;unsafe-inline&#x27; https://fonts.googleapis.com; font-src &#x27;self&#x27; https://fonts.gstatic.com; img-src &#x27;self&#x27; data:; connect-src &#x27;self&#x27; https://mtpqpxcmngrsivntbgcc.supabase.co wss://mtpqpxcmngrsivntbgcc.supabase.co https://cdn.jsdelivr.net; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;self&#x27;; frame-src &#x27;none&#x27;">
+<meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
   <title>Crear cuenta | RHO Seguridad Industrial</title>
@@ -57,15 +59,15 @@
         <label class="check"><input type="checkbox" required><span>Confirmo que he leído el aviso de privacidad y acepto el tratamiento de mis datos para crear, administrar y autenticar mi cuenta, así como para recibir la atención y seguimiento que solicite a RHO.</span></label>
         <button class="btn" type="submit">Crear mi cuenta</button>
       </form>
-      <p class="note" id="status">Al crear la cuenta, tu sesión se iniciará automáticamente.</p>
+      <p class="note" id="status">Confirma tu correo con el enlace que recibirás antes de iniciar sesión.</p>
       <section id="contactOptions" class="contact-options" hidden>
-        <h2>¿Cómo deseas enviar tu registro?</h2>
-        <p>Elige una opción. El destinatario y el mensaje ya estarán completos con tus datos.</p>
+        <h2>Confirma tu correo</h2>
+        <p>El enlace llegará al correo que ingresaste. Si no lo recibes, revisa correo no deseado o solicita ayuda a RHO.</p>
         <div class="contact-actions">
-          <a id="registerWhatsApp" class="contact-btn whatsapp" target="_blank" rel="noopener">Enviar por WhatsApp</a>
-          <a id="registerEmail" class="contact-btn email">Enviar por correo</a>
+          <a id="registerWhatsApp" class="contact-btn whatsapp" href="https://wa.me/525545683441?text=Necesito%20ayuda%20para%20confirmar%20mi%20correo" target="_blank" rel="noopener">Solicitar ayuda por WhatsApp</a>
+          <a id="registerEmail" class="contact-btn email" href="mailto:Administracion@rhosegind.com?subject=Ayuda%20para%20confirmar%20correo">Solicitar ayuda por correo</a>
         </div>
-        <a class="continue-link" href="cuenta.html">Ir a mi cuenta</a>
+        <a class="continue-link" href="login.html">Ya confirmé mi correo: iniciar sesión</a>
       </section>
     </section>
   </main><footer aria-label="Información de privacidad" style="padding:20px;text-align:center"><a href="aviso-privacidad.html" style="color:#071a35;font:600 14px Arial,sans-serif;text-decoration:underline">Aviso de privacidad</a></footer>
@@ -79,101 +81,7 @@
       this.href = 'https://wa.me/525545683441?text=' + encodeURIComponent(message);
     });
   </script>
-  <script type="module">
-    import { supabase } from './supabase-client.js?v=20260913-registration';
-
-    const form = document.getElementById('registerForm');
-    const status = document.getElementById('status');
-    const button = form.querySelector('button');
-    const publishableKey = 'sb_publishable_5Dan5EdjEHyfPDG30opQ8Q_d-Kkp72_';
-
-    const randomNonce = () => {
-      const bytes = new Uint8Array(32);
-      crypto.getRandomValues(bytes);
-      return [...bytes].map((value) => value.toString(16).padStart(2, '0')).join('');
-    };
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      button.disabled = true;
-      status.className = 'note';
-      status.textContent = 'Creando cuenta e iniciando sesión…';
-
-      const values = new FormData(form);
-      const email = String(values.get('email')).trim().toLowerCase();
-      const password = String(values.get('password'));
-      const fullName = `${String(values.get('nombre')).trim()} ${String(values.get('apellidos')).trim()}`.trim();
-      const nonce = randomNonce();
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            company_name: String(values.get('empresa')).trim(),
-            phone: String(values.get('telefono')).trim(),
-            customer_type: values.get('tipo'),
-            registration_nonce: nonce,
-          },
-        },
-      });
-
-      if (error || !data.user || data.user.identities?.length === 0) {
-        status.className = 'note error';
-        status.textContent = error?.message?.includes('registered') || data.user?.identities?.length === 0
-          ? 'Ese correo ya está registrado. Inicia sesión con tu contraseña.'
-          : 'No fue posible crear la cuenta. Revisa los datos e inténtalo de nuevo.';
-        button.disabled = false;
-        return;
-      }
-
-      if (!data.session) {
-        const confirmation = await fetch('https://mtpqpxcmngrsivntbgcc.supabase.co/functions/v1/complete-registration', {
-          method: 'POST',
-          headers: { apikey: publishableKey, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: data.user.id, email, nonce }),
-        });
-        const confirmationResult = await confirmation.json();
-        if (!confirmation.ok) {
-          status.className = 'note error';
-          status.textContent = confirmationResult.error || 'La cuenta se creó, pero no fue posible iniciar la sesión automáticamente.';
-          button.disabled = false;
-          return;
-        }
-
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) {
-          status.className = 'note error';
-          status.textContent = 'La cuenta está activa. Inicia sesión con el correo y contraseña registrados.';
-          button.disabled = false;
-          return;
-        }
-      }
-
-      status.className = 'note ok';
-      status.textContent = 'Cuenta creada. Sesión iniciada correctamente.';
-      const company = String(values.get('empresa') || '').trim();
-      const phone = String(values.get('telefono') || '').trim();
-      const customerType = String(values.get('tipo') || '').trim();
-      const message = [
-        'Hola RHO Seguridad Industrial,',
-        '',
-        'Acabo de crear mi cuenta como cliente con los siguientes datos:',
-        `Nombre: ${fullName}`,
-        company ? `Empresa: ${company}` : '',
-        `Tipo de cliente: ${customerType}`,
-        `Correo: ${email}`,
-        phone ? `Teléfono: ${phone}` : '',
-        '',
-        'Deseo continuar con la atención de mi registro.',
-      ].filter(Boolean).join('\n');
-      const subject = `Nuevo registro de cliente - ${fullName}`;
-
-      document.getElementById('registerEmail').href = `mailto:Administracion@rhosegind.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
-      document.getElementById('registerWhatsApp').href = `https://wa.me/525545683441?text=${encodeURIComponent(message)}`;
-      form.hidden = true;
-      document.getElementById('contactOptions').hidden = false;
-    });
-  </script>
+  <script type="module" src="./registration.js?v=20261027-email-verification"></script>
 <script src="./footer.js?v=20261001-imageguard"></script></body>
 </html>
+
