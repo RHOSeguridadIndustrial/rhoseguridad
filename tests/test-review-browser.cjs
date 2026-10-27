@@ -38,7 +38,7 @@ async function main(){
    await page.evaluate(()=>{fixture.owner='different-owner';fixture.authChanged('SIGNED_OUT');});await page.locator('#app').waitFor({state:'hidden'});assert.equal(await page.locator('#cases article').count(),0);
    console.log(`PASS ${++groups}: ${type.name()} review, safe text, responsive layout and account-change clearing`);
    await open({loseResponse:true});await page.locator('#app').waitFor({state:'visible'});await page.locator('textarea').fill('Prueba de respuesta perdida al guardar.');await page.getByRole('button',{name:'Registrar revisión'}).click();
-   await page.getByText('No se completó la operación.',{exact:false}).waitFor();await page.getByRole('button',{name:'Actualizar casos'}).click();await page.getByText('Revisión registrada',{exact:true}).waitFor();assert.equal(await page.locator('textarea').count(),0);
+   await page.getByText('No se completó la operación.',{exact:false}).waitFor();assert.equal(await page.locator('textarea').count(),0);assert.equal(await page.locator('#summary').textContent(),'');await page.getByRole('button',{name:'Actualizar casos'}).click();await page.getByText('Revisión registrada',{exact:true}).waitFor();assert.equal(await page.locator('textarea').count(),0);
    console.log(`PASS ${++groups}: ${type.name()} lost committed response recovers by read without duplicate mutation`);
    const refund={refund_id:'re_fixture',event_id:'evt_fixture',amount_cents:29100,currency:'mxn',status:'succeeded',event_created:1792800000,recorded_at:'2026-10-25T20:00:00Z'};
    await open({cases:[{...record,reviewed:true,note:'Nota previa de la prueba.',reviewed_at:'2026-10-24T20:00:00Z',resolution:{state:'refunded',limited:false,refunds:[refund]}}]});
@@ -46,6 +46,19 @@ async function main(){
    assert.match(await page.locator('#cases').textContent(),/re_fixture/);assert.match(await page.locator('#cases').textContent(),/evt_fixture/);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
    assert.equal(await page.locator('textarea').count(),0);
+   await page.evaluate(()=>{fixture.fail=true;});
+   await page.getByRole('button',{name:'Actualizar casos'}).click();await page.getByText('No se completó la operación.',{exact:false}).waitFor();
+   assert.equal(await page.locator('#cases article').count(),0);assert.equal(await page.locator('#summary').textContent(),'');
+   assert.equal(await page.getByText('Reembolso de prueba confirmado',{exact:true}).count(),0);
+   await page.evaluate(()=>{fixture.fail=false;fixture.slow=true;});
+   await page.getByRole('button',{name:'Actualizar casos'}).click();await page.waitForFunction(()=>typeof fixture.finish==='function');
+   assert.equal(await page.locator('#cases article').count(),0);assert.equal(await page.locator('#summary').textContent(),'');
+   await page.evaluate(()=>fixture.finish());await page.getByText('Reembolso de prueba confirmado',{exact:true}).waitFor();
+   await page.evaluate(()=>{fixture.environment='live';});
+   await page.getByRole('button',{name:'Actualizar casos'}).click();await page.getByText('No se completó la operación.',{exact:false}).waitFor();
+   assert.equal(await page.locator('#cases article').count(),0);assert.equal(await page.locator('#summary').textContent(),'');
+   await page.evaluate(()=>{fixture.environment='test';});
+   await page.getByRole('button',{name:'Actualizar casos'}).click();await page.getByText('Reembolso de prueba confirmado',{exact:true}).waitFor();
    await page.evaluate(()=>{fixture.cases[0].resolution={state:'unresolved',limited:false,refunds:[{...fixture.cases[0].resolution.refunds[0],status:'failed'}]};});
    await page.getByRole('button',{name:'Actualizar casos'}).click();await page.getByText('Resolución pendiente',{exact:true}).waitFor();
    assert.match(await page.locator('#summary').textContent(),/1 sin resolver/);assert.equal(await page.getByText('Reembolso de prueba confirmado',{exact:true}).count(),0);

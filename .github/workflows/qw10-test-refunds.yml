@@ -1,7 +1,7 @@
 name: QW10 signed refund reconciliation
 on:
   push:
-    branches: [qw10-refund-reconciliation-20261025, qw10-review-session-continuity, main]
+    branches: [qw10-refund-reconciliation-20261025, qw10-review-session-continuity, qw10-review-fresh-results, main]
     paths: ['supabase/qw10-test-refunds.sql', 'supabase/migrations/*qw10_test_refunds.sql', 'supabase/functions/stripe-test-orders/**', 'supabase/functions/_shared/*payment*.js', 'supabase/functions/_shared/refund-confirmation.js', 'tests/test-refund*', 'tests/test-review*', 'admin-revision-pruebas*', 'test-review-model.js', '.github/workflows/qw10-test-refunds.yml']
 permissions:
   contents: read

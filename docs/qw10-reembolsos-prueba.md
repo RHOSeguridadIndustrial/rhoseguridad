@@ -51,3 +51,11 @@ El panel conserva los casos al reconfirmar SIGNED_IN o renovar TOKEN_REFRESHED
 para la misma identidad. Un cierre o cambio de cuenta elimina los casos e invalida
 respuestas pendientes, también durante el arranque. La consulta sigue exigiendo
 el guard administrativo, MFA y las restricciones del RPC. No cambia datos ni permisos.
+
+## Resultados vigentes y recuperación de errores — 27 de octubre de 2026
+
+Actualizar casos retira el resultado anterior mientras consulta. Si falla la red
+o la validación de la respuesta, no conserva indicadores de reembolso confirmado
+ni conteos anteriores. Si se pierde la respuesta al registrar una nota, retira el
+formulario y pide actualizar antes de otro intento; una lectura recupera la nota
+ya confirmada sin repetir la escritura. No modifica el histórico ni la resolución.
