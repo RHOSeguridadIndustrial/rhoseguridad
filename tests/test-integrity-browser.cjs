@@ -23,9 +23,11 @@ const client=`export const supabase={auth:{getSession:async()=>({data:{session:f
    let page;const errors=[];
    async function open(overrides={}){if(page)await page.close();page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.addInitScript(data=>{window.fixture=data;},{owner:'fixture-admin',report:sample,calls:[],...overrides});await page.goto(base+'/admin-control-pruebas.html');}
    await open();await page.locator('#report').waitFor({state:'visible'});
-   assert.match(await page.locator('#review-warning').innerText(),/1 pagos siguen en revisión; 1 tienen una nota/);
-   assert.match(await page.locator('#records').innerText(),/Nota registrada; el pago sigue en revisión/);
+   assert.match(await page.locator('#review-warning').innerText(),/1 recibos fueron marcados para revisión; 1 tienen una nota/);
+   assert.match(await page.locator('#records').innerText(),/Nota registrada. Consulta la resolución actual/);
    assert.match(await page.locator('#records').innerText(),/\$123.70/);
+   assert.equal(await page.locator('#review-warning a').getAttribute('href'),'admin-revision-pruebas.html');
+   assert.match(await page.locator('#review-warning').innerText(),/no consulta reembolsos posteriores/);
    await page.evaluate(()=>fixture.authChanged('SIGNED_IN',{user:{id:fixture.owner}}));
    assert.equal(await page.locator('#report').isVisible(),true);
    assert.equal(await page.locator('#login-help').isVisible(),false);
@@ -42,7 +44,7 @@ const client=`export const supabase={auth:{getSession:async()=>({data:{session:f
    assert.match(await page.locator('#outcome').innerText(),/1 solicitudes con diferencias/);
    await page.evaluate(()=>{fixture.owner=null;fixture.authChanged('SIGNED_OUT');});
    await page.locator('#app').waitFor({state:'hidden'});assert.equal(await page.locator('#records article').count(),0);
-   console.log('PASS '+engine.name()+': same-owner sign-in during guard and refocus, reviewed exception stays pending, exact money, read-only refresh, incident and error clearing');
+   console.log('PASS '+engine.name()+': same-owner sign-in during guard and refocus, original receipt is distinguished from current resolution, exact money, read-only refresh, incident and error clearing');
    await open({owner:null});await page.locator('#login-help').waitFor({state:'visible'});assert.equal(await page.evaluate(()=>fixture.calls.length),0);
    await open({error:'42501'});await page.locator('#login-help').waitFor({state:'visible'});assert.equal(await page.locator('#report').isVisible(),false);
    for(const mutate of [d=>d.environment='live',d=>d.totals.receipts=0,d=>d.requests[0].requestId='<img src=x onerror=alert(1)>']){

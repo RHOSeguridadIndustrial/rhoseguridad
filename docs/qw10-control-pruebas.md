@@ -105,3 +105,11 @@ seis órdenes y seis movimientos de prueba. El panel tiene alcance por propietar
 sus once solicitudes no deben confundirse con esos totales globales. Inventario
 real: 50 unidades; órdenes reales: cero. No se crearon nuevos pagos, órdenes,
 movimientos ni eventos de preparación durante la consulta.
+
+## Aclaración del estado original — 26 de octubre de 2026
+
+El control muestra el estado del recibo al procesar el pago. Sus etiquetas ya no
+afirman que un caso siga pendiente: un reembolso posterior puede haberlo resuelto.
+La advertencia enlaza a Revisión de pagos para consultar la resolución actual y
+los reembolsos. Se conservan los importes, el histórico y la validación de integridad;
+esta aclaración no incorpora reembolsos al cálculo ni modifica datos.
