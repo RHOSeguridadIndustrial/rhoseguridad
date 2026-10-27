@@ -4,7 +4,7 @@ import {validateReviewCases,reviewReasons} from './test-review-model.js?v=202610
 const $=id=>document.getElementById(id);
 const money=v=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(v/100);
 const date=v=>new Date(v).toLocaleString('es-MX',{timeZone:'America/Mexico_City'});
-let busy=false,epoch=0;
+let busy=false,epoch=0,observedOwner;
 const element=(tag,text)=>{const e=document.createElement(tag);e.textContent=text;return e;};
 function lock(){epoch++;$('cases').replaceChildren();$('summary').textContent='';$('message').textContent='';$('app').hidden=true;$('login-help').hidden=false;$('access').textContent='Inicia sesión como administrador y completa el autenticador para consultar estos casos.';}
 async function call(action,request=null,note=null){
@@ -41,8 +41,15 @@ async function run(work){
  finally{busy=false;for(const b of document.querySelectorAll('button'))b.disabled=false;}
 }
 $('refresh').addEventListener('click',()=>run(refresh));
-supabase.auth.onAuthStateChange(event=>{if(!['INITIAL_SESSION','TOKEN_REFRESHED'].includes(event))lock();});
+supabase.auth.onAuthStateChange((event,session)=>{
+ const owner=session?.user?.id??null,changed=observedOwner!==undefined&&owner!==observedOwner;
+ observedOwner=owner;
+ if(!owner||changed||!['INITIAL_SESSION','SIGNED_IN','TOKEN_REFRESHED'].includes(event))lock();
+});
 try{
- await requireSecureAdmin(supabase);const version=epoch;const {data}=await supabase.auth.getSession();if(!data.session)throw Error();await refresh(data.session.user.id,version);
+ const version=epoch;await requireSecureAdmin(supabase);if(version!==epoch)throw Error();
+ const {data,error}=await supabase.auth.getSession();if(error||!data.session||version!==epoch)throw Error();
+ observedOwner=data.session.user.id;await refresh(data.session.user.id,version);
+ if(version!==epoch)throw Error();
  $('access').textContent='';$('app').hidden=false;
 }catch{lock();}
