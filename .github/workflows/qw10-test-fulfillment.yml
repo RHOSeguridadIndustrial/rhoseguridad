@@ -35,6 +35,6 @@ jobs:
           RHO_LOCAL_PG_URL: postgresql://postgres:disposable_fixture_only@127.0.0.1:5432/rho_deployed_fixture
         run: python3 tests/deployed-fulfillment-concurrent.py
       - name: Install desktop and mobile browser engines
-        run: npx --prefix tests playwright install --with-deps chromium webkit
+        run: node tests/node_modules/playwright/cli.js install --with-deps chromium webkit
       - name: Verify review UI on desktop and mobile WebKit
         run: node tests/test-review-browser.cjs

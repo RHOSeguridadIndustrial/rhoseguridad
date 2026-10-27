@@ -6,7 +6,8 @@ const money=v=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).
 const date=v=>new Date(v).toLocaleString('es-MX',{timeZone:'America/Mexico_City'});
 let busy=false,epoch=0,observedOwner;
 const element=(tag,text)=>{const e=document.createElement(tag);e.textContent=text;return e;};
-function lock(){epoch++;$('cases').replaceChildren();$('summary').textContent='';$('message').textContent='';$('app').hidden=true;$('login-help').hidden=false;$('access').textContent='Inicia sesión como administrador y completa el autenticador para consultar estos casos.';}
+function clearCases(){$('cases').replaceChildren();$('summary').textContent='';}
+function lock(){epoch++;clearCases();$('message').textContent='';$('app').hidden=true;$('login-help').hidden=false;$('access').textContent='Inicia sesión como administrador y completa el autenticador para consultar estos casos.';}
 async function call(action,request=null,note=null){
  const {data,error}=await supabase.rpc('qw10_test_review',{p_action:action,p_request:request,p_note:note});
  if(error)throw error;return data;
@@ -33,11 +34,15 @@ function draw(cases){
   });});note.addEventListener('input',()=>note.setCustomValidity(''));return article;
  }));
 }
-async function refresh(owner,version){const data=await call('list');await sameOwner(owner,version);draw(validateReviewCases(data));}
+async function refresh(owner,version){
+ clearCases();$('message').textContent='Consultando el estado actual de los casos…';
+ const data=await call('list');await sameOwner(owner,version);
+ draw(validateReviewCases(data));$('message').textContent='';
+}
 async function run(work){
  if(busy)return;busy=true;const version=epoch;$('message').textContent='';for(const b of document.querySelectorAll('button'))b.disabled=true;
  try{const {data,error}=await supabase.auth.getSession();if(error||!data.session)throw Error('session_changed');await work(data.session.user.id,version);}
- catch(error){if(error.code==='42501'||error.message==='session_changed')lock();else $('message').textContent='No se completó la operación. Actualiza los casos antes de volver a intentarlo.';}
+ catch(error){if(error.code==='42501'||error.message==='session_changed')lock();else if(version===epoch){clearCases();$('message').textContent='No se completó la operación. Actualiza los casos antes de volver a intentarlo.';}}
  finally{busy=false;for(const b of document.querySelectorAll('button'))b.disabled=false;}
 }
 $('refresh').addEventListener('click',()=>run(refresh));

@@ -1,7 +1,7 @@
 name: QW10 signed refund reconciliation
 on:
   push:
-    branches: [qw10-refund-reconciliation-20261025, qw10-review-session-continuity, main]
+    branches: [qw10-refund-reconciliation-20261025, qw10-review-session-continuity, qw10-review-fresh-results, main]
     paths: ['supabase/qw10-test-refunds.sql', 'supabase/migrations/*qw10_test_refunds.sql', 'supabase/functions/stripe-test-orders/**', 'supabase/functions/_shared/*payment*.js', 'supabase/functions/_shared/refund-confirmation.js', 'tests/test-refund*', 'tests/test-review*', 'admin-revision-pruebas*', 'test-review-model.js', '.github/workflows/qw10-test-refunds.yml']
 permissions:
   contents: read
@@ -37,6 +37,6 @@ jobs:
           RHO_LOCAL_PG_URL: postgresql://postgres:disposable_fixture_only@127.0.0.1:5432/rho_deployed_fixture
         run: python3 tests/test-refund-concurrent.py
       - name: Install desktop and mobile browser engines
-        run: npx --prefix tests playwright install --with-deps chromium webkit
+        run: node tests/node_modules/playwright/cli.js install --with-deps chromium webkit
       - name: Verify review UI on desktop and mobile WebKit
         run: node tests/test-review-browser.cjs
