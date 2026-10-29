@@ -1,13 +1,15 @@
 import {supabase} from './supabase-client.js?v=20261007-security';
-const $=id=>document.getElementById(id),allowed=new Set(['admin.html','admin-precios.html','admin-pedidos.html','admin-inventario.html','admin-lealtad.html','admin-compras.html','admin-transfer-pruebas.html']);
-const requested=new URLSearchParams(location.search).get('next'),next=allowed.has(requested)?requested:'admin.html';
+import {adminReturnTarget} from './admin-return.js';
+const $=id=>document.getElementById(id);
+const next=adminReturnTarget(location.search);
+const loginUrl='login.html?next='+encodeURIComponent(next);
 let factorId=null,enrolling=false;
 function feedback(text){$('status').textContent=text;}
 function clearSecret(){$('qr').removeAttribute('src');$('secret').value='';$('setup').hidden=true;}
 async function initialize(){
  try{
  const {data:{user},error}=await supabase.auth.getUser();
- if(error||!user){location.replace('login.html');return;}
+ if(error||!user){location.replace(loginUrl);return;}
  const {data:profile,error:profileError}=await supabase.from('profiles').select('role').eq('id',user.id).single();
  if(profileError||profile?.role!=='admin'){location.replace('index.html');return;}
  const {data:factors,error:factorsError}=await supabase.auth.mfa.listFactors();if(factorsError)throw factorsError;
@@ -16,7 +18,7 @@ async function initialize(){
  $('content').hidden=false;
  if(verified.length&&assurance.currentLevel==='aal2'){
  const {data:valid,error:touchError}=await supabase.rpc('admin_session_touch');
- if(!touchError&&valid===true){$('intro').textContent='Tu identidad está verificada.';$('ready').hidden=false;$('continue').href=next;return;}
+ if(!touchError&&valid===true){$('intro').textContent='Tu identidad está verificada.';$('ready').hidden=false;$('continue').href=next;if(next==='checkout-prueba.html'){$('continue').textContent='Volver a la compra de prueba';$('ready').querySelector('p').textContent='Segundo factor verificado. Ya puedes continuar la compra de prueba.';}return;}
  }
  $('intro').textContent=verified.length?'Escribe el código que aparece en tu autenticador para entrar al panel.':'Vincula tu autenticador para proteger el acceso de administrador.';
  if(verified.length){
@@ -46,7 +48,7 @@ $('verify').addEventListener('submit',async e=>{
  const {error}=await supabase.auth.mfa.challengeAndVerify({factorId,code:$('code').value});if(error)throw error;
  $('code').value='';clearSecret();if(enrolling)sessionStorage.removeItem('rho_pending_mfa_factor');
  const {data:valid,error:touchError}=await supabase.rpc('admin_session_touch');
- if(touchError||valid!==true){await supabase.auth.signOut({scope:'global'});location.replace('login.html?reason=renew');return;}
+ if(touchError||valid!==true){await supabase.auth.signOut({scope:'global'});location.replace(loginUrl+'&reason=renew');return;}
  location.replace(next);
  }catch{feedback('El código no es válido o expiró. Captura el código actual de tu autenticador.');}
  finally{button.disabled=false;}

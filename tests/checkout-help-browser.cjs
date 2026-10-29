@@ -38,7 +38,7 @@ const cart=`window.items=[{id:'fixture-helmet',name:'Casco de prueba',qty:1}];ex
    await page.evaluate(()=>window.owner=null);
    await run('success','Inicia sesión con tu cuenta');
    assert.equal(await page.evaluate(()=>calls.length),0);
-   assert.equal(await help.getAttribute('href'),'admin-seguridad.html');
+   assert.equal(await help.getAttribute('href'),'admin-seguridad.html?next=checkout-prueba.html');
    await page.evaluate(()=>{window.owner='fixture-admin';window.items=[];window.dispatchEvent(new Event('rho-cart-changed'));});
    await run('success','El carrito está vacío');assert.equal(await help.getAttribute('href'),'carrito.html');
    await page.evaluate(()=>{window.items=[{id:'fixture-helmet',name:'Casco de prueba',qty:1}];window.dispatchEvent(new Event('rho-cart-changed'));});
