@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src &#x27;self&#x27;; script-src &#x27;self&#x27; https://cdn.jsdelivr.net &#x27;sha256-i4gD70kvMZola5ohtUM4v0ZjjwEpmFswsvJz9Xk7Jhk=&#x27;; style-src &#x27;self&#x27; &#x27;unsafe-inline&#x27; https://fonts.googleapis.com; font-src &#x27;self&#x27; https://fonts.gstatic.com; img-src &#x27;self&#x27; data:; connect-src &#x27;self&#x27; https://mtpqpxcmngrsivntbgcc.supabase.co wss://mtpqpxcmngrsivntbgcc.supabase.co https://cdn.jsdelivr.net; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;self&#x27;; frame-src &#x27;none&#x27;">
+<meta http-equiv="Content-Security-Policy" content="default-src &#x27;self&#x27;; script-src &#x27;self&#x27; https://cdn.jsdelivr.net &#x27;sha256-Weui4qGqTAEmStR5n+5b4uy/ZUqyfDodrClJP23aP7E=&#x27;; style-src &#x27;self&#x27; &#x27;unsafe-inline&#x27; https://fonts.googleapis.com; font-src &#x27;self&#x27; https://fonts.gstatic.com; img-src &#x27;self&#x27; data:; connect-src &#x27;self&#x27; https://mtpqpxcmngrsivntbgcc.supabase.co wss://mtpqpxcmngrsivntbgcc.supabase.co https://cdn.jsdelivr.net; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;self&#x27;; frame-src &#x27;none&#x27;">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
@@ -20,10 +20,11 @@
 <header class="topbar"><a href="index.html" aria-label="Volver a inicio"><img src="logo-rho.jpeg" alt="RHO Seguridad Industrial"></a><a class="back" href="index.html">Inicio</a></header>
 <main class="wrap"><section class="welcome"><div class="user-icon"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path><path d="M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6"></path></svg></div><h1>Bienvenido</h1><p>Ingresa para consultar tus datos y continuar con tu cotización.</p></section><section class="card"><h2>Iniciar sesión</h2><p>Accede a tu cuenta RHO.</p><form id="loginForm"><label class="field">Correo electrónico<input name="email" type="email" autocomplete="email" placeholder="correo@empresa.com" required></label><label class="field">Contraseña<input name="password" type="password" autocomplete="current-password" placeholder="••••••••" required></label><a id="forgotPassword" class="forgot-password" href="recuperar-password.html">¿Olvidaste tu contraseña?</a><button class="primary" type="submit">Ingresar</button></form><div class="divider">o</div><a class="create" href="registro.html">Crear cuenta</a><p class="note" id="status">Acceso protegido con Supabase.</p></section></main>
 <script type="module">import { supabase } from './supabase-client.js?v=20260913-loyalty';
+import {adminVerificationUrl} from './admin-return.js';
 const form=document.getElementById('loginForm'),status=document.getElementById('status'),button=form.querySelector('button'),forgot=document.getElementById('forgotPassword'),emailField=form.elements.email;emailField.addEventListener('input',()=>{const email=emailField.value.trim();forgot.href='recuperar-password.html'+(email?'?email='+encodeURIComponent(email):'');});
 async function routeUser(user) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id',user.id).maybeSingle();
-  location.replace(profile?.role === 'admin' ? 'admin-seguridad.html' : 'cuenta.html');
+  location.replace(profile?.role === 'admin' ? adminVerificationUrl(location.search) : 'cuenta.html');
 }
 form.addEventListener('submit',async event=>{
   event.preventDefault();button.disabled=true;status.className='note';status.textContent='Validando acceso…';

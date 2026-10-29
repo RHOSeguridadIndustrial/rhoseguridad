@@ -43,7 +43,7 @@ function showSummary(value){
 }
 function showProblem(kind){
  const problems={
-  session:['Inicia sesión con tu cuenta de administrador en este navegador y completa la verificación del autenticador. Después vuelve aquí y reintenta.','Verificar acceso de administrador','admin-seguridad.html'],
+  session:['Inicia sesión con tu cuenta de administrador en este navegador y completa la verificación del autenticador. Al terminar volverás a esta compra para reintentar.','Verificar acceso de administrador','admin-seguridad.html?next=checkout-prueba.html'],
   empty:['El carrito está vacío en este navegador. Agrega un artículo antes de preparar la prueba.','Ir al carrito','carrito.html'],
   conflict:['No se pudo confirmar la preparación. Revisa que los artículos estén habilitados y disponibles en el inventario de prueba y que la reserva siga vigente. Reintenta con los mismos datos para evitar duplicados.','Revisar carrito','carrito.html'],
   disabled:['El servicio de pruebas no está disponible en este momento. Intenta más tarde.'],
