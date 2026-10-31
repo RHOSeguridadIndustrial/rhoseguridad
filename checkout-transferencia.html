@@ -5,14 +5,14 @@
   <meta name="referrer" content="no-referrer">
   <title>Compra por transferencia | RHO Seguridad Industrial</title>
   <meta name="description" content="Revisa tu carrito, completa tus datos y solicita a RHO la confirmación de tu compra por transferencia bancaria.">
-  <link rel="stylesheet" href="checkout-transferencia.css?v=20261031">
+  <link rel="stylesheet" href="checkout-transferencia.css?v=20261031-inbursa">
 </head>
 <body>
   <header class="header"><a class="brand" href="index.html" aria-label="RHO, ir al inicio">R<span>H</span><b>O</b></a><a href="carrito.html">← Volver al carrito</a></header>
   <main>
     <p class="eyebrow">TU COMPRA EN RHO</p>
     <h1>Compra por transferencia</h1>
-    <p class="intro">Completa tu solicitud. RHO te confirmará el total y los datos bancarios antes del pago.</p>
+    <p class="intro">Completa tu solicitud. RHO te confirmará el total y la referencia de tu pedido antes del pago.</p>
     <ol class="steps" aria-label="Pasos de compra"><li><b>1</b> Tus datos</li><li><b>2</b> Revisión con RHO</li><li><b>3</b> Transferencia</li></ol>
     <noscript>Activa JavaScript para revisar tu carrito o comunícate con RHO al 55 4568 3441.</noscript>
     <div id="empty-cart" class="panel" hidden><h2>Tu carrito está vacío</h2><p>Agrega artículos para continuar con tu solicitud.</p><a class="button" href="portafolio.html">Ver productos</a></div>
@@ -42,7 +42,15 @@
           <p class="muted">RHO verificará cobertura, costo y fecha de entrega. Si necesitas factura, solicitará tus datos fiscales al confirmar.</p>
         </section>
         <section class="panel payment"><h2>3. Transferencia bancaria</h2><p class="badge">Confirmación de pago por RHO</p>
-          <ol class="instructions"><li>Envía tu solicitud para confirmar artículos, envío y total.</li><li>RHO te compartirá los datos bancarios y la referencia de tu pedido.</li><li>Envía tu comprobante. RHO confirmará el pago cuando reciba el dinero.</li></ol>
+          <ol class="instructions"><li>Envía tu solicitud para confirmar artículos, envío y total.</li><li>Cuando RHO confirme el importe y la referencia de tu pedido, transfiere a la cuenta Inbursa indicada abajo.</li><li>Envía tu comprobante. RHO confirmará el pago cuando reciba el dinero.</li></ol>
+          <section class="bank-details" aria-labelledby="bank-heading">
+            <img class="bank-logo" src="assets/inbursa-banco.jpeg" width="1320" height="364" alt="Inbursa Banco">
+            <h3 id="bank-heading">Datos para transferencia</h3>
+            <p class="bank-instruction">Utiliza el importe y la referencia confirmados por RHO. El total del resumen es una estimación.</p>
+            <div class="bank-row"><div><label for="bank-account">Cuenta Inbursa</label><input id="bank-account" class="bank-number" value="50048556474" readonly inputmode="numeric" autocomplete="off" spellcheck="false"></div><button class="bank-copy" type="button" data-bank-copy="bank-account" data-copy-label="Cuenta" aria-label="Copiar cuenta Inbursa">Copiar</button></div>
+            <div class="bank-row"><div><label for="bank-clabe">CLABE interbancaria</label><input id="bank-clabe" class="bank-number" value="036180500485564746" readonly inputmode="numeric" autocomplete="off" spellcheck="false"></div><button class="bank-copy" type="button" data-bank-copy="bank-clabe" data-copy-label="CLABE" aria-label="Copiar CLABE interbancaria">Copiar</button></div>
+            <p id="bank-copy-status" class="bank-copy-status" role="status" aria-live="polite"></p>
+          </section>
           <p class="muted">La solicitud no reserva mercancía. Espera la confirmación de RHO antes de transferir.</p>
           <button id="review-request" class="button" type="submit" disabled>Revisar mi solicitud</button>
           <p id="request-status" role="status" aria-live="polite"></p>
@@ -58,5 +66,6 @@
     </div>
   </main>
   <footer><a href="aviso-privacidad.html">Aviso de privacidad</a><span>RHO Seguridad Industrial · 55 4568 3441</span></footer>
-  <script type="module" src="checkout-transferencia.js?v=20261031"></script>
+  <script type="module" src="checkout-transferencia.js?v=20261031-inbursa"></script>
+  <script type="module" src="transfer-bank.js?v=20261031-inbursa"></script>
 </body></html>

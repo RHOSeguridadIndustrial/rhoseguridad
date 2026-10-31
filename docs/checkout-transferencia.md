@@ -21,8 +21,9 @@ sessionStorage ni en nuevas tablas. Cerrar o cambiar de sesión limpia el formul
 Los faltantes y el stock desconocido se derivan a Suministro especializado.
 La política existente de envío se reutiliza sin cambiar sus umbrales; el resultado
 es una estimación. Los destinos fuera de CDMX y los beneficios sin registro
-reconocido conservan envío y total por confirmar. No se muestran datos para pagar
-antes de la validación manual de RHO.
+reconocido conservan envío y total por confirmar. Los datos bancarios de Inbursa proporcionados por Rafael el 31/10/2026
+se muestran con botones de copia. Se indica utilizar únicamente el importe y la
+referencia confirmados por RHO; el resumen permanece como estimación.
 
 ## Validación
 
@@ -31,7 +32,7 @@ antes de la validación manual de RHO.
   edición de domicilio invalida el enlace anterior; sin desbordamiento horizontal.
 - Stock agotado, fallo de consulta y cierre de sesión comprobados en vista previa.
 - Catálogo real consultado desde vista previa sin modificaciones de pedidos ni stock.
-- No se enviaron mensajes, se transfirió dinero ni se simularon pagos reales.
+- No se enviaron mensajes ni se transfirió dinero.
 
 La conciliación bancaria automática y un checkout que cree órdenes persistentes
 siguen fuera de este cambio. La aceptación en Safari nativo sigue pendiente.

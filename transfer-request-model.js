@@ -37,7 +37,7 @@ export function transferMessage(quote, contact) {
     '', `Entrega solicitada: ${deliveryText(contact)}`,
     contact.notes && `Referencias: ${contact.notes}`,
     `Requiere factura: ${contact.invoice ? 'sí' : 'no'}`,
-    '', 'Solicito confirmar existencias, cobertura, envío, total final y fecha de entrega, y después recibir los datos bancarios y referencia para transferir.',
+    '', 'Solicito confirmar existencias, cobertura, envío, total final y fecha de entrega, y la referencia para transferir a la cuenta Inbursa publicada en el checkout.',
     'Esta solicitud no reserva mercancía ni confirma un pedido o pago. El pago quedará pendiente hasta que RHO confirme la recepción del dinero.'
   ].filter(line=>line !== false).join('\n');
 }
