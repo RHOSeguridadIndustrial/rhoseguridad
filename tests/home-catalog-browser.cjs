@@ -34,8 +34,8 @@ try{
    // Every product photograph is an actual, decodable catalog asset.
    for(const img of await page.locator('.rho-home-product img').all()){
     await img.scrollIntoViewIfNeeded();
-    await img.evaluate(async image=>{await image.decode()});
-    assert.ok(await img.evaluate(image=>image.naturalWidth>0));
+    const label=await img.locator('..').locator('..').innerText();
+    try { await page.waitForFunction(image=>image.complete && image.naturalWidth>0,await img.elementHandle(),{timeout:10000}); } catch { throw new Error('Catalog image did not load: '+label); }
    }
    if(width<=900){
     await page.locator('#rho-home-modules').evaluate(el=>el.scrollLeft=0);

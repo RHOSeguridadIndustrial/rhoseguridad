@@ -15,7 +15,8 @@ jobs:
       - run: node --check home-catalog.js
       - run: node tests/node_modules/playwright/cli.js install --with-deps chromium webkit
       - run: node tests/home-catalog-browser.cjs
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: home-catalog-previews
           path: tests/home-previews/
