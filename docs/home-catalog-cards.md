@@ -16,4 +16,4 @@ Ajuste móvil solicitado el mismo día: nueve artículos visibles en tres filas 
 
 Se retira de Inicio el bloque señalado por el usuario: «Solicita una cotización», botón «Abrir cotizador virtual», teléfono y zona de servicio, y formulario de WhatsApp. Los accesos del menú a Cotizador virtual y Atención a clientes continúan disponibles, igual que las páginas de destino.
 
-La revisión visual detectó que el JPEG original de tapones con cordón carecía del último byte del marcador de fin y no se pintaba en WebKit. Se restaura ese byte sin modificar los píxeles de la fotografía y se renueva su URL de caché en Inicio. La verificación comprueba también su decodificación.
+La revisión visual detectó que la fotografía original de tapones con cordón no se decodifica en WebKit. La portada utiliza los tapones sin cordón y un arnés, ambos del catálogo real, para mantener doce artículos en escritorio y nueve en móvil con fotografías válidas. La verificación comprueba también la decodificación del JPEG de los tapones elegidos. Los enlaces antiguos a Inicio #contacto redirigen a Atención a clientes.

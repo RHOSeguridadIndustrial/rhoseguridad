@@ -3,8 +3,8 @@ import { searchCatalog } from './search-catalog.js?v=20261008-4';
 // Discovery modules use the same product names and photographs as site search.
 // Prices, stock, variants and cart actions stay in the existing catalog flow.
 const groups = [
-  { title: 'Equipa tu jornada', subtitle: 'Protección de cabeza a pies', theme: 'navy', ids: ['casco-mundial-infra', 'lentes-al012cl-dermacare', 'guante-japones-latex', 'bota-industrial-dielectrica'] },
-  { title: 'Cuida cada sentido', subtitle: 'Protección respiratoria, auditiva y visual', theme: 'green', ids: ['mascarilla-3m-8210-n95', 'tapones-3m-con-cordon', 'tapones-3m-sin-cordon', 'lente-steel-espejeado'] },
+  { title: 'Equipa tu jornada', subtitle: 'Protección de cabeza a pies', theme: 'navy', ids: ['casco-mundial-infra', 'guante-japones-latex', 'bota-industrial-dielectrica', 'arnes-seguridad'] },
+  { title: 'Cuida cada sentido', subtitle: 'Protección respiratoria, auditiva y visual', theme: 'green', ids: ['mascarilla-3m-8210-n95', 'tapones-3m-sin-cordon', 'lente-steel-espejeado', 'lentes-al012cl-dermacare'] },
   { title: 'Prepara tu operación', subtitle: 'Visibilidad, manos y primeros auxilios', theme: 'orange', ids: ['chaleco-seguridad', 'guante-carnaza-vestimenta', 'guante-limpieza-rudo', 'botiquin-equipado'] }
 ];
 // Compact labels keep the mobile mosaic readable; the complete catalog name
@@ -15,8 +15,8 @@ const compactNames = {
   'guante-japones-latex': 'Guante látex',
   'bota-industrial-dielectrica': 'Bota de seguridad',
   'mascarilla-3m-8210-n95': 'N95 3M 8210',
-  'tapones-3m-con-cordon': 'Tapones con cordón',
   'tapones-3m-sin-cordon': 'Tapones sin cordón',
+  'arnes-seguridad': 'Arnés',
   'lente-steel-espejeado': 'Lente Steel',
   'chaleco-seguridad': 'Chaleco',
   'guante-carnaza-vestimenta': 'Guante carnaza',
@@ -25,7 +25,7 @@ const compactNames = {
 };
 const mobileProducts = new Set([
   'casco-mundial-infra', 'guante-japones-latex', 'bota-industrial-dielectrica',
-  'mascarilla-3m-8210-n95', 'tapones-3m-con-cordon', 'lente-steel-espejeado',
+  'mascarilla-3m-8210-n95', 'tapones-3m-sin-cordon', 'lente-steel-espejeado',
   'chaleco-seguridad', 'guante-carnaza-vestimenta', 'botiquin-equipado'
 ]);
 const node = (tag, className, text) => {
@@ -51,8 +51,7 @@ if (root) {
       link.title = product.name;
       const photo = node('div', 'rho-home-product__photo');
       const img = node('img');
-      // Refresh the repaired JPEG in browsers that cached its incomplete version.
-      img.src = product.image + (id === 'tapones-3m-con-cordon' ? '&repair=20261031' : '');
+      img.src = product.image;
       img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
       img.width = 200; img.height = 160;
       img.addEventListener('error', () => { img.hidden = true; photo.append(node('span', 'rho-home-product__fallback', 'Ver en catálogo')); }, { once: true });
@@ -82,3 +81,10 @@ if (root) {
   root.addEventListener('scroll', update, {passive:true});
   window.addEventListener('resize', update); update();
 }
+// Existing category pages still link to the removed homepage contact block.
+// Preserve those links by sending visitors to the dedicated support page.
+function redirectLegacyContact() {
+  if (location.hash === '#contacto') location.replace('atencion-clientes.html');
+}
+window.addEventListener('hashchange', redirectLegacyContact);
+redirectLegacyContact();
