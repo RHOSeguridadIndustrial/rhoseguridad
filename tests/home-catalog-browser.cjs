@@ -36,6 +36,7 @@ try{
     await img.scrollIntoViewIfNeeded();
     const label=await img.locator('..').locator('..').innerText();
     try { await page.waitForFunction(image=>image.complete && image.naturalWidth>0,await img.elementHandle(),{timeout:10000}); } catch { throw new Error('Catalog image did not load: '+label); }
+    if((await img.getAttribute('src')).includes('tapones-3m-')) await img.evaluate(image=>image.decode());
    }
    if(width>600&&width<=900){
     await page.locator('#rho-home-modules').evaluate(el=>el.scrollLeft=0);
