@@ -3,31 +3,23 @@ import { searchCatalog } from './search-catalog.js?v=20261008-4';
 // Discovery modules use the same product names and photographs as site search.
 // Prices, stock, variants and cart actions stay in the existing catalog flow.
 const groups = [
-  { title: 'Equipa tu jornada', subtitle: 'Protección y alta visibilidad', theme: 'navy', ids: ['casco-mundial-infra', 'guante-japones-latex', 'chaleco-seguridad', 'arnes-seguridad'] },
-  { title: 'Cuida cada sentido', subtitle: 'Protección respiratoria, auditiva y visual', theme: 'green', ids: ['mascarilla-3m-8210-n95', 'tapones-3m-sin-cordon', 'lente-steel-espejeado', 'lentes-al012cl-dermacare'] },
-  { title: 'Prepara tu operación', subtitle: 'Primeros auxilios y protección', theme: 'orange', ids: ['botiquin-equipado', 'guante-carnaza-vestimenta', 'guante-limpieza-rudo', 'bota-industrial-dielectrica'] }
+  { title: 'Equipa tu jornada', subtitle: 'Protección y alta visibilidad', theme: 'navy', ids: ['casco-mundial-infra', 'chaleco-seguridad', 'guante-japones-latex'] },
+  { title: 'Cuida cada sentido', subtitle: 'Protección visual, respiratoria y auditiva', theme: 'green', ids: ['lente-steel-espejeado', 'mascarilla-3m-8210-n95', 'tapones-3m-sin-cordon'] },
+  { title: 'Prepara tu operación', subtitle: 'Señalización, alturas y primeros auxilios', theme: 'orange', ids: ['cono-seguridad-45cm', 'arnes-seguridad', 'botiquin-equipado'] }
 ];
 // Compact labels keep the mobile mosaic readable; the complete catalog name
 // remains the link's accessible name and is shown in the catalog destination.
 const compactNames = {
   'casco-mundial-infra': 'Casco INFRA',
-  'lentes-al012cl-dermacare': 'Lentes AL012CL',
   'guante-japones-latex': 'Guante látex',
-  'bota-industrial-dielectrica': 'Bota de seguridad',
   'mascarilla-3m-8210-n95': 'N95 3M 8210',
-  'tapones-3m-sin-cordon': 'Tapones sin cordón',
+  'tapones-3m-sin-cordon': 'Tapones auditivos',
   'arnes-seguridad': 'Arnés',
   'lente-steel-espejeado': 'Lente Steel',
   'chaleco-seguridad': 'Chaleco',
-  'guante-carnaza-vestimenta': 'Guante carnaza',
-  'guante-limpieza-rudo': 'Guante uso rudo',
+  'cono-seguridad-45cm': 'Señalización',
   'botiquin-equipado': 'Botiquín equipado'
 };
-const mobileProducts = new Set([
-  'casco-mundial-infra', 'guante-japones-latex', 'bota-industrial-dielectrica',
-  'mascarilla-3m-8210-n95', 'tapones-3m-sin-cordon', 'lente-steel-espejeado',
-  'chaleco-seguridad', 'guante-carnaza-vestimenta', 'botiquin-equipado'
-]);
 const node = (tag, className, text) => {
   const element = document.createElement(tag);
   if (className) element.className = className;
@@ -45,7 +37,6 @@ if (root) {
       const product = catalog.get(id);
       if (!product) continue;
       const link = node('a', 'rho-home-product');
-      if (!mobileProducts.has(id)) link.classList.add('rho-home-product--desktop-only');
       link.href = 'portafolio.html?q=' + encodeURIComponent(product.product_id);
       link.setAttribute('aria-label', product.name);
       link.title = product.name;
