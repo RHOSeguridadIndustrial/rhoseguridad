@@ -1,7 +1,7 @@
 name: Home catalog cards
 on:
   push:
-    branches: [main, rho-home-catalog-cards]
+    branches: [main, rho-home-catalog-cards, rho-home-mobile-compact]
     paths: ['index.html', 'cuenta.html', 'home-catalog.*', 'search-catalog.js', 'tests/home-catalog-browser.cjs', '.github/workflows/home-catalog.yml']
 permissions:
   contents: read

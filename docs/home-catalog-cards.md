@@ -11,3 +11,7 @@ Los nombres y fotografías se obtienen de search-catalog.js. Los enlaces abren l
 Se conservan el aviso de pago con tarjeta, los banners enlazados a Productos, las tarjetas compactas de las categorías, la cotización empresarial y el checkout existentes. version.json permanece en 10.6, que ya había sido registrado por otro proyecto; no se reutiliza 10.4 para esta mejora de portada.
 
 Validación: sintaxis y diff; prueba de las imágenes, enlaces, navegación de módulos, ausencia de recomendaciones y ancho de página en Chromium y WebKit a 320, 390, 768 y 1280 px.
+
+Ajuste móvil solicitado el mismo día: nueve artículos visibles en tres filas y tres columnas, distribuidos entre los tres módulos de color. Las miniaturas llevan etiquetas breves y nombre completo accesible; el catálogo conserva los doce artículos de la selección original. Se reducen títulos, espacios y tarjetas de información. Escritorio conserva su presentación de doce productos y tablet conserva su carrusel. Los controles calculan el avance con la separación real entre módulos.
+
+Se retira de Inicio el bloque señalado por el usuario: «Solicita una cotización», botón «Abrir cotizador virtual», teléfono y zona de servicio, y formulario de WhatsApp. Los accesos del menú a Cotizador virtual y Atención a clientes continúan disponibles, igual que las páginas de destino.
