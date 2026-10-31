@@ -5,7 +5,7 @@
   <meta name="referrer" content="no-referrer">
   <title>Compra por transferencia | RHO Seguridad Industrial</title>
   <meta name="description" content="Revisa tu carrito, completa tus datos y solicita a RHO la confirmación de tu compra por transferencia bancaria.">
-  <link rel="stylesheet" href="checkout-transferencia.css?v=20261031-inbursa">
+  <link rel="stylesheet" href="checkout-transferencia.css?v=20261031-postal">
 </head>
 <body>
   <header class="header"><a class="brand" href="index.html" aria-label="RHO, ir al inicio">R<span>H</span><b>O</b></a><a href="carrito.html">← Volver al carrito</a></header>
@@ -31,8 +31,9 @@
             <label>Destino *<select name="destination" required><option value="cdmx">Ciudad de México</option><option value="other">Otro estado · por confirmar</option></select></label>
             <label>Código postal *<input name="postal" autocomplete="shipping postal-code" inputmode="numeric" pattern="[0-9]{5}" minlength="5" maxlength="5" required></label>
             <label class="wide" id="state-field" hidden>Estado *<input name="state" autocomplete="shipping address-level1" maxlength="80" disabled></label>
-            <label>Alcaldía o municipio *<input name="municipality" autocomplete="shipping address-level2" maxlength="100" required></label>
-            <label>Colonia *<input name="settlement" autocomplete="shipping address-level3" maxlength="100" required></label>
+            <label>Alcaldía o municipio *<input name="municipality" autocomplete="shipping address-level2" maxlength="100" placeholder="Se completa con el CP" readonly required></label>
+            <div><label id="postal-settlement-label" for="delivery-settlement">Colonia *</label><input id="delivery-settlement" name="settlement" autocomplete="shipping address-level3" maxlength="150" placeholder="Se completa con el CP" readonly required><select id="postal-settlement-choice" hidden disabled><option value="">Selecciona tu colonia</option></select></div>
+            <div class="wide postal-feedback"><p id="postal-address-status" class="muted" role="status" aria-live="polite">Escribe los cinco dígitos del código postal.</p><button id="postal-manual" class="text-button" type="button" hidden>Mi colonia no aparece / corregir domicilio</button></div>
             <label class="wide">Calle *<input name="street" autocomplete="shipping address-line1" maxlength="120" required></label>
             <label>Número exterior *<input name="exterior" maxlength="20" required></label>
             <label>Interior (opcional)<input name="interior" maxlength="20"></label>
@@ -66,6 +67,6 @@
     </div>
   </main>
   <footer><a href="aviso-privacidad.html">Aviso de privacidad</a><span>RHO Seguridad Industrial · 55 4568 3441</span></footer>
-  <script type="module" src="checkout-transferencia.js?v=20261031-inbursa"></script>
+  <script type="module" src="checkout-transferencia.js?v=20261031-postal"></script>
   <script type="module" src="transfer-bank.js?v=20261031-inbursa"></script>
 </body></html>

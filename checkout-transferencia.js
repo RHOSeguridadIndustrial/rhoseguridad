@@ -1,7 +1,8 @@
 import {searchCatalog} from './search-catalog.js?v=20261008-4';
 import {inventoryVariants} from './inventory-catalog.js?v=20261008-1';
 import {buildQuoteCatalog, calculateQuote} from './quote-model.js?v=20261025-1';
-import {transferContact, deliveryText, transferMessage} from './transfer-request-model.js?v=20261031-inbursa';
+import {transferContact, deliveryText, transferMessage} from './transfer-request-model.js?v=20261031-postal';
+import {setupPostalAddress} from './postal-address.js?v=20261031';
 
 const $ = id => document.getElementById(id);
 const form = $('transfer-form');
@@ -129,11 +130,12 @@ async function start() {
       const owner=session?.user?.id??null,changed=observedOwner!==undefined && owner!==observedOwner;
       observedOwner=owner;
       if(changed || event==='SIGNED_OUT'){
-        ++loadGeneration;checkedAt=0;registered=false;form.reset();destinationChanged();
+        ++loadGeneration;checkedAt=0;registered=false;form.reset();postalAddress.reset();destinationChanged();
         invalidate('La sesión cambió. Completa una nueva solicitud.');render();setTimeout(refresh,0);
       }
     });
     destinationChanged();await refresh();
   } catch {$('catalog-status').textContent='No pudimos cargar tu carrito. Revisa tu conexión y vuelve a abrir esta página.';}
 }
+const postalAddress=setupPostalAddress({form,onChange:()=>{invalidate();destinationChanged();render();}});
 start();

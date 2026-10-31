@@ -36,3 +36,17 @@ referencia confirmados por RHO; el resumen permanece como estimación.
 
 La conciliación bancaria automática y un checkout que cree órdenes persistentes
 siguen fuera de este cambio. La aceptación en Safari nativo sigue pendiente.
+
+## Autocompletado de domicilio (31/10/2026)
+
+Al completar cinco dígitos del CP, se consulta una copia pública del catálogo
+postal de CDMX ya verificado por RHO el 25/10/2026: 1,110 códigos y 16 alcaldías.
+La fuente y sus hashes se conservan en assets/postal-cdmx.json. Solo contiene
+nombres y claves postales públicos; no se publican datos de clientes ni se amplían
+permisos de la base. El catálogo original de pruebas no se modifica.
+
+Una sola colonia completa ambos campos. Varias colonias requieren selección
+explícita; cambiar CP limpia los campos y descarta respuestas anteriores. El
+código 02140 completa Santa Inés, Azcapotzalco. La captura manual se mantiene
+para fallos, CP ausentes y destinos fuera de CDMX, cuya cobertura sigue pendiente
+de confirmación. Autocompletar no valida calle, número ni cobertura logística.

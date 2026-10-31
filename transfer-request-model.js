@@ -2,7 +2,7 @@ const money = cents => new Intl.NumberFormat('es-MX', {style:'currency', currenc
 const clean = (value, max) => String(value || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, max);
 
 export function transferContact(values) {
-  const data = Object.fromEntries(Object.entries({name:100,phone:25,email:160,company:120,postal:5,state:80,municipality:100,settlement:100,street:120,exterior:20,interior:20,notes:240}).map(([key,max])=>[key,clean(values[key],max)]));
+  const data = Object.fromEntries(Object.entries({name:100,phone:25,email:160,company:120,postal:5,state:80,municipality:100,settlement:150,street:120,exterior:20,interior:20,notes:240}).map(([key,max])=>[key,clean(values[key],max)]));
   data.destination = values.destination;
   data.invoice = values.invoice === true;
   if (data.name.length < 2) throw new Error('Escribe tu nombre completo.');
