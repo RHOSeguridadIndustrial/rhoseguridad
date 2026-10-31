@@ -58,8 +58,7 @@ if(value('correo'))lines.push('Correo: '+value('correo'));
 lines.push('','PRODUCTOS Y VOLUMEN');
 rows.forEach((row,i)=>{const get=n=>row.querySelector('[data-field="'+n+'"]').value.trim();lines.push((i+1)+'. '+get('producto')+' — '+get('cantidad')+' '+get('unidad'));if(get('detalle'))lines.push('   Especificaciones: '+get('detalle'));});
 lines.push('','ENTREGA Y SUMINISTRO','Destino: '+value('destino')+' · CP '+value('cp'),'Plazo requerido: '+value('plazo')+(value('fecha')?' ('+value('fecha')+')':''),'Frecuencia: '+value('frecuencia'),'Modalidad: '+value('modalidad'),'Factura: '+value('factura'));
-if(value('presupuesto'))lines.push('Presupuesto estimado total: </html>
-+Number(value('presupuesto')).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})+' MXN');
+if(value('presupuesto'))lines.push('Presupuesto estimado total: $'+Number(value('presupuesto')).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})+' MXN');
 if(value('notas'))lines.push('Notas: '+value('notas'));
 lines.push('','Solicito confirmar precio por volumen, disponibilidad, costo de envío y plazo de entrega. Esta solicitud no confirma un pedido.');
 const message=lines.join('\n');document.getElementById('business-summary').textContent=message;
