@@ -92,3 +92,9 @@
   .construction-banner { padding-top: 16px; }
   .construction-banner__stage { height: 260px; }
 }
+
+/* Preserve the full payment announcement at every screen size. */
+.construction-banner--payment .construction-banner__stage {
+  height: auto;
+  aspect-ratio: 1536 / 614;
+}
