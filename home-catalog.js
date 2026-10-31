@@ -42,7 +42,8 @@ if (root) {
       link.title = product.name;
       const photo = node('div', 'rho-home-product__photo');
       const img = node('img');
-      img.src = product.image;
+      // Keep a local copy of the catalog's cone photo to avoid a third-party request.
+      img.src = id === 'cono-seguridad-45cm' ? 'assets/cono-seguridad-45cm.jpg' : product.image;
       img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
       img.width = 200; img.height = 160;
       img.addEventListener('error', () => { img.hidden = true; photo.append(node('span', 'rho-home-product__fallback', 'Ver en catálogo')); }, { once: true });
