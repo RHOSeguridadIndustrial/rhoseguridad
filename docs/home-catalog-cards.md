@@ -15,3 +15,5 @@ Validación: sintaxis y diff; prueba de las imágenes, enlaces, navegación de m
 Ajuste móvil solicitado el mismo día: nueve artículos visibles en tres filas y tres columnas, distribuidos entre los tres módulos de color. Las miniaturas llevan etiquetas breves y nombre completo accesible; el catálogo conserva los doce artículos de la selección original. Se reducen títulos, espacios y tarjetas de información. Escritorio conserva su presentación de doce productos y tablet conserva su carrusel. Los controles calculan el avance con la separación real entre módulos.
 
 Se retira de Inicio el bloque señalado por el usuario: «Solicita una cotización», botón «Abrir cotizador virtual», teléfono y zona de servicio, y formulario de WhatsApp. Los accesos del menú a Cotizador virtual y Atención a clientes continúan disponibles, igual que las páginas de destino.
+
+La revisión visual detectó que el JPEG original de tapones con cordón carecía del último byte del marcador de fin y no se pintaba en WebKit. Se restaura ese byte sin modificar los píxeles de la fotografía y se renueva su URL de caché en Inicio. La verificación comprueba también su decodificación.

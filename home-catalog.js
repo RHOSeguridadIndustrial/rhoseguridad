@@ -51,7 +51,9 @@ if (root) {
       link.title = product.name;
       const photo = node('div', 'rho-home-product__photo');
       const img = node('img');
-      img.src = product.image; img.alt = ''; img.loading = 'lazy'; img.decoding = 'sync';
+      // Refresh the repaired JPEG in browsers that cached its incomplete version.
+      img.src = product.image + (id === 'tapones-3m-con-cordon' ? '&repair=20261031' : '');
+      img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
       img.width = 200; img.height = 160;
       img.addEventListener('error', () => { img.hidden = true; photo.append(node('span', 'rho-home-product__fallback', 'Ver en catálogo')); }, { once: true });
       photo.append(img);
