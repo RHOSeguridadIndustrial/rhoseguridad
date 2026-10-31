@@ -58,6 +58,12 @@ try{
     for(const product of await page.locator('.rho-home-product').all()){
      assert.ok((await product.getAttribute('aria-label')).length>5,'Retain full accessible product name');
     }
+    for(const img of await page.locator('.rho-home-product:visible img').all()){
+     assert.ok(await img.evaluate(image=>{
+      const box=image.parentElement.getBoundingClientRect(),photo=image.getBoundingClientRect();
+      return photo.top>=box.top-1&&photo.bottom<=box.bottom+1&&photo.left>=box.left-1&&photo.right<=box.right+1;
+     }),'Show the complete photo without container cropping');
+    }
     console.log(`MOBILE ${engine.name()} ${width}px: ${Math.round(metrics.height)}px tall, 3 rows x 3 columns`);
    }
    await section.scrollIntoViewIfNeeded();
