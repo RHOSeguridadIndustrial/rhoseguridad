@@ -2,7 +2,7 @@ import {searchCatalog} from './search-catalog.js?v=20261008-4';
 import {inventoryVariants} from './inventory-catalog.js?v=20261008-1';
 import {buildQuoteCatalog, calculateQuote} from './quote-model.js?v=20261025-1';
 import {transferContact, deliveryText, transferMessage} from './transfer-request-model.js?v=20261031-postal';
-import {setupPostalAddress} from './postal-address.js?v=20261031';
+import {setupPostalAddress} from './postal-address.js?v=20261031-mx';
 
 const $ = id => document.getElementById(id);
 const form = $('transfer-form');

@@ -5,7 +5,7 @@ import {postalOptions} from '../postal-address-model.js';
 const catalog=JSON.parse(await readFile(new URL('../assets/postal-cdmx.json',import.meta.url),'utf8'));
 test('02140 conserva el cero inicial y resuelve Santa Inés, Azcapotzalco',()=>{
  const options=postalOptions(catalog,'02140');assert.equal(options.length,1);
- assert.deepEqual(options[0],{key:'002:0392',postalCode:'02140',municipality:'Azcapotzalco',settlement:'Santa Inés'});
+ assert.deepEqual(options[0],{key:'09002:0392',postalCode:'02140',stateCode:'09',state:'Ciudad de México',municipality:'Azcapotzalco',settlement:'Santa Inés'});
 });
 test('Un CP compartido ofrece todas las colonias sin elegir por el cliente',()=>{
  const options=postalOptions(catalog,'02010');

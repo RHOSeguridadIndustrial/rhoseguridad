@@ -30,7 +30,7 @@
           <div class="fields">
             <label>Destino *<select name="destination" required><option value="cdmx">Ciudad de México</option><option value="other">Otro estado · por confirmar</option></select></label>
             <label>Código postal *<input name="postal" autocomplete="shipping postal-code" inputmode="numeric" pattern="[0-9]{5}" minlength="5" maxlength="5" required></label>
-            <label class="wide" id="state-field" hidden>Estado *<input name="state" autocomplete="shipping address-level1" maxlength="80" disabled></label>
+            <label class="wide" id="state-field" hidden>Estado *<input name="state" autocomplete="shipping address-level1" maxlength="80" placeholder="Se completa con el CP" readonly disabled></label>
             <label>Alcaldía o municipio *<input name="municipality" autocomplete="shipping address-level2" maxlength="100" placeholder="Se completa con el CP" readonly required></label>
             <div><label id="postal-settlement-label" for="delivery-settlement">Colonia *</label><input id="delivery-settlement" name="settlement" autocomplete="shipping address-level3" maxlength="150" placeholder="Se completa con el CP" readonly required><select id="postal-settlement-choice" hidden disabled><option value="">Selecciona tu colonia</option></select></div>
             <div class="wide postal-feedback"><p id="postal-address-status" class="muted" role="status" aria-live="polite">Escribe los cinco dígitos del código postal.</p><button id="postal-manual" class="text-button" type="button" hidden>Mi colonia no aparece / corregir domicilio</button></div>
@@ -67,6 +67,6 @@
     </div>
   </main>
   <footer><a href="aviso-privacidad.html">Aviso de privacidad</a><span>RHO Seguridad Industrial · 55 4568 3441</span></footer>
-  <script type="module" src="checkout-transferencia.js?v=20261031-postal"></script>
+  <script type="module" src="checkout-transferencia.js?v=20261031-mx"></script>
   <script type="module" src="transfer-bank.js?v=20261031-inbursa"></script>
 </body></html>

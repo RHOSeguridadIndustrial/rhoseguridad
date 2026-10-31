@@ -37,16 +37,42 @@ referencia confirmados por RHO; el resumen permanece como estimación.
 La conciliación bancaria automática y un checkout que cree órdenes persistentes
 siguen fuera de este cambio. La aceptación en Safari nativo sigue pendiente.
 
-## Autocompletado de domicilio (31/10/2026)
+## Autocompletado nacional de domicilio (31/10/2026)
 
-Al completar cinco dígitos del CP, se consulta una copia pública del catálogo
-postal de CDMX ya verificado por RHO el 25/10/2026: 1,110 códigos y 16 alcaldías.
-La fuente y sus hashes se conservan en assets/postal-cdmx.json. Solo contiene
-nombres y claves postales públicos; no se publican datos de clientes ni se amplían
-permisos de la base. El catálogo original de pruebas no se modifica.
+Al completar los cinco dígitos del CP se consulta `postal-lookup` en Supabase.
+Devuelve únicamente las colonias del CP solicitado, sus municipios y estados.
+Una sola colonia completa los campos; varias requieren selección explícita.
+Cambiar CP limpia estado, municipio y colonia, invalida la solicitud anterior y
+descarta respuestas tardías. La captura manual funciona ante CP ausente o fallo.
+CDMX conserva además el respaldo local anterior en `assets/postal-cdmx.json`.
 
-Una sola colonia completa ambos campos. Varias colonias requieren selección
-explícita; cambiar CP limpia los campos y descarta respuestas anteriores. El
-código 02140 completa Santa Inés, Azcapotzalco. La captura manual se mantiene
-para fallos, CP ausentes y destinos fuera de CDMX, cuya cobertura sigue pendiente
-de confirmación. Autocompletar no valida calle, número ni cobertura logística.
+Fuente nacional: Correos de México / SEPOMEX, descarga TXT del 31/10/2026,
+actualizada por la fuente el 30/10/2026. Contiene 31,866 CP, 159,437 asentamientos
+y 32 estados. SHA-256 del TXT: `af2304baeef7fc14f828832ac84d3696f4dedd27015be87f8cf7631df54ca35d`.
+Fuente: https://www.correosdemexico.gob.mx/SSLServicios/ConsultaCP/CodigoPostal_Exportar.aspx
+
+El catálogo nacional completo permanece en la tabla interna
+`public.checkout_postal_catalog`, en 96 segmentos comprimidos por prefijo.
+RLS está habilitado; `anon` y `authenticated` no tienen permisos sobre la tabla.
+La función valida la clave publicable de la aplicación y el CP antes de consultar
+con una clave de servidor obtenida del entorno. Solo responde a un CP exacto;
+no acepta búsquedas generales, datos de contacto ni domicilios completos.
+El aviso informativo de Supabase «RLS Enabled No Policy» para esta tabla es
+intencional: no se conceden políticas de lectura al cliente.
+
+`supabase/sql/checkout-postal-catalog.sql` reproduce el esquema.
+`scripts/prepare-postal-import.py` prepara los lotes de importación desde el ZIP
+oficial; ejecutar con directorio de salida fuera del repositorio público.
+No se publica el TXT nacional ni los lotes de datos en GitHub Pages.
+La función se despliega con verificación de clave en el handler (`verify_jwt=false`)
+para permitir el checkout de visitantes y las claves publicables actuales.
+La fuente se actualiza mediante una nueva descarga e importación, no automáticamente.
+
+19 pruebas aprobadas, incluida validación de todos los CP importados y rechazo
+de consultas inválidas. Pruebas de UI móvil: 02140, 44100, 72000, selección de
+colonia, resumen nacional, limpieza de datos y captura manual ante fallo.
+Sin desbordamiento horizontal a 375 px de contenido. No se enviaron mensajes,
+crearon pedidos ni modificaron existencias durante las verificaciones.
+
+Autocompletar no valida calle, número ni cobertura logística. Fuera de CDMX,
+la cobertura, el envío y el total siguen sujetos a confirmación de RHO.

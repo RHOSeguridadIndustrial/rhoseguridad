@@ -1,0 +1,81 @@
+{
+  "states": {
+    "09": "Ciudad de México",
+    "14": "Jalisco",
+    "15": "México",
+    "19": "Nuevo León",
+    "21": "Puebla"
+  },
+  "municipalities": {
+    "09002": "Azcapotzalco",
+    "14039": "Guadalajara",
+    "15106": "Toluca",
+    "19039": "Monterrey",
+    "21114": "Puebla"
+  },
+  "postcodes": {
+    "02140": [
+      [
+        "09002",
+        "0392",
+        "Santa Inés"
+      ]
+    ],
+    "02010": [
+      [
+        "09002",
+        "0356",
+        "Los Reyes"
+      ],
+      [
+        "09002",
+        "0357",
+        "San Rafael"
+      ],
+      [
+        "09002",
+        "0358",
+        "Nuevo Barrio San Rafael"
+      ]
+    ],
+    "44100": [
+      [
+        "14039",
+        "0003",
+        "Guadalajara Centro"
+      ]
+    ],
+    "50000": [
+      [
+        "15106",
+        "0160",
+        "Toluca de Lerdo Centro"
+      ]
+    ],
+    "64000": [
+      [
+        "19039",
+        "0001",
+        "Monterrey Centro"
+      ],
+      [
+        "19039",
+        "3429",
+        "La Finca"
+      ]
+    ],
+    "72000": [
+      [
+        "21114",
+        "0001",
+        "Puebla Centro"
+      ],
+      [
+        "21114",
+        "2819",
+        "San Francisco"
+      ]
+    ]
+  },
+  "sourceUpdatedOn": "2026-10-30"
+}

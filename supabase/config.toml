@@ -1,0 +1,4 @@
+[functions.postal-lookup]
+# The handler verifies the application's publishable API key. Guests may look up
+# public postal names without signing in; the private cache is never exposed.
+verify_jwt = false
