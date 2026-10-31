@@ -19,6 +19,7 @@
 .rho-home-product__photo img{display:block;width:100%;height:100%;object-fit:contain;max-height:160px}
 .rho-home-product__photo img[hidden]{display:none}
 .rho-home-product__name{font-size:13px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+.rho-home-product__short-name{display:none}
 .rho-home-product__action{font-size:12px;font-weight:700;line-height:1.4;color:#345f11;margin-top:auto;padding-top:4px}
 .rho-home-product__fallback{font-size:12px;color:#526171}
 .rho-home__controls{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:#536171;padding:0 4px 14px}
@@ -33,5 +34,31 @@
 .rho-home__business b{display:block;margin-top:16px;font-size:14px;color:#345f11}
 .rho-home a:focus-visible,.rho-home button:focus-visible{outline:3px solid #e77b25;outline-offset:3px}
 @media(max-width:900px){.rho-home__modules{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:3px;scrollbar-width:thin;scrollbar-color:#9eacb8 transparent}.rho-home-card{flex:0 0 44%;scroll-snap-align:start}.rho-home__heading{align-items:start}}
-@media(max-width:600px){.rho-home{width:94%;margin:20px auto 28px}.rho-home__heading{display:block;margin:14px 0}.rho-home__catalog-link{display:inline-block;margin-top:12px;min-height:28px}.rho-home-card{flex-basis:88%;padding:20px 14px 14px}.rho-home-card h3{font-size:27px;margin-bottom:16px}.rho-home-product{padding:8px 8px 10px}.rho-home-product__name{font-size:13px}.rho-home__business{grid-template-columns:1fr}.rho-home__business a{padding:20px}}
+@media(max-width:600px){
+  .rho-home{width:94%;margin:14px auto 22px}
+  .rho-home__eyebrow{font-size:11px;margin-bottom:3px}
+  .rho-home__chips{gap:6px;padding-bottom:6px}
+  .rho-home__chips a{font-size:12px;padding:8px 12px}
+  .rho-home__heading{display:block;margin:10px 0 8px}
+  .rho-home h2{font-size:22px}
+  .rho-home__catalog-link{display:inline-flex;align-items:center;margin-top:0;min-height:44px;font-size:12px}
+  .rho-home__modules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;overflow:visible;scroll-snap-type:none;padding:4px 0 10px}
+  .rho-home-card{display:flex;flex-direction:column;padding:10px 6px 6px;border-radius:14px}
+  .rho-home-card__eyebrow{display:none}
+  .rho-home-card h3{font-size:clamp(14px,3.6vw,17px);min-height:2.16em;margin-bottom:7px}
+  .rho-home-card__grid{grid-template-columns:1fr;grid-template-rows:repeat(3,1fr);flex:1;gap:6px}
+  .rho-home-product{gap:4px;padding:5px;border-radius:9px}
+  .rho-home-product__photo{display:block;height:clamp(48px,14vw,64px);aspect-ratio:auto;border-radius:6px}
+  .rho-home-product__photo img{min-width:0;min-height:0;max-height:100%}
+  .rho-home-product__name,.rho-home-product__action{display:none}
+  .rho-home-product__short-name{display:block;min-height:2.5em;font-size:12px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+  .rho-home-product--desktop-only{display:none}
+  .rho-home__controls{padding-bottom:10px;font-size:11px}
+  .rho-home__controls>div{display:flex;flex-shrink:0;gap:4px}
+  .rho-home__business{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .rho-home__business a{padding:14px 12px;border-radius:14px}
+  .rho-home__business strong{font-size:17px;margin-bottom:6px}
+  .rho-home__business span{font-size:12px;line-height:1.4}
+  .rho-home__business b{font-size:12px;margin-top:10px}
+}
 @media(prefers-reduced-motion:reduce){.rho-home-product{transition:none}}

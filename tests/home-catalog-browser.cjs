@@ -18,7 +18,7 @@ try{
  for(const filename of ['index.html','cuenta.html'])assert.doesNotMatch(fs.readFileSync(filename,'utf8'),/data-purchase-recommendations|recommendations\.(css|js)/);
  for(const engine of [chromium,webkit]){
   const browser=await engine.launch();
-  try{for(const width of [320,390,768,1280]){
+  try{for(const width of [320,390,430,768,1280]){
    const page=await browser.newPage({viewport:{width,height:900}}),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
@@ -32,22 +32,48 @@ try{
     const href=await link.getAttribute('href');assert.ok(fs.existsSync(href.split('?')[0]));
    }
    // Every product photograph is an actual, decodable catalog asset.
-   for(const img of await page.locator('.rho-home-product img').all()){
+   for(const img of await page.locator('.rho-home-product:visible img').all()){
     await img.scrollIntoViewIfNeeded();
     const label=await img.locator('..').locator('..').innerText();
     try { await page.waitForFunction(image=>image.complete && image.naturalWidth>0,await img.elementHandle(),{timeout:10000}); } catch { throw new Error('Catalog image did not load: '+label); }
+    if((await img.getAttribute('src')).includes('tapones-3m-')) await img.evaluate(image=>image.decode());
    }
-   if(width<=900){
+   if(width>600&&width<=900){
     await page.locator('#rho-home-modules').evaluate(el=>el.scrollLeft=0);
     await page.getByRole('button',{name:'Ver siguiente módulo',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('#rho-home-modules').scrollLeft>20);
    }else assert.equal(await page.locator('#rho-home-controls').isVisible(),false);
    await page.locator('#rho-home-modules').evaluate(el=>el.scrollLeft=0);
+   if(width<=600){
+    const metrics=await page.locator('#rho-home-modules').evaluate(el=>{
+     const cards=[...el.children].map(c=>c.getBoundingClientRect());
+     const products=[...el.querySelectorAll('.rho-home-product')].filter(p=>p.offsetWidth).map(p=>p.getBoundingClientRect());
+     return {rows:[...new Set(products.map(p=>Math.round(p.top)))].length,
+      columns:[...new Set(products.map(p=>Math.round(p.left)))].length,
+      height:Math.max(...cards.map(c=>c.height))};
+    });
+    assert.equal(await page.locator('.rho-home-product:visible').count(),9);
+    assert.equal(metrics.columns,3,'Show three product columns');
+    assert.equal(metrics.rows,3,'Align products in three rows');
+    assert.ok(metrics.height<=410,'Keep the nine mobile products compact');
+    for(const product of await page.locator('.rho-home-product').all()){
+     assert.ok((await product.getAttribute('aria-label')).length>5,'Retain full accessible product name');
+    }
+    for(const img of await page.locator('.rho-home-product:visible img').all()){
+     assert.ok(await img.evaluate(image=>{
+      const box=image.parentElement.getBoundingClientRect(),photo=image.getBoundingClientRect();
+      return photo.top>=box.top-1&&photo.bottom<=box.bottom+1&&photo.left>=box.left-1&&photo.right<=box.right+1;
+     }),'Show the complete photo without container cropping');
+    }
+    console.log(`MOBILE ${engine.name()} ${width}px: ${Math.round(metrics.height)}px tall, 3 rows x 3 columns`);
+   }
    await section.scrollIntoViewIfNeeded();
    fs.mkdirSync('tests/home-previews',{recursive:true});
    await section.screenshot({path:`tests/home-previews/${engine.name()}-${width}.png`});
    assert.equal(await page.locator('.banner-track a[href="portafolio.html"]').count(),3);
    assert.equal(await page.locator('img[alt="Pago con tarjeta muy pronto. Mientras, cotiza y paga por transferencia."]').count(),1);
+   assert.equal(await page.locator('#contacto,#quoteForm').count(),0);
+   assert.equal(await page.locator('#main-menu a[href="cotizador.html"]').count(),1);
    assert.deepEqual(errors,[]);
    await page.close();console.log(`PASS ${engine.name()} ${width}px: cards, images, links, scrolling, existing banners`);
   }}finally{await browser.close()}
