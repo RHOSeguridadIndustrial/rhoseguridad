@@ -5,7 +5,10 @@ import { searchCatalog } from './search-catalog.js?v=20261008-4';
 const groups = [
   { title: 'Equipa tu jornada', subtitle: 'Protección y alta visibilidad', theme: 'navy', ids: ['casco-mundial-infra', 'chaleco-seguridad', 'guante-japones-latex'] },
   { title: 'Cuida cada sentido', subtitle: 'Protección visual, respiratoria y auditiva', theme: 'green', ids: ['lente-steel-espejeado', 'mascarilla-3m-8210-n95', 'tapones-3m-sin-cordon'] },
-  { title: 'Prepara tu operación', subtitle: 'Señalización, alturas y primeros auxilios', theme: 'orange', ids: ['cono-seguridad-45cm', 'arnes-seguridad', 'botiquin-equipado'] }
+  { title: 'Prepara tu operación', subtitle: 'Señalización, alturas y primeros auxilios', theme: 'orange', ids: ['cono-seguridad-45cm', 'arnes-seguridad', 'botiquin-equipado'] },
+  { title: 'Delimita tu espacio', subtitle: 'Señalización para áreas de trabajo', theme: 'navy', ids: ['cinta-precaucion', 'cinta-delimitadora-3m-2', 'malla-seguridad'] },
+  { title: 'Seguridad en obra', subtitle: 'Delimitación y protección en alturas', theme: 'green', ids: ['poste-delimitador', 'cadena-plastica-18-50m', 'linea-vida-absorbedor'] },
+  { title: 'Refuerza tu equipo', subtitle: 'Protección para manos y pies', theme: 'orange', ids: ['guante-carnaza-vestimenta', 'guante-limpieza-rudo', 'bota-industrial-dielectrica'] }
 ];
 // Compact labels keep the mobile mosaic readable; the complete catalog name
 // remains the link's accessible name and is shown in the catalog destination.
@@ -18,7 +21,26 @@ const compactNames = {
   'lente-steel-espejeado': 'Lente Steel',
   'chaleco-seguridad': 'Chaleco',
   'cono-seguridad-45cm': 'Señalización',
-  'botiquin-equipado': 'Botiquín equipado'
+  'botiquin-equipado': 'Botiquín equipado',
+  'cinta-precaucion': 'Cinta precaución',
+  'linea-vida-absorbedor': 'Línea de vida',
+  'malla-seguridad': 'Malla de seguridad',
+  'poste-delimitador': 'Poste delimitador',
+  'cadena-plastica-18-50m': 'Cadena plástica',
+  'cinta-delimitadora-3m-2': 'Cinta 3M',
+  'guante-carnaza-vestimenta': 'Guante carnaza',
+  'guante-limpieza-rudo': 'Guante uso rudo',
+  'bota-industrial-dielectrica': 'Bota de seguridad'
+};
+// Local copies of the catalog photographs avoid third-party image requests.
+const localPhotos = {
+  'cono-seguridad-45cm': 'assets/cono-seguridad-45cm.jpg',
+  'cinta-precaucion': 'assets/cinta-precaucion.jpg',
+  'linea-vida-absorbedor': 'assets/linea-vida-absorbedor.jpg',
+  'malla-seguridad': 'assets/malla-seguridad.png',
+  'poste-delimitador': 'assets/poste-delimitador.jpg',
+  'cadena-plastica-18-50m': 'assets/cadena-plastica-18-50m.jpg',
+  'cinta-delimitadora-3m-2': 'assets/cinta-delimitadora-3m-2.jpg'
 };
 const node = (tag, className, text) => {
   const element = document.createElement(tag);
@@ -42,8 +64,7 @@ if (root) {
       link.title = product.name;
       const photo = node('div', 'rho-home-product__photo');
       const img = node('img');
-      // Keep a local copy of the catalog's cone photo to avoid a third-party request.
-      img.src = id === 'cono-seguridad-45cm' ? 'assets/cono-seguridad-45cm.jpg' : product.image;
+      img.src = localPhotos[id] || product.image;
       img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
       img.width = 200; img.height = 160;
       img.addEventListener('error', () => { img.hidden = true; photo.append(node('span', 'rho-home-product__fallback', 'Ver en catálogo')); }, { once: true });

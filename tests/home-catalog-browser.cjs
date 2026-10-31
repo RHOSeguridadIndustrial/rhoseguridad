@@ -24,9 +24,9 @@ try{
    await page.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
    await page.goto(origin+'/index.html');await page.locator('.rho-home-product').last().waitFor();
    const section=page.locator('.rho-home');await section.scrollIntoViewIfNeeded();
-   assert.equal(await page.locator('.rho-home-product').count(),9);
+   assert.equal(await page.locator('.rho-home-product').count(),18);
    assert.equal(await page.locator('.rho-home__chips a').count(),10);
-   assert.equal(await page.locator('.rho-home-card').count(),3);
+   assert.equal(await page.locator('.rho-home-card').count(),6);
    for(const card of await page.locator('.rho-home-card').all()){
     const products=await card.locator('.rho-home-product').evaluateAll(links=>links.map(link=>{
      const rect=link.getBoundingClientRect();return {left:Math.round(rect.left),top:Math.round(rect.top)};
@@ -46,7 +46,7 @@ try{
     try { await page.waitForFunction(image=>image.complete && image.naturalWidth>0,await img.elementHandle(),{timeout:10000}); } catch { throw new Error('Catalog image did not load: '+label); }
     if((await img.getAttribute('src')).includes('tapones-3m-')) await img.evaluate(image=>image.decode());
    }
-   if(width>600&&width<=900){
+   if(width<=900){
     await page.locator('#rho-home-modules').evaluate(el=>el.scrollLeft=0);
     await page.getByRole('button',{name:'Ver siguiente módulo',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('#rho-home-modules').scrollLeft>20);
@@ -56,14 +56,19 @@ try{
     const metrics=await page.locator('#rho-home-modules').evaluate(el=>{
      const cards=[...el.children].map(c=>c.getBoundingClientRect());
      const products=[...el.querySelectorAll('.rho-home-product')].filter(p=>p.offsetWidth).map(p=>p.getBoundingClientRect());
+     const viewport=el.getBoundingClientRect();
      return {rows:[...new Set(products.map(p=>Math.round(p.top)))].length,
       columns:[...new Set(products.map(p=>Math.round(p.left)))].length,
+      visibleCards:cards.filter(c=>c.left>=viewport.left-1&&c.right<=viewport.right+1).length,
+      cardWidth:cards[0].width,viewportWidth:el.clientWidth,
       height:Math.max(...cards.map(c=>c.height))};
     });
-    assert.equal(await page.locator('.rho-home-product:visible').count(),9);
-    assert.equal(metrics.columns,3,'Show three product columns');
+    assert.equal(await page.locator('.rho-home-product:visible').count(),18);
+    assert.equal(metrics.columns,6,'Keep six columns in the mobile carousel');
+    assert.equal(metrics.visibleCards,3,'Show three full modules at a time');
+    assert.ok(Math.abs(metrics.cardWidth-(metrics.viewportWidth-14)/3)<1,'Preserve the compact module width');
     assert.equal(metrics.rows,3,'Align products in three rows');
-    assert.ok(metrics.height<=410,'Keep the nine mobile products compact');
+    assert.ok(metrics.height<=410,'Keep all mobile modules compact');
     for(const product of await page.locator('.rho-home-product').all()){
      assert.ok((await product.getAttribute('aria-label')).length>5,'Retain full accessible product name');
     }
@@ -73,7 +78,16 @@ try{
       return photo.top>=box.top-1&&photo.bottom<=box.bottom+1&&photo.left>=box.left-1&&photo.right<=box.right+1;
      }),'Show the complete photo without container cropping');
     }
-    console.log(`MOBILE ${engine.name()} ${width}px: ${Math.round(metrics.height)}px tall, 3 rows x 3 columns`);
+    await page.locator('#rho-home-modules').evaluate(el=>el.scrollLeft=el.scrollWidth);
+    await page.waitForFunction(()=>{
+     const root=document.querySelector('#rho-home-modules'),last=root.lastElementChild.getBoundingClientRect(),box=root.getBoundingClientRect();
+     return last.right<=box.right+1&&last.left>=box.left-1;
+    });
+    await section.scrollIntoViewIfNeeded();
+    fs.mkdirSync('tests/home-previews',{recursive:true});
+    await section.screenshot({path:`tests/home-previews/${engine.name()}-${width}-last.png`});
+    await page.locator('#rho-home-modules').evaluate(el=>el.scrollLeft=0);
+    console.log(`MOBILE ${engine.name()} ${width}px: ${Math.round(metrics.height)}px tall, 6 modules, 3 visible, all reachable`);
    }
    await section.scrollIntoViewIfNeeded();
    fs.mkdirSync('tests/home-previews',{recursive:true});
