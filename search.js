@@ -1,4 +1,4 @@
-import { addSpecialOrderMessage } from './special-order.js?v=20261008-1';
+import { setStockSnapshot } from './stock-feedback.js?v=10.4';
 import { searchCatalog } from './search-catalog.js?v=20261008-4';
 import { inventoryVariants } from './inventory-catalog.js?v=20261008-1';
 
@@ -33,6 +33,7 @@ if (query !== null && query.trim()) {
     image.loading = 'lazy';
     image.className = 'search-image';
     const category = document.createElement('p');
+    category.className = 'search-category';
     category.textContent = product.category;
     const heading = document.createElement('h2');
     heading.textContent = product.name;
@@ -53,8 +54,10 @@ if (query !== null && query.trim()) {
     stock.textContent = 'Consultando inventario…';
     const delivery = document.createElement('p');
     delivery.textContent = 'Fecha de entrega: por confirmar según código postal.';
-    article.append(image, category, heading, price, tax, salesUnit, stock, delivery, link);
-    addSpecialOrderMessage(article, product.name, stock);
+    const details = document.createElement('div');
+    details.className = 'search-details';
+    details.append(category, heading, price, tax, salesUnit, stock, delivery, link);
+    article.append(image, details);
     addCartControls(article, product);
     results.append(article);
   }
@@ -77,6 +80,7 @@ async function loadDetails(products, results) {
     ? responses[index].value.data || [] : [];
   const prices = new Map(rows(0).map(row => [row.id, row]));
   const inventory = new Map(rows(1).map(row => [row.sku, row]));
+  setStockSnapshot(responses[1].status === 'fulfilled' && !responses[1].value.error ? 'ready' : 'error', rows(1));
   for (const product of products) {
     const article = [...results.children].find(row => row.dataset.productId === product.product_id);
     if (!article) continue;
@@ -144,7 +148,7 @@ function addCartControls(article, product) {
     button.disabled = true;
     status.textContent = 'Agregando…';
     try {
-      const { addToCart, getCart } = await withTimeout(import('./cart.js?v=20260914-account-isolation'));
+      const { addToCart, getCart } = await withTimeout(import('./cart.js?v=10.4'));
       const before = getCart().find(row => row.id === variant.sku)?.qty || 0;
       // Keep the same sales price for the selected variant when the cart resolves aliases.
       try {
@@ -164,7 +168,7 @@ function addCartControls(article, product) {
     finally { button.disabled = false; }
   });
   controls.append(button, status);
-  article.append(controls);
+  article.querySelector('.search-details').append(controls);
 }
 
 function withTimeout(request) {
@@ -173,3 +177,4 @@ function withTimeout(request) {
     Promise.resolve(request).then(resolve, reject).finally(() => clearTimeout(timer));
   });
 }
+

@@ -1,4 +1,5 @@
 // Separate local carts by authenticated user. Never import the ownerless v1 cart.
+import { notifyStockRequest } from './stock-feedback.js?v=10.4';
 const AUTH_KEY = 'sb-mtpqpxcmngrsivntbgcc-auth-token';
 const PREFIX = 'rho_cart_v2:';
 let owner = null;
@@ -42,8 +43,8 @@ function currentPrice(product){
 function withCurrentPrice(item){return {...item,price:currentPrice(item)}}
 export function getCart(){ const key=activeKey(); if(!key)return[]; try{const cart=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(cart)?cart.map(withCurrentPrice):[]}catch{return[]} }
 export function saveCart(cart){const key=activeKey();if(!key){alert('Tu sesión cambió. Recarga la página antes de modificar el carrito.');return}localStorage.setItem(key,JSON.stringify(cart));announce()}
-export function addToCart(product){const priced=withCurrentPrice(product),cart=getCart();const found=cart.find(item=>item.id===priced.id);if(found){found.qty+=1;found.price=priced.price}else{cart.push({...priced,qty:1})}saveCart(cart);return cart}
-export function updateQuantity(id,qty){const cart=getCart();const item=cart.find(item=>item.id===id);if(!item)return cart;item.qty=Math.max(1,Number(qty)||1);saveCart(cart);return cart}
+export function addToCart(product){const priced=withCurrentPrice(product),cart=getCart();const found=cart.find(item=>item.id===priced.id);const previous=found?.qty||0;if(found){found.qty+=1;found.price=priced.price}else{cart.push({...priced,qty:1})}saveCart(cart);if(activeKey())notifyStockRequest(priced.id,previous,previous+1);return cart}
+export function updateQuantity(id,qty){const cart=getCart();const item=cart.find(item=>item.id===id);if(!item)return cart;const previous=item.qty;item.qty=Math.max(1,Number(qty)||1);saveCart(cart);if(activeKey())notifyStockRequest(id,previous,item.qty);return cart}
 export function removeFromCart(id){const cart=getCart().filter(item=>item.id!==id);saveCart(cart);return cart}
 export function clearCart(){saveCart([])}
 export function cartCount(){return getCart().reduce((sum,item)=>sum+item.qty,0)}
@@ -74,3 +75,4 @@ function removeSpeedReducer(){
 document.addEventListener('DOMContentLoaded',()=>{updateCartBadges();fixPortfolioWideCards();removeSpeedReducer()});
 window.addEventListener('storage',event=>{if(event.key===AUTH_KEY||event.key===null){ready=false;announce();location.reload();return}if(event.key===activeKey())announce()});
 window.addEventListener('pageshow',event=>{if(event.persisted)location.reload()});
+

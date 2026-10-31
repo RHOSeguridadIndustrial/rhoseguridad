@@ -1,5 +1,5 @@
 import { purchaseChannel } from './purchase-channel.js?v=20261008-1';
-import { addSpecialOrderMessage } from './special-order.js?v=20261009-cart-compact';
+import { setStockSnapshot } from './stock-feedback.js?v=10.4';
 import { supabase } from './supabase-client.js?v=20261007-inventory';
 import { describeAvailability } from './inventory-availability.js?v=20261008-3';
 import { inventoryVariants } from './inventory-catalog.js?v=20261008-1';
@@ -26,15 +26,13 @@ function render() {
     if(tax)tax.textContent='IVA incluido';
     let unit=article.querySelector('.rho-sale-unit');
     if(!unit && tax){unit=document.createElement('p');unit.className='rho-sale-unit';tax.after(unit);}
-    if(unit)unit.textContent=`Precio por: 1 ${salesUnits.get(sku)||'pieza'}`;
+    if(unit)unit.textContent=article.querySelector('.product-heading') ? `por 1 ${salesUnits.get(sku)||'pieza'}` : `Precio por: 1 ${salesUnits.get(sku)||'pieza'}`;
     for(const node of article.querySelectorAll('.product-meta li')) {
       if(/^(1 (pieza|par)|Unidad de venta: 1 (pieza|par))$/.test(node.textContent.trim()))node.remove();
     }
     let badge=article.querySelector('.inventory-badge');
     if(!badge && unit){badge=document.createElement('p');badge.className='inventory-badge';badge.setAttribute('role','status');badge.setAttribute('aria-live','polite');unit.after(badge);}
-    const result=availability(sku);if(badge){badge.textContent=result.text;badge.dataset.state=result.state;}
-    addSpecialOrderMessage(article, article.querySelector('h2,h3')?.textContent, badge);
-    const special=article.querySelector('.rho-special-order');if(badge&&special)badge.after(special);
+    const result=availability(sku);if(badge){badge.textContent=article.querySelector('.product-heading') ? result.text.replace('Existencias en stock:', 'Existencias:') : result.text;badge.dataset.state=result.state;}
     // The current store accepts quote requests; adding to a quote never reserves stock.
     const button=article.querySelector('.cart-action,.buy,button.btn');
     if(button) button.textContent='Agregar al carrito';
@@ -44,7 +42,6 @@ function render() {
     const sku=row.querySelector('[data-qty]')?.dataset.qty; if(!sku)continue;
     let badge=row.querySelector('.inventory-badge');if(!badge){badge=document.createElement('p');badge.className='inventory-badge';badge.setAttribute('role','status');badge.setAttribute('aria-live','polite');row.querySelector('.rho-sale-unit')?.after(badge);}
     const result=availability(sku);badge.textContent=result.text;badge.dataset.state=result.state;
-    addSpecialOrderMessage(row, row.querySelector('.item-name')?.textContent, badge);
   }
   const checkout=document.getElementById('checkout');
   const note=document.getElementById('purchaseChannelNote');
@@ -63,7 +60,7 @@ export async function refreshInventory() {
   inflight=(async()=>{
     try {const {data,error}=await supabase.from('inventory_items').select('sku,quantity,unit,state,is_active');if(error)throw error;inventory=new Map(data.map(i=>[i.sku,i]));connection='ready';}
     catch {connection='error';inventory=new Map();}
-    finally {render();inflight=null;}
+    finally {setStockSnapshot(connection,[...inventory.values()]);render();inflight=null;}
   })();return inflight;
 }
 document.addEventListener('change',e=>{if(e.target.matches('[name="helmet-color"],[name="color"],[name="boot-size"]'))render();});
@@ -76,7 +73,7 @@ render();refreshInventory();
 
 // Signage cards previously had no cart listener; use their exact inventory SKU.
 if(page==='senalizacion') {
-  import('./cart.js?v=20260914-account-isolation').then(({addToCart})=>{
+  import('./cart.js?v=10.4').then(({addToCart})=>{
     document.querySelectorAll('article[data-inventory-sku]').forEach(article=>{
       const button=article.querySelector('button.btn');if(!button)return;
       button.addEventListener('click',()=>{
@@ -88,3 +85,4 @@ if(page==='senalizacion') {
     });
   }).catch(()=>{});
 }
+

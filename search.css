@@ -22,3 +22,27 @@
 #searchResults .search-cart-controls button{width:100%;min-height:46px;padding:12px 16px;border:0;border-radius:10px;background:#43a324;color:#fff;font:700 16px Arial,sans-serif;cursor:pointer}
 #searchResults .search-cart-controls button:disabled{opacity:.6;cursor:wait}
 #searchResults .search-cart-controls [role=status]{margin:8px 0 0;min-height:20px;font-size:14px;color:#071a35}
+
+/* v10.4: same left-photo / right-details layout as category cards. */
+#searchResults{grid-template-columns:1fr;gap:12px}
+#searchResults article{display:grid;grid-template-columns:30% minmax(0,1fr);gap:18px;padding:16px;max-width:980px;width:100%;box-sizing:border-box;margin:0 auto}
+#searchResults .search-details{min-width:0}
+#searchResults .search-image{width:100%;height:auto;aspect-ratio:1;margin:0;border:1px solid #edf0f3;border-radius:12px}
+#searchResults .search-category{font-size:12px;font-weight:700;color:#367b22;text-transform:uppercase;letter-spacing:.045em;margin-bottom:3px}
+#searchResults h2{font-size:23px;line-height:1.2;margin:0 0 8px;overflow-wrap:anywhere}
+#searchResults .search-price{font-size:28px;color:#df4e0c;margin:0 0 3px}
+#searchResults .search-tax{font-weight:700}
+#searchResults .search-tax,#searchResults .rho-sale-unit{font-size:13px;line-height:1.4;margin:0 0 3px}
+#searchResults .search-stock{font-size:13px;line-height:1.4;margin:8px 0}
+#searchResults .search-cart-controls{margin-top:6px}
+#searchResults .search-cart-controls button{border-radius:999px;min-height:44px;background:#367f1d;font-size:15px}
+#searchResults .search-cart-controls [role=status]:empty{display:none}
+#searchResults .search-cart-controls button:focus-visible{outline:3px solid #071a35;outline-offset:3px}
+@media(max-width:800px){
+ #productSearch{padding:16px 8px 24px}
+ #searchResults article{gap:10px;padding:10px}
+ #searchResults h2{font-size:17px}
+ #searchResults .search-category{font-size:11px}
+ #searchResults .search-price{font-size:25px}
+}
+
