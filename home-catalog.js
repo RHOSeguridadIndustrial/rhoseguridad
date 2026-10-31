@@ -3,9 +3,9 @@ import { searchCatalog } from './search-catalog.js?v=20261008-4';
 // Discovery modules use the same product names and photographs as site search.
 // Prices, stock, variants and cart actions stay in the existing catalog flow.
 const groups = [
-  { title: 'Equipa tu jornada', subtitle: 'Seguridad y primeros auxilios', theme: 'navy', ids: ['casco-mundial-infra', 'guante-japones-latex', 'botiquin-equipado', 'arnes-seguridad'] },
+  { title: 'Equipa tu jornada', subtitle: 'Protección y alta visibilidad', theme: 'navy', ids: ['casco-mundial-infra', 'guante-japones-latex', 'chaleco-seguridad', 'arnes-seguridad'] },
   { title: 'Cuida cada sentido', subtitle: 'Protección respiratoria, auditiva y visual', theme: 'green', ids: ['mascarilla-3m-8210-n95', 'tapones-3m-sin-cordon', 'lente-steel-espejeado', 'lentes-al012cl-dermacare'] },
-  { title: 'Prepara tu operación', subtitle: 'Visibilidad, manos y calzado', theme: 'orange', ids: ['chaleco-seguridad', 'guante-carnaza-vestimenta', 'guante-limpieza-rudo', 'bota-industrial-dielectrica'] }
+  { title: 'Prepara tu operación', subtitle: 'Primeros auxilios y protección', theme: 'orange', ids: ['botiquin-equipado', 'guante-carnaza-vestimenta', 'guante-limpieza-rudo', 'bota-industrial-dielectrica'] }
 ];
 // Compact labels keep the mobile mosaic readable; the complete catalog name
 // remains the link's accessible name and is shown in the catalog destination.
