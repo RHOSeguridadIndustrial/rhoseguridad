@@ -1,0 +1,21 @@
+name: Home catalog cards
+on:
+  push:
+    branches: [main, rho-home-catalog-cards]
+    paths: ['index.html', 'cuenta.html', 'home-catalog.*', 'search-catalog.js', 'tests/home-catalog-browser.cjs', '.github/workflows/home-catalog.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node --check home-catalog.js
+      - run: node tests/node_modules/playwright/cli.js install --with-deps chromium webkit
+      - run: node tests/home-catalog-browser.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: home-catalog-previews
+          path: tests/home-previews/
