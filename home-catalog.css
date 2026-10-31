@@ -1,0 +1,37 @@
+.rho-home{--rho-ink:#071a35;width:min(1200px,94%);margin:30px auto 36px;color:var(--rho-ink);font-family:Arial,Helvetica,sans-serif}
+.rho-home *{box-sizing:border-box}
+.rho-home__eyebrow{margin:0 0 6px;color:#376900;font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+.rho-home__heading{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:24px 0 18px}
+.rho-home h2{font-size:clamp(25px,3vw,36px);line-height:1.12;letter-spacing:-.035em;margin:0;color:var(--rho-ink)}
+.rho-home__catalog-link{flex-shrink:0;color:#244e00;font-size:14px;font-weight:700;text-underline-offset:4px}
+.rho-home__chips{display:flex;gap:9px;overflow-x:auto;padding:4px 3px 12px;scrollbar-width:thin;scrollbar-color:#b9c4cc transparent}
+.rho-home__chips a{flex-shrink:0;display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;border:1px solid #d7dfe6;border-radius:999px;background:#fff;color:var(--rho-ink);font-size:14px;font-weight:700;text-decoration:none;white-space:nowrap}
+.rho-home__chips a:hover{background:#edf6e7;border-color:#438400}
+.rho-home__modules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch;padding:4px 3px 14px}
+.rho-home-card{min-width:0;padding:22px 18px 18px;border-radius:24px;background:#071a35;box-shadow:0 5px 15px #071a3510;color:white}
+.rho-home-card--green{background:#285b26}.rho-home-card--orange{background:#a43d13}
+.rho-home-card__eyebrow{font-size:12px;line-height:1.4;margin:0 0 8px;color:#fff}
+.rho-home-card h3{font-size:clamp(24px,2.6vw,32px);line-height:1.08;letter-spacing:-.025em;margin:0 0 20px;color:white}
+.rho-home-card__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rho-home-product{display:flex;flex-direction:column;gap:7px;min-width:0;padding:9px 9px 12px;border-radius:15px;background:#fff;color:var(--rho-ink);text-decoration:none;transition:box-shadow .15s}
+.rho-home-product:hover{box-shadow:0 0 0 3px #b5dd8a}
+.rho-home-product__photo{display:grid;place-items:center;aspect-ratio:1.2;background:#fff;border-radius:10px;overflow:hidden}
+.rho-home-product__photo img{display:block;width:100%;height:100%;object-fit:contain;max-height:160px}
+.rho-home-product__photo img[hidden]{display:none}
+.rho-home-product__name{font-size:13px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+.rho-home-product__action{font-size:12px;font-weight:700;line-height:1.4;color:#345f11;margin-top:auto;padding-top:4px}
+.rho-home-product__fallback{font-size:12px;color:#526171}
+.rho-home__controls{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:#536171;padding:0 4px 14px}
+.rho-home__controls[hidden]{display:none}
+.rho-home__controls button{width:44px;height:44px;border:1px solid #bdc9d2;border-radius:50%;background:white;color:#071a35;font-size:22px;cursor:pointer}
+.rho-home__controls button:disabled{opacity:.35;cursor:default}
+.rho-home__business{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-top:4px}
+.rho-home__business a{display:block;border-radius:20px;background:#f0f4f7;border:1px solid #dce4ea;padding:22px;color:var(--rho-ink);text-decoration:none}
+.rho-home__business a:first-child{background:#edf5e8;border-color:#cddfc2}
+.rho-home__business strong{display:block;font-size:22px;line-height:1.2;margin-bottom:8px}
+.rho-home__business span{display:block;font-size:14px;line-height:1.5;color:#455364}
+.rho-home__business b{display:block;margin-top:16px;font-size:14px;color:#345f11}
+.rho-home a:focus-visible,.rho-home button:focus-visible{outline:3px solid #e77b25;outline-offset:3px}
+@media(max-width:900px){.rho-home__modules{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:3px;scrollbar-width:thin;scrollbar-color:#9eacb8 transparent}.rho-home-card{flex:0 0 44%;scroll-snap-align:start}.rho-home__heading{align-items:start}}
+@media(max-width:600px){.rho-home{width:94%;margin:20px auto 28px}.rho-home__heading{display:block;margin:14px 0}.rho-home__catalog-link{display:inline-block;margin-top:12px;min-height:28px}.rho-home-card{flex-basis:88%;padding:20px 14px 14px}.rho-home-card h3{font-size:27px;margin-bottom:16px}.rho-home-product{padding:8px 8px 10px}.rho-home-product__name{font-size:13px}.rho-home__business{grid-template-columns:1fr}.rho-home__business a{padding:20px}}
+@media(prefers-reduced-motion:reduce){.rho-home-product{transition:none}}
