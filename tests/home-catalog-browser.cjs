@@ -24,9 +24,17 @@ try{
    await page.route('**/*',r=>new URL(r.request().url()).origin===origin?r.continue():r.abort());
    await page.goto(origin+'/index.html');await page.locator('.rho-home-product').last().waitFor();
    const section=page.locator('.rho-home');await section.scrollIntoViewIfNeeded();
-   assert.equal(await page.locator('.rho-home-product').count(),12);
+   assert.equal(await page.locator('.rho-home-product').count(),9);
    assert.equal(await page.locator('.rho-home__chips a').count(),10);
    assert.equal(await page.locator('.rho-home-card').count(),3);
+   for(const card of await page.locator('.rho-home-card').all()){
+    const products=await card.locator('.rho-home-product').evaluateAll(links=>links.map(link=>{
+     const rect=link.getBoundingClientRect();return {left:Math.round(rect.left),top:Math.round(rect.top)};
+    }));
+    assert.equal(products.length,3,'Each module contains three products');
+    assert.equal(new Set(products.map(p=>p.left)).size,1,'Each module uses one product column');
+    assert.equal(new Set(products.map(p=>p.top)).size,3,'Each module uses three product rows');
+   }
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
    for(const link of await page.locator('.rho-home a').all()){
     const href=await link.getAttribute('href');assert.ok(fs.existsSync(href.split('?')[0]));
