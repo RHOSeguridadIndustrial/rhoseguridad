@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Compra por transferencia | RHO Seguridad Industrial</title>
+  <meta name="description" content="Revisa tu carrito, completa tus datos y solicita a RHO la confirmación de tu compra por transferencia bancaria.">
+  <link rel="stylesheet" href="checkout-transferencia.css?v=20261031">
+</head>
+<body>
+  <header class="header"><a class="brand" href="index.html" aria-label="RHO, ir al inicio">R<span>H</span><b>O</b></a><a href="carrito.html">← Volver al carrito</a></header>
+  <main>
+    <p class="eyebrow">TU COMPRA EN RHO</p>
+    <h1>Compra por transferencia</h1>
+    <p class="intro">Completa tu solicitud. RHO te confirmará el total y los datos bancarios antes del pago.</p>
+    <ol class="steps" aria-label="Pasos de compra"><li><b>1</b> Tus datos</li><li><b>2</b> Revisión con RHO</li><li><b>3</b> Transferencia</li></ol>
+    <noscript>Activa JavaScript para revisar tu carrito o comunícate con RHO al 55 4568 3441.</noscript>
+    <div id="empty-cart" class="panel" hidden><h2>Tu carrito está vacío</h2><p>Agrega artículos para continuar con tu solicitud.</p><a class="button" href="portafolio.html">Ver productos</a></div>
+    <div id="checkout-layout" class="layout">
+      <form id="transfer-form">
+        <section class="panel"><h2>1. Datos de contacto</h2><p class="muted">Los campos marcados con * son obligatorios.</p>
+          <div class="fields">
+            <label class="wide">Nombre completo *<input name="name" autocomplete="name" required minlength="2" maxlength="100"></label>
+            <label>Teléfono *<input name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="25" placeholder="10 dígitos o +52"></label>
+            <label>Correo (opcional)<input name="email" type="email" autocomplete="email" maxlength="160"></label>
+            <label class="wide">Empresa (opcional)<input name="company" autocomplete="organization" maxlength="120"></label>
+          </div>
+        </section>
+        <section class="panel"><h2>2. Domicilio de entrega</h2>
+          <div class="fields">
+            <label>Destino *<select name="destination" required><option value="cdmx">Ciudad de México</option><option value="other">Otro estado · por confirmar</option></select></label>
+            <label>Código postal *<input name="postal" autocomplete="shipping postal-code" inputmode="numeric" pattern="[0-9]{5}" minlength="5" maxlength="5" required></label>
+            <label class="wide" id="state-field" hidden>Estado *<input name="state" autocomplete="shipping address-level1" maxlength="80" disabled></label>
+            <label>Alcaldía o municipio *<input name="municipality" autocomplete="shipping address-level2" maxlength="100" required></label>
+            <label>Colonia *<input name="settlement" autocomplete="shipping address-level3" maxlength="100" required></label>
+            <label class="wide">Calle *<input name="street" autocomplete="shipping address-line1" maxlength="120" required></label>
+            <label>Número exterior *<input name="exterior" maxlength="20" required></label>
+            <label>Interior (opcional)<input name="interior" maxlength="20"></label>
+            <label class="wide">Referencias (opcional)<textarea name="notes" rows="2" maxlength="240"></textarea></label>
+          </div>
+          <label class="check"><input name="invoice" type="checkbox"> Necesito factura</label>
+          <p class="muted">RHO verificará cobertura, costo y fecha de entrega. Si necesitas factura, solicitará tus datos fiscales al confirmar.</p>
+        </section>
+        <section class="panel payment"><h2>3. Transferencia bancaria</h2><p class="badge">Confirmación de pago por RHO</p>
+          <ol class="instructions"><li>Envía tu solicitud para confirmar artículos, envío y total.</li><li>RHO te compartirá los datos bancarios y la referencia de tu pedido.</li><li>Envía tu comprobante. RHO confirmará el pago cuando reciba el dinero.</li></ol>
+          <p class="muted">La solicitud no reserva mercancía. Espera la confirmación de RHO antes de transferir.</p>
+          <button id="review-request" class="button" type="submit" disabled>Revisar mi solicitud</button>
+          <p id="request-status" role="status" aria-live="polite"></p>
+        </section>
+      </form>
+      <aside class="panel summary" aria-labelledby="summary-heading"><h2 id="summary-heading">Tu resumen</h2><ul id="transfer-items" class="items"></ul>
+        <dl><div><dt>Productos · IVA incluido</dt><dd id="products-total">—</dd></div><div><dt>Envío estimado</dt><dd id="shipping-total">Por confirmar</dd></div><div class="total"><dt>Total estimado <small>MXN</small></dt><dd id="transfer-total">Por confirmar</dd></div></dl>
+        <p id="shipping-note" class="muted"></p><p id="catalog-status" class="muted" role="status" aria-live="polite">Consultando precios y existencias…</p>
+        <button id="refresh-catalog" type="button" class="text-button">Actualizar precios y existencias</button>
+        <a id="special-link" href="suministro-especializado.html" hidden>Solicitar suministro especializado →</a>
+        <div id="review-panel" class="review" hidden tabindex="-1"><h3>Revisa antes de enviar</h3><p id="review-contact"></p><p id="review-delivery"></p><p class="muted">Se abrirá WhatsApp con tu solicitud. Pulsa Enviar allí para compartirla con RHO. Todavía no se ha enviado ni registrado un pedido.</p><a id="send-request" class="button" rel="noopener noreferrer" target="_blank">Enviar solicitud por WhatsApp</a><p id="whatsapp-status" role="status" aria-live="polite"></p></div>
+      </aside>
+    </div>
+  </main>
+  <footer><a href="aviso-privacidad.html">Aviso de privacidad</a><span>RHO Seguridad Industrial · 55 4568 3441</span></footer>
+  <script type="module" src="checkout-transferencia.js?v=20261031"></script>
+</body></html>

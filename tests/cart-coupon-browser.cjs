@@ -14,7 +14,9 @@ const assert=require('node:assert/strict');
   return route.abort();
  });
  await page.goto('http://rho.test/');
- await page.getByRole('combobox').selectOption('card');
+ assert.equal(await page.getByRole('combobox').inputValue(),'transfer');
+ assert.equal(await page.locator('option[value="card"]').isDisabled(),true);
+ assert.equal(await page.getByRole('link',{name:'Continuar con transferencia →'}).getAttribute('href'),'checkout-transferencia.html');
  await page.waitForFunction(()=>document.querySelector('[role=status]').textContent.includes('estándar'));
  await page.evaluate(()=>{window.items=[{price:1200.01,qty:1}];window.dispatchEvent(new Event('rho-cart-changed'));});
  assert.match(await page.getByRole('status').textContent(),/express/);
@@ -30,3 +32,4 @@ const assert=require('node:assert/strict');
  assert.deepEqual(errors,[]);
  await browser.close();console.log('PASS: tarjeta, transferencia, recálculo, cierre de sesión y reconstrucción del carrito');
 })().catch(e=>{console.error(e);process.exit(1)});
+
