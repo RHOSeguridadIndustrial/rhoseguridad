@@ -1,6 +1,6 @@
 {
-  "version": "10.5",
-  "change": 5,
+  "version": "10.6",
+  "change": 6,
   "date": "2026-10-31",
-  "description": "Suministro especializado"
+  "description": "Banner hipervínculo: los tres banners rotativos abren el submenú Productos"
 }
