@@ -34,3 +34,11 @@ Workflow: `.github/workflows/transfer-persistence.yml`.
 ## Autocompletado postal conservado
 
 Se conserva `postal-lookup` y el catálogo nacional privado previamente desplegado: consulta por CP, colonia única/múltiple, cancelación de respuestas antiguas y corrección manual. Esto no certifica cobertura logística ni dirección física. Los datos bancarios publicados y botones Copiar permanecen sin cambios.
+
+## Evidencia del despliegue
+
+- PR #51; commit funcional validado `3cca494c320687c7ad7976fadf69b74696c5c75d`.
+- GitHub Actions [41282979855](https://github.com/RHOSeguridadIndustrial/rhoseguridad/actions/runs/41282979855): correcto; seis grupos de base de datos, cinco pruebas del modelo y UI Chromium/WebKit con consulta administrativa.
+- Migración aplicada y permisos inspeccionados: RLS activo, sin lectura directa de visitantes/clientes y sin ejecución anónima del registro.
+- Al aplicar: cero solicitudes nuevas, inventario 50, órdenes reales 0. No se insertaron datos de cliente de prueba en producción.
+- Continúa el aviso previo de [protección contra contraseñas filtradas](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). La tabla privada sin políticas de acceso directo es intencional: se accede por funciones restringidas.
