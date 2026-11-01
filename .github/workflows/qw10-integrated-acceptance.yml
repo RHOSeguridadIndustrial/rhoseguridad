@@ -1,0 +1,112 @@
+name: QW10 integrated acceptance
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, qw10-integrated-20261101]
+    paths: ['.github/workflows/qw10-integrated-acceptance.yml']
+permissions:
+  contents: read
+# Isolated synthetic fixtures only: no production credentials, payments or orders.
+jobs:
+  payments:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: rho_deployed_fixture
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: disposable_fixture_only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d rho_deployed_fixture"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install locked dependencies
+        run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - name: Verify frontend validation
+        run: node --test tests/test-review-model.test.mjs
+      - name: Verify migration and export exact tested schema
+        run: node tests/deployed-fulfillment-database.mjs --export-fixture
+      - name: Verify signed receipts through the deployed schema
+        run: node tests/deployed-signed-receipt.mjs
+      - name: Verify payment and stock contention
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_fixture_only@127.0.0.1:5432/rho_deployed_fixture
+        run: python3 tests/deployed-fulfillment-concurrent.py
+      - name: Verify signed refunds and restricted database projection
+        run: node tests/test-refund-database.mjs --export-fixture
+      - name: Verify concurrent refund deliveries
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_fixture_only@127.0.0.1:5432/rho_deployed_fixture
+        run: python3 tests/test-refund-concurrent.py
+      - name: Install desktop and mobile browser engines
+        run: node tests/node_modules/playwright/cli.js install --with-deps chromium webkit
+      - name: Verify review UI on desktop and mobile WebKit
+        run: node tests/test-review-browser.cjs
+  transfers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: rho_transfer_fixture
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: disposable_fixture_only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d rho_transfer_fixture"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/test-transfer-model.test.mjs tests/delivery-snapshot.test.mjs
+      - run: node tests/test-transfer-database.mjs
+      - name: Verify actual database contention
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_fixture_only@127.0.0.1:5432/rho_transfer_fixture
+        run: python3 tests/test-transfer-concurrent.py
+      - run: npx --prefix tests playwright install --with-deps chromium webkit
+      - run: node tests/test-transfer-browser.cjs
+      - run: node tests/admin-security-browser.cjs
+      - run: node tests/confirmation-delivery-browser.cjs
+  postal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/delivery-address.test.mjs tests/postal-checkout.test.mjs tests/checkout-coupon.test.mjs tests/checkout-summary.test.mjs tests/shipping-coupon.test.mjs tests/checkout-transfer-expiry.test.mjs
+      - run: node tests/postal-catalog-database.mjs
+      - run: node tests/checkout-transfer-expiry-database.mjs
+      - run: npx --prefix tests playwright install --with-deps chromium webkit
+      - run: node tests/checkout-help-browser.cjs
+  integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/test-integrity-model.test.mjs
+      - run: node tests/test-integrity-database.mjs
+      - run: npx --prefix tests playwright install --with-deps chromium webkit
+      - run: node tests/test-integrity-browser.cjs
+  storefront:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - name: Verify all model and request regressions
+        run: node --test tests/*.test.mjs
+      - run: node tests/node_modules/playwright/cli.js install --with-deps chromium webkit
+      - run: node tests/home-catalog-browser.cjs
+      - run: node tests/auth-return-browser.cjs
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: qw10-home-previews
+          path: tests/home-previews/
