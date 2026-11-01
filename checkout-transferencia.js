@@ -136,7 +136,7 @@ $('send-request').addEventListener('click',async event=>{
   }catch(error){if(attempt===revision)$('whatsapp-status').textContent=transferError(error);}
   finally{controls.forEach((element,i)=>element.disabled=states[i]);busy=false;$('send-request').disabled=false;render();}
 });
-$('refresh-catalog').addEventListener('click',()=>{invalidate();refresh();});
+$('refresh-catalog').addEventListener('click',()=>{if(busy)return;invalidate();refresh();});
 window.addEventListener('rho-cart-changed',()=>{invalidate('El carrito cambió. Revisa nuevamente tu solicitud.');render();});
 window.addEventListener('rho-prices-updated',()=>{invalidate('Los precios cambiaron. Revisa nuevamente tu solicitud.');checkedAt=0;render();});
 window.addEventListener('pageshow',event=>{if(event.persisted){invalidate();refresh();}});
