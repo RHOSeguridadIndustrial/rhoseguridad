@@ -13,9 +13,11 @@
     <p class="eyebrow">TU COMPRA EN RHO</p>
     <h1>Compra por transferencia</h1>
     <p class="intro">Completa tu solicitud. RHO te confirmará el total y la referencia de tu pedido antes del pago.</p>
+    <p><a href="login.html">Iniciar sesión</a> · <a href="solicitudes-transferencia.html">Mis solicitudes</a></p><p class="muted">Para registrar tu solicitud necesitas una cuenta RHO verificada. Guardaremos tus datos de contacto y entrega para atenderla. <a href="aviso-privacidad.html">Aviso de privacidad</a>.</p>
     <ol class="steps" aria-label="Pasos de compra"><li><b>1</b> Tus datos</li><li><b>2</b> Revisión con RHO</li><li><b>3</b> Transferencia</li></ol>
     <noscript>Activa JavaScript para revisar tu carrito o comunícate con RHO al 55 4568 3441.</noscript>
     <div id="empty-cart" class="panel" hidden><h2>Tu carrito está vacío</h2><p>Agrega artículos para continuar con tu solicitud.</p><a class="button" href="portafolio.html">Ver productos</a></div>
+    <section id="request-receipt" class="panel" tabindex="-1" hidden><h2>Solicitud registrada</h2><p>Tu folio: <strong id="receipt-reference"></strong></p><p>Productos · IVA incluido: <strong id="receipt-products"></strong></p><p><strong>Pendiente de revisión de RHO · Pago sin confirmar</strong></p><p>RHO revisará existencias, cobertura, envío y total antes de indicarte cómo continuar. Espera su confirmación antes de transferir. Esta solicitud no reserva mercancía ni programa una entrega.</p><a class="button" href="solicitudes-transferencia.html">Consultar mis solicitudes</a></section>
     <div id="checkout-layout" class="layout">
       <form id="transfer-form">
         <section class="panel"><h2>1. Datos de contacto</h2><p class="muted">Los campos marcados con * son obligatorios.</p>
@@ -62,11 +64,12 @@
         <p id="shipping-note" class="muted"></p><p id="catalog-status" class="muted" role="status" aria-live="polite">Consultando precios y existencias…</p>
         <button id="refresh-catalog" type="button" class="text-button">Actualizar precios y existencias</button>
         <a id="special-link" href="suministro-especializado.html" hidden>Solicitar suministro especializado →</a>
-        <div id="review-panel" class="review" hidden tabindex="-1"><h3>Revisa antes de enviar</h3><p id="review-contact"></p><p id="review-delivery"></p><p class="muted">Se abrirá WhatsApp con tu solicitud. Pulsa Enviar allí para compartirla con RHO. Todavía no se ha enviado ni registrado un pedido.</p><a id="send-request" class="button" rel="noopener noreferrer" target="_blank">Enviar solicitud por WhatsApp</a><p id="whatsapp-status" role="status" aria-live="polite"></p></div>
+        <div id="review-panel" class="review" hidden tabindex="-1"><h3>Revisa antes de enviar</h3><p id="review-contact"></p><p id="review-delivery"></p><p class="muted">Al registrar, RHO recibirá tus artículos y datos de entrega. El folio identifica una solicitud pendiente de revisión; todavía no confirma un pedido ni un pago.</p><button id="send-request" class="button" type="button">Registrar solicitud en RHO</button><p id="whatsapp-status" role="status" aria-live="polite"></p></div>
       </aside>
     </div>
   </main>
   <footer><a href="aviso-privacidad.html">Aviso de privacidad</a><span>RHO Seguridad Industrial · 55 4568 3441</span></footer>
-  <script type="module" src="checkout-transferencia.js?v=20261031-mx"></script>
+  <script type="module" src="checkout-transferencia.js?v=20261101-persist"></script>
   <script type="module" src="transfer-bank.js?v=20261031-inbursa"></script>
 </body></html>
+
