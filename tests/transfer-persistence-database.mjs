@@ -1,0 +1,48 @@
+import {PGlite} from '@electric-sql/pglite';
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const db=new PGlite();
+const a='11111111-1111-4111-8111-111111111111',b='22222222-2222-4222-8222-222222222222',sid='33333333-3333-4333-8333-333333333333';
+await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth; create schema private;
+grant usage on schema private,auth to authenticated;
+create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('test.uid',true),'')::uuid $$;
+create function auth.jwt() returns jsonb language sql stable as $$ select jsonb_build_object('session_id',current_setting('test.sid',true)) $$;
+create function private.customer_account_enabled() returns boolean language sql stable as $$ select current_setting('test.enabled',true)='true' $$;
+create function private.current_user_is_admin() returns boolean language sql stable as $$ select current_setting('test.admin',true)='true' $$;
+create function private.is_admin() returns boolean language sql stable as $$ select current_setting('test.admin',true)='true' and current_setting('test.mfa',true)='true' $$;
+create table auth.users(id uuid primary key,email_confirmed_at timestamptz,is_anonymous boolean,banned_until timestamptz);
+create table auth.sessions(id uuid,user_id uuid,not_after timestamptz);
+insert into auth.users values('${a}',now(),false,null),('${b}',now(),false,null);
+insert into auth.sessions values('${sid}','${a}',null),('${b}','${b}',null);
+create table public.products(id text primary key,price numeric,currency text,is_active boolean);
+create table public.inventory_items(sku text primary key,product_id text,name text,unit text,quantity int,state text,is_active boolean);
+insert into products values('p',24.70,'MXN',true); insert into inventory_items values('sku','p','Artículo de prueba','pieza',50,'tracked',true);
+create table public.orders(id int);`);
+await db.exec(readFileSync('supabase/migrations/20261101065319_transfer_purchase_requests.sql','utf8'));
+async function identity(id=a,{enabled=true,admin=false,mfa=false,session=sid}={}){
+ await db.exec(`reset role; select set_config('test.uid','${id}',false),set_config('test.sid','${session}',false),set_config('test.enabled','${enabled}',false),set_config('test.admin','${admin}',false),set_config('test.mfa','${mfa}',false); set role authenticated;`);
+}
+const contact={name:'Cliente Prueba',phone:'5555555555',email:'',company:'',postal:'02000',state:'Ciudad de México',municipality:'Azcapotzalco',settlement:'Centro',street:'Prueba',exterior:'1',interior:'',notes:'',destination:'cdmx',invoice:false};
+const key=crypto.randomUUID(),items=[{sku:'sku',quantity:2}];
+const submit=async(k=key,c=contact,i=items,cents=4940)=>(await db.query('select public.submit_transfer_request($1,$2,$3,$4) as result',[k,JSON.stringify(c),JSON.stringify(i),cents])).rows[0].result;
+const list=async(admin=false)=>(await db.query('select public.list_transfer_requests($1) as result',[admin])).rows[0].result.requests;
+await identity();const first=await submit();assert.match(first.reference,/^SOL-\d{10}$/);assert.equal(first.products_cents,4940);assert.equal(first.payment_status,'unconfirmed');assert.equal(first.total_cents,null);assert.equal(first.status,'awaiting_review');assert.equal((await list()).length,1);
+console.log('PASS request persisted with server prices, pending payment and shipping');
+assert.deepEqual(await submit(),first);await assert.rejects(submit(key,{...contact,name:'Otro'}),/transfer_request_conflict/);
+await db.exec('reset role; update products set price=30;');await identity();assert.deepEqual(await submit(),first);await assert.rejects(submit(crypto.randomUUID()),/transfer_price_changed/);
+console.log('PASS retry retains receipt after price change; changed payload conflicts');
+await db.exec('reset role; update products set price=24.70;');await identity();
+for(const bad of [[],[{sku:'sku',quantity:0}],[{sku:'sku',quantity:1.5}],[{sku:'sku',quantity:'2'}],[...items,...items],[{sku:'missing',quantity:2}],[{sku:'sku',quantity:51}]])await assert.rejects(submit(crypto.randomUUID(),contact,bad));
+for(const c of [{...contact,phone:'x'},{...contact,postal:'99999'},{...contact,invoice:'yes'},{...contact,name:null},{...contact,street:''}])await assert.rejects(submit(crypto.randomUUID(),c));
+console.log('PASS invalid contact, invalid quantities, duplicate SKU and shortage rejected');
+await identity(b,{session:b});assert.equal((await list()).length,0);await assert.rejects(list(true),/transfer_admin_required/);await assert.rejects(db.query('select * from private.transfer_purchase_requests'),/permission denied/);await assert.rejects(db.query('insert into private.transfer_purchase_requests(owner_id,request_key,submitted,snapshot) values($1,$2,$3,$4)',[b,crypto.randomUUID(),'{}','{}']),/permission denied/);
+console.log('PASS owner isolation and direct read/write denied');
+for(const settings of [{enabled:false},{session:b},{admin:true,mfa:false}]){await identity(a,settings);await assert.rejects(list(),/transfer_auth_required/);await assert.rejects(submit(),/transfer_auth_required/);}
+await identity(a,{admin:true,mfa:true});assert.equal((await list(true)).length,1);
+await db.exec('reset role; update auth.users set banned_until=now()+interval \'1 day\' where id=\''+a+'\';');await identity();await assert.rejects(submit(),/transfer_auth_required/);await db.exec('reset role; update auth.users set banned_until=null;');
+await identity();await db.exec('set role anon;');await assert.rejects(submit(),/permission denied/);
+console.log('PASS disabled/banned/revoked/missing MFA sessions denied; MFA admin can read');
+await identity();for(let j=0;j<9;j++)await submit(crypto.randomUUID());await assert.rejects(submit(crypto.randomUUID()),/transfer_rate_limit/);assert.deepEqual(await submit(),first);
+await db.exec('reset role;');assert.equal((await db.query('select quantity from inventory_items')).rows[0].quantity,50);assert.equal((await db.query('select count(*)::int n from orders')).rows[0].n,0);
+console.log('PASS rate limit, idempotent retry at limit, stock and orders unchanged');
+await db.close();
