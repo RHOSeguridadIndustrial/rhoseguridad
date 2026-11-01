@@ -42,16 +42,16 @@
   .rho-home__heading{display:block;margin:10px 0 8px}
   .rho-home h2{font-size:22px}
   .rho-home__catalog-link{display:inline-flex;align-items:center;margin-top:0;min-height:44px;font-size:12px}
-  .rho-home__modules{display:flex;gap:7px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0;padding:4px 0 10px}
-  .rho-home-card{display:flex;flex:0 0 calc((100% - 14px)/3);flex-direction:column;padding:10px 6px 6px;border-radius:14px}
+  .rho-home__modules{display:flex;gap:8.4px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding:0;padding:4px 0 10px}
+  .rho-home-card{display:flex;flex:0 0 calc(40% - 5.6px);flex-direction:column;padding:12px 7.2px 7.2px;border-radius:16.8px}
   .rho-home-card__eyebrow{display:none}
-  .rho-home-card h3{font-size:clamp(14px,3.6vw,17px);min-height:2.16em;margin-bottom:7px}
-  .rho-home-card__grid{grid-template-columns:1fr;grid-template-rows:repeat(3,1fr);flex:1;gap:6px}
-  .rho-home-product{gap:4px;padding:5px;border-radius:9px}
-  .rho-home-product__photo{display:block;height:clamp(48px,14vw,64px);aspect-ratio:auto;border-radius:6px}
+  .rho-home-card h3{font-size:clamp(16.8px,4.32vw,20.4px);min-height:2.16em;margin-bottom:8.4px}
+  .rho-home-card__grid{grid-template-columns:1fr;grid-template-rows:repeat(3,1fr);flex:1;gap:7.2px}
+  .rho-home-product{gap:4.8px;padding:6px;border-radius:10.8px}
+  .rho-home-product__photo{display:block;height:clamp(57.6px,16.8vw,76.8px);aspect-ratio:auto;border-radius:7.2px}
   .rho-home-product__photo img{min-width:0;min-height:0;max-height:100%}
   .rho-home-product__name,.rho-home-product__action{display:none}
-  .rho-home-product__short-name{display:block;min-height:2.5em;font-size:12px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+  .rho-home-product__short-name{display:block;min-height:2.5em;font-size:14.4px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
   .rho-home__controls{padding-bottom:10px;font-size:11px}
   .rho-home__controls>div{display:flex;flex-shrink:0;gap:4px}
   .rho-home__business{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}

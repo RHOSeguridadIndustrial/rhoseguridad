@@ -65,10 +65,11 @@ try{
     });
     assert.equal(await page.locator('.rho-home-product:visible').count(),18);
     assert.equal(metrics.columns,6,'Keep six columns in the mobile carousel');
-    assert.equal(metrics.visibleCards,3,'Show three full modules at a time');
-    assert.ok(Math.abs(metrics.cardWidth-(metrics.viewportWidth-14)/3)<1,'Preserve the compact module width');
+    assert.equal(metrics.visibleCards,2,'Show two enlarged modules and a preview of the next');
+    assert.ok(Math.abs(metrics.cardWidth-1.2*(metrics.viewportWidth-14)/3)<1,'Increase mobile module width by 20 percent');
     assert.equal(metrics.rows,3,'Align products in three rows');
-    assert.ok(metrics.height<=410,'Keep all mobile modules compact');
+    const previousHeight={320:341,390:361,430:381}[width];
+    assert.ok(Math.abs(metrics.height-previousHeight*1.2)<2,'Increase mobile module height proportionally by 20 percent');
     for(const product of await page.locator('.rho-home-product').all()){
      assert.ok((await product.getAttribute('aria-label')).length>5,'Retain full accessible product name');
     }
@@ -87,7 +88,7 @@ try{
     fs.mkdirSync('tests/home-previews',{recursive:true});
     await section.screenshot({path:`tests/home-previews/${engine.name()}-${width}-last.png`});
     await page.locator('#rho-home-modules').evaluate(el=>el.scrollLeft=0);
-    console.log(`MOBILE ${engine.name()} ${width}px: ${Math.round(metrics.height)}px tall, 6 modules, 3 visible, all reachable`);
+    console.log(`MOBILE ${engine.name()} ${width}px: ${Math.round(metrics.height)}px tall, 6 modules enlarged 20%, 2 fully visible, all reachable`);
    }
    await section.scrollIntoViewIfNeeded();
    fs.mkdirSync('tests/home-previews',{recursive:true});
