@@ -32,10 +32,6 @@ jobs:
         run: node tests/deployed-fulfillment-database.mjs --export-fixture
       - name: Verify signed receipts through the deployed schema
         run: node tests/deployed-signed-receipt.mjs
-      - name: Verify payment and stock contention
-        env:
-          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_fixture_only@127.0.0.1:5432/rho_deployed_fixture
-        run: python3 tests/deployed-fulfillment-concurrent.py
       - name: Verify signed refunds and restricted database projection
         run: node tests/test-refund-database.mjs --export-fixture
       - name: Verify concurrent refund deliveries
@@ -110,3 +106,27 @@ jobs:
         with:
           name: qw10-home-previews
           path: tests/home-previews/
+  stock_contention:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: rho_deployed_fixture
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: disposable_fixture_only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d rho_deployed_fixture"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install locked dependencies
+        run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - name: Verify migration and export exact tested schema
+        run: node tests/deployed-fulfillment-database.mjs --export-fixture
+      - name: Verify payment and reservation contention
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_fixture_only@127.0.0.1:5432/rho_deployed_fixture
+        run: python3 tests/deployed-fulfillment-concurrent.py
