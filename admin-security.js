@@ -1,5 +1,5 @@
 import {supabase} from './supabase-client.js?v=20261007-security';
-import {adminReturnTarget} from './admin-return.js';
+import {adminReturnTarget} from './admin-return.js?v=20261106';
 const $=id=>document.getElementById(id);
 const next=adminReturnTarget(location.search);
 const loginUrl='login.html?next='+encodeURIComponent(next);

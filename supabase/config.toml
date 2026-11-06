@@ -2,3 +2,14 @@
 # The handler verifies the application's publishable API key. Guests may look up
 # public postal names without signing in; the private cache is never exposed.
 verify_jwt = false
+
+[functions.create-card-checkout]
+# Validates the supplied user session via the owner-scoped database identity RPC.
+verify_jwt = false
+
+[functions.stripe-card-orders]
+# Stripe signs the raw body; this endpoint does not accept a user JWT as proof.
+verify_jwt = false
+
+[functions.verify-card-payment]
+verify_jwt = false

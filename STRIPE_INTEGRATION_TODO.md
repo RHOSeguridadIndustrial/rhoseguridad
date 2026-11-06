@@ -1,6 +1,16 @@
 # Stripe Checkout — estado y pasos pendientes
 
-## Estado: integrado en main, desplegado y validado de extremo a extremo en pruebas (versión 9)
+## Avance del 6 de noviembre de 2026: servidor e interfaz
+
+- Checkout con datos de entrega, total del servidor, aceptación explícita y reintentos conservados.
+- Retorno con consulta de solo lectura por propietario; no confirma ni crea pedidos desde el navegador.
+- Backend desplegado: `create-card-checkout` v8 y `stripe-card-orders` v1. Catálogo operativo CDMX cargado, deshabilitado.
+- Validación: 52 pruebas JS, 15 grupos de BD, 6 escenarios concurrentes y flujos Chromium/WebKit aprobados.
+- Inventario 50 piezas, pedidos reales 0; no se efectuó un cargo.
+- Cuenta Stripe live habilitada para cobros y depósitos; destino webhook y secretos live aún pendientes.
+- El carrito mantiene tarjeta deshabilitada. Ver detalles y límites en `docs/qw10-live-checkout-contract.md`.
+
+## Antecedente: Checkout de sandbox integrado y validado (versión 9)
 
 Aplica el escenario A. Se encontró una única creación de Checkout Session en el código local: [create-test-checkout.js](supabase/functions/_shared/create-test-checkout.js). Su contenido inicial coincide con el archivo consultado en GitHub/main. Solo se modificó su objeto de parámetros; no se cambiaron rutas, validadores, autenticación, inicialización del cliente ni webhooks. Este adaptador es exclusivamente de pruebas.
 
@@ -93,7 +103,7 @@ Se eliminó `locale`, ausente de Field Intents. Excepciones autorizadas:
 3. Mantener Stripe SDK 22.6.0, ya importado por el endpoint. No se añadieron dependencias ni archivos `.env`. Los secretos existentes se leen en el servidor como `STRIPE_TEST_RESTRICTED_KEY` y, para el webhook, `STRIPE_TEST_ORDERS_SIGNING_SECRET`; conservar exactamente esos nombres en la configuración de Supabase. No usar prefijos `VITE_` ni exponerlos en el navegador. Mantener también los secretos Supabase existentes.
 4. Compra autenticada de prueba completada en la orden #9; cancelación, rechazo y recuperación en la misma sesión comprobados en la orden #10. Para volver a consultar la confirmación visual de la orden #10, completar la verificación de administrador solicitada por la página de retorno. Antes de producción, completar el reenvío remoto de eventos y el caso remoto de pago tardío; ya están cubiertos localmente. Tarjetas de prueba: éxito `4242 4242 4242 4242`; rechazo `4000 0000 0000 0002`, con fecha futura y CVC de tres dígitos, únicamente en modo de prueba. No usar tarjetas reales para esta comprobación.
 5. Conservar la secuencia existente: usuario autenticado → cotización del servidor → reserva persistida → creación idempotente de sesión → validación y asociación → página alojada en Stripe → webhook verificado → confirmación del pedido. La página de éxito no prueba por sí sola que el pago se haya completado.
-6. La activación de la cuenta Stripe no convierte este endpoint de pruebas en uno de producción. Revisar el adaptador de producción y completar una validación independiente antes de habilitar cobros reales. `create-card-checkout` permanece deshabilitado (`CARD_PAYMENTS_ENABLED=false`). Esta integración no habilita cobros reales, no crea pedidos reales ni modifica el inventario real; las órdenes y movimientos de estas validaciones pertenecen exclusivamente a `qw10_test`.
+6. La activación de la cuenta Stripe no convierte este endpoint de pruebas en uno de producción. Revisar el adaptador de producción y completar una validación independiente antes de habilitar cobros reales. `create-card-checkout` permanece deshabilitado; la versión 7 exige la bandera de servidor y la configuración privada, que sigue en `enabled=false`. Esta integración no habilita cobros reales, no crea pedidos reales ni modifica el inventario real; las órdenes y movimientos de estas validaciones pertenecen exclusivamente a `qw10_test`.
 7. Para productos y seguimiento, mantener los precios y gastos de envío calculados por el servidor, la asociación pago/pedido y la confirmación idempotente mediante webhook. Verificar vencimiento de reservas, eventos repetidos y pagos tardíos antes del lanzamiento.
 
 ### Estructura del cambio
