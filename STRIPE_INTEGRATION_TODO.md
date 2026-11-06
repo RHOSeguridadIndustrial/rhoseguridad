@@ -33,6 +33,15 @@ Se conservan, con autorización expresa del usuario, `client_reference_id`, `met
 - Identificadores: solicitud `b211e4f2-30ef-4913-ba73-2b241bab591b`; sesión `cs_test_a1SqHmkpzF3jZcwqqrOzNgX69l6v62lRHn24xidwEb2UfxOItSZfakNpgj`; PaymentIntent `pi_3UYiBERpe0k2YzxP07j1AhoW`; evento `evt_1UYiCeRpe0k2YzxPqqbZFNdU`. Recibo registrado el **6 de noviembre de 2026, 08:08:54 UTC**.
 - Límite de la comprobación visual: después del segundo pago, la página de retorno solicitó verificar nuevamente la sesión de administrador, incluso tras pulsar «Consultar de nuevo». No se eludió esa barrera. El éxito de la orden #10 se confirmó mediante Stripe y una consulta de solo lectura a la base de datos; no se afirma haber visto su confirmación autenticada en pantalla. La orden #9 sí tuvo confirmación visual completa.
 
+### Reenvío remoto preparado y evidencia adicional
+
+- Consulta de solo lectura del 6 de noviembre de 2026: la solicitud de la orden #10 conserva **un recibo, una orden y un movimiento de dos unidades**. Es la línea base para comparar después del reenvío; por sí sola no acredita una entrega duplicada.
+- Destino confirmado en el sandbox `acct_1UGwvSRpe0k2YzxP`: `we_1UR03RRpe0k2YzxPZ07v9GNV`, habilitado, `livemode: false`, URL `https://mtpqpxcmngrsivntbgcc.supabase.co/functions/v1/stripe-test-orders`.
+- Evento pendiente de reenviar: `evt_1UYiCeRpe0k2YzxPqqbZFNdU`, asociado a la orden #10. El conector disponible no expone el reenvío. Se abrió el Dashboard; el primer paso de inicio de sesión fue aceptado y quedó pendiente la autenticación con la clave de acceso. No se ha reenviado el evento ni se ha cambiado la configuración del webhook.
+- Al completar el acceso: seleccionar el sandbox indicado, abrir ese evento y reenviarlo únicamente al destino de órdenes anterior. Verificar una respuesta HTTP satisfactoria y repetir la consulta de recibos, órdenes y movimientos: deben seguir en **1 / 1 / 1**, con **2 unidades** en total. Registrar la entrega antes de marcar esta prueba como aprobada.
+- Se contrastó un caso histórico de reserva inactiva: solicitud `3ab60af6-ef86-40b7-a4c0-c11690761bfd`, sesión `cs_test_a1Amj3o65G4AG8f4dLa6ZA2cb1vy7fxSpD5T1A5zHdnorVTO0vdqTJmLsX`, evento `evt_1UUBmdRpe0k2YzxPzzPiTKfF`. Stripe confirma `complete / paid`, **12370 centavos MXN**, `livemode: false`, y la base de datos conserva `reconciliation_required / reservation_inactive`, **cero órdenes y cero movimientos**. El registro es del **24 de octubre de 2026, 20:43:21 UTC**.
+- Este caso histórico acredita el tratamiento de una reserva inactiva. **No acredita vencimiento por tiempo** (`reservation_expired`), ni sustituye una prueba del Checkout versión 9. El caso remoto de pago tardío por vencimiento sigue pendiente. No se alteraron fechas, recibos ni estados de pago en la base de datos para simularlo.
+
 ### Validación local adicional
 
 - `node tests/deployed-fulfillment-database.mjs --export-fixture`: **14 comprobaciones aprobadas**, en PGlite aislado con datos sintéticos. Cubren atomicidad, permisos, importes e identidades, idempotencia, reservas vencidas, inventario insuficiente, auditoría y conservación de evidencia.
