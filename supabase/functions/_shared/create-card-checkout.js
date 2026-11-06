@@ -17,7 +17,8 @@ function cartInput(input) {
     if (!/^[a-z0-9][a-z0-9-]{1,119}$/.test(line?.sku || '') ||
         !Number.isSafeInteger(line.quantity) || line.quantity < 1) throw Error('Invalid card item');
     const quantity = (quantities.get(line.sku) || 0) + line.quantity;
-    if (!Number.isSafeInteger(quantity) || quantity > 1000000) throw Error('Invalid card quantity');
+    // Operational order_items currently permits at most 100 units per SKU.
+    if (!Number.isSafeInteger(quantity) || quantity > 100) throw Error('Invalid card quantity');
     quantities.set(line.sku,quantity);
   }
   const address = normalizeDeliveryAddress(input.address);

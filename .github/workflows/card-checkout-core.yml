@@ -7,6 +7,8 @@ on:
       - 'tests/checkout-summary.test.mjs'
       - 'tests/checkout-coupon.test.mjs'
       - 'tests/package*.json'
+      - 'tests/card-*'
+      - 'supabase/migrations/*card_checkout_operational.sql'
       - '.github/workflows/card-checkout-core.yml'
   workflow_dispatch:
 permissions:
@@ -23,3 +25,28 @@ jobs:
       - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
       - name: Validate production adapters and existing test checkout
         run: node --test tests/live-checkout-core.test.mjs tests/checkout-summary.test.mjs tests/checkout-coupon.test.mjs
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: rho_card_fixture
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: disposable_fixture_only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d rho_card_fixture"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: node tests/card-checkout-database.mjs --export-fixture
+      - name: Verify contention on real PostgreSQL
+        env:
+          RHO_LOCAL_PG_URL: postgresql://postgres:disposable_fixture_only@127.0.0.1:5432/rho_card_fixture
+        run: python3 tests/card-checkout-concurrent.py
