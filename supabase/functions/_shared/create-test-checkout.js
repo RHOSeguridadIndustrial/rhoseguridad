@@ -59,14 +59,17 @@ export async function createTestCheckout(input, {ownerId, retryKey, stripe,
     if(quote.paymentMethod!=='transfer') throw Error('Payment method mismatch');
     return {environment:'test',paymentMethod:'transfer',requestId:request.id,reference:`TEST-${request.id}`,status:'awaiting_test_transfer',totalCents:quote.totalCents,...summary};
   }
-  const params={mode:'payment',adaptive_pricing:{enabled:false},
-    client_reference_id:request.id,metadata:{rho_request_id:request.id,environment:'test'},
+  const params={mode:'payment',ui_mode:'hosted_page',
+    adaptive_pricing:{enabled:false},client_reference_id:request.id,
+    metadata:{rho_request_id:request.id,environment:'test'},expires_at:request.expiresAt,
+    billing_address_collection:'auto',phone_number_collection:{enabled:false},
+    automatic_tax:{enabled:false},allow_promotion_codes:false,submit_type:'auto',
     // One server-priced total includes shipping. Product detail stays in request.
     line_items:[{price_data:{currency:'mxn',unit_amount:quote.totalCents,
       product_data:{name:'PRUEBA RHO — carrito simulado sin entrega'}},quantity:1}],
-    expires_at:request.expiresAt,success_url:'https://rhosegind.com/confirmacion-prueba.html?session_id={CHECKOUT_SESSION_ID}',
-    cancel_url:'https://rhosegind.com',locale:'es-419',
-    integration_identifier:'rho_cart_test_qwertyui'};
+    success_url:'https://rhosegind.com/confirmacion-prueba.html?session_id={CHECKOUT_SESSION_ID}',
+    cancel_url:'https://rhosegind.com',
+    integration_identifier:'hosted_web_0001',origin_context:'web'};
   // Retry with the same immutable payload/key if the network outcome is unknown.
   // Do not release the hold on a timeout: a Stripe session might already exist.
   const session=await stripe.checkout.sessions.create(params,{idempotencyKey:`rho-test-${request.id}`});
