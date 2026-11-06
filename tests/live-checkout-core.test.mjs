@@ -12,7 +12,7 @@ const requestId = '33333333-3333-4333-8333-333333333333';
 const address = {country:'MX',state:'CMX',postalCode:'02000',municipalityCode:'002',
   settlementCode:'0001',street:'Calle de prueba',exterior:'10',interior:'',reference:''};
 function input(extra={}) {return {paymentMethod:'card',items:[{sku:'fixture-sku',quantity:2}],
-  address:structuredClone(address),expectedTotalCents:10564,...extra};}
+  contact:{name:'Comprador de prueba',phone:'5555555555'},address:structuredClone(address),expectedTotalCents:10564,...extra};}
 function quote() {return {currency:'mxn',paymentMethod:'card',
   lines:[{sku:'fixture-sku',name:'Artículo sintético',quantity:2,unitPriceCents:332,lineTotalCents:664}],
   subtotalCents:664,shippingCents:9900,totalCents:10564,mode:'standard',
@@ -65,7 +65,7 @@ test('amount changes require acceptance before any reservation or payment reques
   assert.equal(f.calls.reserves,0);assert.equal(f.calls.creates.length,0);
 });
 test('missing acceptance, invalid address and invalid carts never reach Stripe',async()=>{
-  for(const change of [{expectedTotalCents:undefined},{items:[]},{paymentMethod:'transfer'},
+  for(const change of [{expectedTotalCents:undefined},{items:[]},{paymentMethod:'transfer'},{contact:null},{contact:{name:'A',phone:'123'}},
     {items:[{sku:'fixture-sku',quantity:1.5}]},{items:[{sku:'fixture-sku',quantity:101}]},{address:{postalCode:'02000'}}]) {
     const f=fixture();await assert.rejects(createCardCheckout(input(change),f.deps));assert.equal(f.calls.creates.length,0);
   }
@@ -95,6 +95,7 @@ test('failed session binding prevents redirect and can be retried with identical
 test('retry key cannot be reused for another cart or owner',async()=>{
   const f=fixture();await createCardCheckout(input(),f.deps);
   await assert.rejects(createCardCheckout(input({items:[{sku:'fixture-sku',quantity:3}]}),f.deps));
+  await assert.rejects(createCardCheckout(input({contact:{name:'Otro receptor',phone:'5555555555'}}),f.deps));
   await assert.rejects(createCardCheckout(input(),{...f.deps,ownerId:'44444444-4444-4444-8444-444444444444'}));
   assert.equal(f.calls.creates.length,1);
 });

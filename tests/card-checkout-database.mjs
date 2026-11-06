@@ -2,7 +2,7 @@ import {PGlite} from '@electric-sql/pglite';
 import Stripe from 'stripe';
 import {writeFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
-import {fixtureSql,seedSql,owner,other,admin,sid,address,quote,identity,sqlService} from './card-database-fixture.mjs';
+import {fixtureSql,seedSql,owner,other,admin,sid,address,contact,quote,identity,sqlService} from './card-database-fixture.mjs';
 import {createCardCheckout} from '../supabase/functions/_shared/create-card-checkout.js';
 import {cardCheckoutRpc} from '../supabase/functions/_shared/card-checkout-rpc.js';
 import {cardPaymentRuntime} from '../supabase/functions/_shared/card-payment-runtime.js';
@@ -45,6 +45,14 @@ try{
  await assert.rejects(reserve(),/card_price_changed/);
  await role('postgres');await db.exec('update public.products set price=3.32');await role();
  pass('reservation persists frozen price, owner, shipping, expiry and retry identity');
+ await role('postgres');
+ assert.deepEqual(await scalar('select contact from private.card_checkout_requests where id=$1',[first.id]),{...contact,email:'buyer@example.test'});
+ await role();
+ for(const changed of [null,{name:'X',phone:'5555555555'},{name:'Receptor',phone:'12'}]){
+  await assert.rejects(reserve(quote(),crypto.randomUUID(),owner,JSON.stringify({...JSON.parse(identity(quote())),contact:changed})),/card_invalid_contact/);
+ }
+ await assert.rejects(reserve(quote(),key,owner,JSON.stringify({...JSON.parse(identity(quote())),contact:{...contact,name:'Otro receptor'}})),/card_retry_changed/);
+ pass('recipient is validated, frozen and cannot change under an existing retry');
 
  for(const bad of [{...quote(),shippingCents:0,totalCents:664},{...quote(),totalCents:1},quote(101),
    {...quote(),delivery:{...quote().delivery,catalogSha256:'b'.repeat(64)}},
@@ -144,7 +152,7 @@ try{
  pass('failure after multiple stock writes rolls all lines, order, receipt and audit back together');
 
  const accepted=quote(1),retryKey=crypto.randomUUID();let createdParams;
- const checkout=await createCardCheckout({paymentMethod:'card',items:[{sku:'fixture-sku',quantity:1}],address,expectedTotalCents:accepted.totalCents},
+ const checkout=await createCardCheckout({paymentMethod:'card',items:[{sku:'fixture-sku',quantity:1}],address,contact,expectedTotalCents:accepted.totalCents},
  {enabled:true,ownerId:owner,retryKey,...persistence,quoteBuilder:async()=>accepted,stripe:{checkout:{sessions:{create:async(params)=>{
   createdParams=params;return {id:'cs_live_adapter_fixture',url:'https://checkout.stripe.com/c/pay/cs_live_adapter_fixture',
   livemode:true,status:'open',mode:'payment',payment_status:'unpaid',amount_total:params.line_items[0].price_data.unit_amount,

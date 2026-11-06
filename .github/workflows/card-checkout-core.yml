@@ -10,7 +10,14 @@ on:
       - 'tests/checkout-coupon.test.mjs'
       - 'tests/package*.json'
       - 'tests/card-*'
-      - 'supabase/migrations/*card_checkout_operational.sql'
+      - 'card-checkout-model.js'
+      - 'checkout-tarjeta.*'
+      - 'pago-exitoso.*'
+      - 'checkout-return.js'
+      - 'admin-return.js'
+      - 'admin-security.js'
+      - 'login.html'
+      - 'supabase/migrations/*card_checkout_*.sql'
       - '.github/workflows/card-checkout-core.yml'
   workflow_dispatch:
 permissions:
@@ -26,7 +33,7 @@ jobs:
           node-version: '22'
       - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
       - name: Validate production adapters and existing test checkout
-        run: node --test tests/live-checkout-core.test.mjs tests/card-checkout-handler.test.mjs tests/checkout-summary.test.mjs tests/checkout-coupon.test.mjs
+        run: node --test tests/live-checkout-core.test.mjs tests/card-checkout-handler.test.mjs tests/checkout-summary.test.mjs tests/checkout-coupon.test.mjs tests/card-checkout-model.test.mjs
   database:
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -52,3 +59,15 @@ jobs:
         env:
           RHO_LOCAL_PG_URL: postgresql://postgres:disposable_fixture_only@127.0.0.1:5432/rho_card_fixture
         run: python3 tests/card-checkout-concurrent.py
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - run: cd tests && npx playwright install --with-deps chromium webkit
+      - run: node tests/card-checkout-browser.cjs

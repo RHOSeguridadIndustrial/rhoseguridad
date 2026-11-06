@@ -3,6 +3,7 @@
 // never wire them to qw10_test. See docs/qw10-live-checkout-contract.md.
 import {normalizeDeliveryAddress} from './delivery-address.js';
 import {shippingCoupon} from './shipping-coupon.js';
+import {cardContact} from './card-contact.js';
 
 const canonical = value => Array.isArray(value) ? value.map(canonical) :
   value && typeof value === 'object' ? Object.fromEntries(Object.keys(value).sort().map(k => [k,canonical(value[k])])) : value;
@@ -23,7 +24,7 @@ function cartInput(input) {
   }
   const address = normalizeDeliveryAddress(input.address);
   if (!address) throw Error('Invalid card delivery');
-  return {paymentMethod:'card',address,items:[...quantities].sort(([a],[b])=>a.localeCompare(b))
+  return {paymentMethod:'card',address,contact:cardContact(input.contact),items:[...quantities].sort(([a],[b])=>a.localeCompare(b))
     .map(([sku,quantity])=>({sku,quantity}))};
 }
 

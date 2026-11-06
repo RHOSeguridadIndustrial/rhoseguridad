@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {cardCheckoutHandler} from '../supabase/functions/create-card-checkout/handler.js';
-import {quote,address,owner} from './card-database-fixture.mjs';
-const body={action:'quote',paymentMethod:'card',items:[{sku:'fixture-sku',quantity:2}],address};
+import {quote,address,owner,contact} from './card-database-fixture.mjs';
+const body={action:'quote',paymentMethod:'card',items:[{sku:'fixture-sku',quantity:2}],address,contact};
 const request=(data=body,headers={Authorization:'Bearer fixture'},method='POST')=>new Request('https://fixture.invalid',
  {method,headers,...(method==='POST'?{body:typeof data==='string'?data:JSON.stringify(data)}:{})});
 function setup(overrides={}){

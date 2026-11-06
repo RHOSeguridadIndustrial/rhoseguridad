@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer"><meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' data:; connect-src 'self' https://mtpqpxcmngrsivntbgcc.supabase.co wss://mtpqpxcmngrsivntbgcc.supabase.co https://cdn.jsdelivr.net; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'">
+<title>Compra con tarjeta | RHO Seguridad Industrial</title><link rel="stylesheet" href="checkout-tarjeta.css?v=20261106"></head>
+<body><header class="top"><a href="index.html">RHO <span>Seguridad Industrial</span></a><a href="carrito.html">Volver al carrito</a></header>
+<main class="wrap"><p class="eyebrow">TU COMPRA EN RHO</p><h1>Entrega y pago con tarjeta</h1><p class="intro">Revisa tus datos y el total. Completarás el pago de forma segura en Stripe.</p>
+<p id="card-status" role="status" aria-live="polite">Cargando tu compra…</p><a id="card-login" class="link" href="login.html?next=checkout-tarjeta.html" hidden>Iniciar sesión o verificar mi acceso</a>
+<div class="layout"><form id="card-form" class="panel">
+<h2>1. Datos para la entrega</h2>
+<label>Nombre de quien recibe<input id="card-name" name="name" autocomplete="shipping name" minlength="2" maxlength="120" required></label>
+<label>Teléfono de contacto<input id="card-phone" name="phone" type="tel" autocomplete="shipping tel" maxlength="25" required placeholder="10 dígitos"></label>
+<div class="postal"><label>Código postal<input id="card-postal" name="postal" inputmode="numeric" autocomplete="shipping postal-code" pattern="[0-9]{5}" maxlength="5" required></label><button id="card-lookup" type="button" class="secondary">Consultar CP</button></div>
+<p id="card-postal-status" class="note" role="status"></p>
+<label>Alcaldía y colonia<select id="card-settlement" required disabled><option value="">Consulta tu código postal</option></select></label>
+<label>Calle<input id="card-street" autocomplete="shipping address-line1" maxlength="120" required></label>
+<div class="pair"><label>Número exterior<input id="card-exterior" maxlength="24" required></label><label>Interior <span class="note">(opcional)</span><input id="card-interior" maxlength="24"></label></div>
+<label>Referencias <span class="note">(opcional)</span><textarea id="card-reference" maxlength="240" rows="2"></textarea></label>
+<p class="note">Entrega disponible en los códigos postales de CDMX habilitados. El total se consulta antes de pagar.</p>
+<button id="card-review" type="submit">Revisar mi compra</button></form>
+<aside class="panel"><h2>2. Resumen de compra</h2><ul id="card-items"></ul>
+<section id="card-summary" hidden><ul id="card-lines"></ul><dl><div><dt>Productos · IVA incluido</dt><dd id="card-subtotal"></dd></div><div><dt id="card-shipping-label">Envío</dt><dd id="card-shipping"></dd></div><div class="total"><dt>Total · MXN</dt><dd id="card-total"></dd></div></dl>
+<p id="card-contact" class="note"></p><p id="card-delivery" class="note"></p><p id="card-validity" class="note"></p>
+<label class="accept"><input id="card-accept" type="checkbox">Confirmo los datos de entrega y el importe total.</label>
+<button id="card-pay" type="button" disabled>Continuar al pago seguro</button>
+<a id="card-open" class="button" hidden rel="noreferrer">Abrir pago seguro en Stripe</a>
+<a id="card-check" class="link" hidden>Consultar el estado del pago</a></section>
+<p class="note">RHO no almacena los datos de tu tarjeta. La compra se confirma cuando recibimos la validación del pago.</p>
+<p class="note"><a href="envios-entregas.html">Condiciones de envío</a> · <a href="aviso-privacidad.html">Privacidad</a></p></aside></div>
+<noscript>Activa JavaScript para consultar el total y continuar con tu compra.</noscript></main>
+<script type="module" src="checkout-tarjeta.js?v=20261106"></script></body></html>

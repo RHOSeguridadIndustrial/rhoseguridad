@@ -13,7 +13,8 @@ export function quote(quantity=2,sku='fixture-sku',price=332){
  delivery:{status:'postal_match',assurance:'postal_catalog_only',catalogSha256:'a'.repeat(64),
  validUntil:'2099-01-01T00:00:00Z',address:{...address,municipality:'Azcapotzalco',settlement:'Centro'}}};
 }
-export const identity=q=>JSON.stringify({address,paymentMethod:'card',items:q.lines.map(l=>({sku:l.sku,quantity:l.quantity})).sort((a,b)=>a.sku.localeCompare(b.sku))});
+export const contact={name:'Comprador de prueba',phone:'5555555555'};
+export const identity=q=>JSON.stringify({address,contact,paymentMethod:'card',items:q.lines.map(l=>({sku:l.sku,quantity:l.quantity})).sort((a,b)=>a.sku.localeCompare(b.sku))});
 // Isolated schema reproduces the inspected operational orders constraints and
 // exact committed inventory/reservation/rename/identity definitions. Auth uses
 // synthetic sessions; this is not a claim of remote JWT verification.
@@ -52,6 +53,7 @@ ${readFileSync('supabase/reservations.sql','utf8')}
 ${readFileSync('supabase/migrations/20261024203615_inventory_rename_audited.sql','utf8')}
 ${readFileSync('supabase/migrations/20261101065319_transfer_purchase_requests.sql','utf8')}
 ${readFileSync(migrationPath,'utf8')}
+${readFileSync('supabase/migrations/20261106110000_card_checkout_contact.sql','utf8')}
 `;}
 export function seedSql(){return `
 insert into auth.users values('${owner}',now(),false,null),('${other}',now(),false,null),('${admin}',now(),false,null);

@@ -37,7 +37,7 @@ def main():
                  unitPriceCents=332, lineTotalCents=332)], subtotalCents=332, shippingCents=9900, totalCents=10232, mode='standard',
                  delivery=dict(status='postal_match', assurance='postal_catalog_only', catalogSha256='a' * 64,
                  validUntil='2099-01-01T00:00:00Z', address={**address, 'municipality': 'Azcapotzalco', 'settlement': 'Centro'}))
-    identity = dict(address=address, paymentMethod='card', items=[dict(sku='fixture-sku', quantity=1)])
+    identity = dict(address=address, contact=dict(name='Comprador de prueba', phone='5555555555'), paymentMethod='card', items=[dict(sku='fixture-sku', quantity=1)])
     # Values below are fixed synthetic fixtures, not external input.
     qtext = json.dumps(quote, ensure_ascii=False)
     itext = json.dumps(identity, ensure_ascii=False)
