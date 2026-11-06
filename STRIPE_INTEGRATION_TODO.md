@@ -1,6 +1,6 @@
 # Stripe Checkout — estado y pasos pendientes
 
-## Estado: desplegado en pruebas (versión 9); validación integral pendiente
+## Estado: integrado en main y desplegado en pruebas (versión 9); validación integral pendiente
 
 Aplica el escenario A. Se encontró una única creación de Checkout Session en el código local: [create-test-checkout.js](supabase/functions/_shared/create-test-checkout.js). Su contenido inicial coincide con el archivo consultado en GitHub/main. Solo se modificó su objeto de parámetros; no se cambiaron rutas, validadores, autenticación, inicialización del cliente ni webhooks. Este adaptador es exclusivamente de pruebas.
 
@@ -15,7 +15,7 @@ Se conservan, con autorización expresa del usuario, `client_reference_id`, `met
 - El esquema del conector corresponde a `2026-09-30.preview`; esta prueba no demuestra por sí sola compatibilidad con la versión fijada por el endpoint (`2026-08-26.dahlia`).
 - Se desplegó `create-test-checkout`, versión **9**, estado **ACTIVE**. Se recuperaron los nueve archivos desplegados y se verificó coincidencia exacta con el paquete enviado. Solo cambió el objeto de parámetros del helper; autenticación, SDK y versión de API permanecen iguales.
 - Comprobación HTTP posterior: `OPTIONS` → 204; `POST` sin sesión → 401 `admin_session_required`; `GET` → 405 `method_not_allowed`. Estas respuestas verifican disponibilidad y barreras de acceso, no un pago completo.
-- Pendiente: desde una sesión de administrador existente, completar un pedido de prueba para validar los parámetros con la versión de API fijada por el endpoint, así como el pedido persistido y el webhook. No se dispone de esa sesión en esta ejecución; no se alteró ni eludió la autenticación.
+- Pendiente: desde una sesión de administrador existente, completar un pedido de prueba para validar los parámetros con la versión de API fijada por el endpoint, así como el pedido persistido y el webhook. El navegador de verificación abrió `checkout-prueba.html` y mostró el requisito de acceso de administrador; su enlace condujo a `login.html?next=checkout-prueba.html`. Falta iniciar sesión y completar el autenticador. No se alteró ni eludió la autenticación.
 
 ## Values to Replace
 
@@ -69,7 +69,7 @@ Se eliminó `locale`, ausente de Field Intents. Excepciones autorizadas:
 - Modificado: [supabase/functions/_shared/create-test-checkout.js](supabase/functions/_shared/create-test-checkout.js), únicamente el objeto de parámetros.
 - Nuevo: [STRIPE_INTEGRATION_TODO.md](STRIPE_INTEGRATION_TODO.md), este documento.
 
-El cambio se desplegó únicamente en `create-test-checkout` (versión 9). Se conserva en la rama `codex/checkout-studio-20261106` de GitHub para revisión. Los cambios previos ajenos a Stripe en el directorio de trabajo se dejaron intactos. No se habilitaron cobros de producción.
+El cambio se desplegó únicamente en `create-test-checkout` (versión 9). La [PR #52](https://github.com/RHOSeguridadIndustrial/rhoseguridad/pull/52) se integró en `main` el 6 de noviembre de 2026 mediante el commit `4c8824e2ac1d37ec25da19779477081581bf2a94`. GitHub no devolvió ejecuciones de workflows de PR ni estados para su commit de cabecera; la validación automatizada disponible es la local de 21 pruebas. Los cambios previos ajenos a Stripe en el directorio de trabajo se dejaron intactos. No se habilitaron cobros de producción.
 
 ### Recursos
 
