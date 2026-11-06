@@ -1,0 +1,25 @@
+name: Card checkout core
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/_shared/**'
+      - 'tests/live-checkout-core.test.mjs'
+      - 'tests/checkout-summary.test.mjs'
+      - 'tests/checkout-coupon.test.mjs'
+      - 'tests/package*.json'
+      - '.github/workflows/card-checkout-core.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
+      - name: Validate production adapters and existing test checkout
+        run: node --test tests/live-checkout-core.test.mjs tests/checkout-summary.test.mjs tests/checkout-coupon.test.mjs

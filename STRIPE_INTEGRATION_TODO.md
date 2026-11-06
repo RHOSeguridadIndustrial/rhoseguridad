@@ -1,5 +1,19 @@
 # Stripe Checkout — estado y pasos pendientes
 
+## Reanudación del 6 de noviembre: producción requiere integración adicional
+
+La inspección directa confirmó que `create-card-checkout` versión 6 sigue
+deshabilitado y conserva la implementación antigua sin envío, reservas ni
+idempotencia Stripe. La cuenta activa no tiene endpoints webhook registrados;
+los triggers de inventario aún exigen administrador humano. No basta guardar un
+secreto para habilitar pagos reales.
+
+Se prepararon adaptadores separados de creación de Checkout y verificación del
+webhook live, todavía sin conectarlos a los endpoints ni a la base operativa.
+Pasaron 16 pruebas nuevas de esos adaptadores y las 21 de Checkout existentes.
+El contrato pendiente, los límites de esta evidencia y el siguiente trabajo
+están en [preparación del cobro real](docs/qw10-live-checkout-contract.md).
+
 ## Estado: integrado en main, desplegado y validado de extremo a extremo en pruebas (versión 9)
 
 Aplica el escenario A. Se encontró una única creación de Checkout Session en el código local: [create-test-checkout.js](supabase/functions/_shared/create-test-checkout.js). Su contenido inicial coincide con el archivo consultado en GitHub/main. Solo se modificó su objeto de parámetros; no se cambiaron rutas, validadores, autenticación, inicialización del cliente ni webhooks. Este adaptador es exclusivamente de pruebas.
