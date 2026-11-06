@@ -1,4 +1,4 @@
-// Server-only production preparation. This module is not a deployed endpoint.
+// Server-only Checkout preparation, composed by create-card-checkout/index.ts.
 // Persistence callbacks MUST use the operational database under shared SKU locks;
 // never wire them to qw10_test. See docs/qw10-live-checkout-contract.md.
 import {normalizeDeliveryAddress} from './delivery-address.js';
@@ -49,6 +49,12 @@ function validateQuote(quote, cart) {
       quote.shippingCents !== shipping.shippingCents || quote.totalCents !== shipping.totalCents ||
       !Number.isSafeInteger(quote.totalCents) || quote.mode !== shipping.mode)
     throw Error('Card quote total mismatch');
+}
+
+export async function quoteCardCheckout(input,{quoteBuilder}) {
+  const cart=cartInput(input),quote=await quoteBuilder(cart);
+  validateQuote(quote,cart);
+  return {environment:'live',...quote};
 }
 
 // An authenticated, active registered customer is a precondition of the adapter.

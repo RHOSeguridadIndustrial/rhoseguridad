@@ -66,7 +66,7 @@ test('amount changes require acceptance before any reservation or payment reques
 });
 test('missing acceptance, invalid address and invalid carts never reach Stripe',async()=>{
   for(const change of [{expectedTotalCents:undefined},{items:[]},{paymentMethod:'transfer'},
-    {items:[{sku:'fixture-sku',quantity:1.5}]},{address:{postalCode:'02000'}}]) {
+    {items:[{sku:'fixture-sku',quantity:1.5}]},{items:[{sku:'fixture-sku',quantity:101}]},{address:{postalCode:'02000'}}]) {
     const f=fixture();await assert.rejects(createCardCheckout(input(change),f.deps));assert.equal(f.calls.creates.length,0);
   }
 });

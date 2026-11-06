@@ -55,7 +55,7 @@ function render() {
 }
 function renderHistory(history,people) {
   const names=new Map(items.map(i=>[i.sku,i.name])), admins=new Map(people.map(p=>[p.id,p.full_name||'Administrador']));
-  $('history').innerHTML=history.length?history.map(h=>`<tr><td>${esc(new Date(h.changed_at).toLocaleString('es-MX'))}</td><td>${esc(names.get(h.sku)||h.sku)}</td><td>${h.old_quantity??'Alta'} → ${h.new_quantity}${h.old_state!==h.new_state?'<small>'+esc(h.new_state==='tracked'?'Existencia confirmada':'Pendiente de compra')+'</small>':''}</td><td>${esc(h.reason)}</td><td>${esc(admins.get(h.changed_by)||'Administrador')}</td></tr>`).join(''):'<tr><td colspan="5">La propuesta de compra está cargada. Aún no hay entradas ni salidas.</td></tr>';
+  $('history').innerHTML=history.length?history.map(h=>`<tr><td>${esc(new Date(h.changed_at).toLocaleString('es-MX'))}</td><td>${esc(names.get(h.sku)||h.sku)}</td><td>${h.old_quantity??'Alta'} → ${h.new_quantity}${h.old_state!==h.new_state?'<small>'+esc(h.new_state==='tracked'?'Existencia confirmada':'Pendiente de compra')+'</small>':''}</td><td>${esc(h.reason)}</td><td>${esc(h.changed_by===null?'Sistema de pagos':admins.get(h.changed_by)||'Administrador')}</td></tr>`).join(''):'<tr><td colspan="5">La propuesta de compra está cargada. Aún no hay entradas ni salidas.</td></tr>';
 }
 function edit(sku) {
   activeItem=items.find(i=>i.sku===sku); if(!activeItem) return;

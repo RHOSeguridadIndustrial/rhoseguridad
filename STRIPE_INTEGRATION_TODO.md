@@ -1,18 +1,17 @@
 # Stripe Checkout — estado y pasos pendientes
 
-## Reanudación del 6 de noviembre: producción requiere integración adicional
+## Reanudación del 6 de noviembre: conexión operativa implementada
 
-La inspección directa confirmó que `create-card-checkout` versión 6 sigue
-deshabilitado y conserva la implementación antigua sin envío, reservas ni
-idempotencia Stripe. La cuenta activa no tiene endpoints webhook registrados;
-los triggers de inventario aún exigen administrador humano. No basta guardar un
-secreto para habilitar pagos reales.
+Se implementaron reservas y recibos privados conectados con los pedidos y el
+inventario operativos, incluidos actor automático verificable, persistencia
+atómica, protección de reservas manuales y consulta exclusiva del propietario.
+El endpoint autenticado de Checkout y el webhook live tienen barreras apagadas
+por defecto. La integración del carrito y la página de retorno, la configuración
+operativa y la validación remota siguen pendientes antes de activar cobros.
 
-Se prepararon adaptadores separados de creación de Checkout y verificación del
-webhook live, todavía sin conectarlos a los endpoints ni a la base operativa.
-Pasaron 16 pruebas nuevas de esos adaptadores y las 21 de Checkout existentes.
-El contrato pendiente, los límites de esta evidencia y el siguiente trabajo
-están en [preparación del cobro real](docs/qw10-live-checkout-contract.md).
+Evidencia: 44 pruebas JavaScript, 14 grupos de base y 6 escenarios concurrentes
+PostgreSQL. No son cobros reales. Detalle, despliegue y pendientes en
+[conexión de cobros reales](docs/qw10-live-checkout-contract.md).
 
 ## Estado: integrado en main, desplegado y validado de extremo a extremo en pruebas (versión 9)
 

@@ -127,6 +127,22 @@ try{
  await db.exec('drop trigger fixture_fail_order_item on public.order_items;drop function public.fixture_fail_order_item()');await role();
  assert.equal((await pay(atomic)).status,'paid');pass('order failure rolls receipt, hold, stock and history back atomically; retry succeeds');
 
+ const multiQuote=quote(1);multiQuote.lines.push(quote(1,'fixture-second').lines[0]);
+ multiQuote.lines.sort((a,b)=>a.sku.localeCompare(b.sku));multiQuote.subtotalCents=664;multiQuote.totalCents=10564;
+ const multi=await reserve(multiQuote);multi.sessionId=await bind(multi);const multiBefore=await state();
+ await role('postgres');const secondBefore=await scalar("select quantity from public.inventory_items where sku='fixture-second'");
+ await db.exec(`create function public.fixture_fail_second_stock() returns trigger language plpgsql as $$begin
+ if (select count(*) from private.card_inventory_write_context c join public.inventory_history h
+ on h.card_receipt_id=c.receipt_id and h.sku=c.sku where c.transaction_id=txid_current())>1
+ then raise exception 'synthetic second stock failure';end if;return new;end$$;
+ create trigger zz_fixture_fail_second_stock after update on public.inventory_items
+ for each row execute function public.fixture_fail_second_stock();`);await role();
+ await assert.rejects(pay(multi),/synthetic second stock failure/);assert.deepEqual(await state(),multiBefore);
+ await role('postgres');assert.equal(await scalar("select quantity from public.inventory_items where sku='fixture-second'"),secondBefore);
+ await db.exec('drop trigger zz_fixture_fail_second_stock on public.inventory_items;drop function public.fixture_fail_second_stock()');await role();
+ assert.equal((await pay(multi)).status,'paid');
+ pass('failure after multiple stock writes rolls all lines, order, receipt and audit back together');
+
  const accepted=quote(1),retryKey=crypto.randomUUID();let createdParams;
  const checkout=await createCardCheckout({paymentMethod:'card',items:[{sku:'fixture-sku',quantity:1}],address,expectedTotalCents:accepted.totalCents},
  {enabled:true,ownerId:owner,retryKey,...persistence,quoteBuilder:async()=>accepted,stripe:{checkout:{sessions:{create:async(params)=>{
@@ -136,6 +152,12 @@ try{
  assert.equal((await persistence.loadRequest(checkout.sessionId)).id,checkout.requestId);
  assert.equal(createdParams.line_items[0].price_data.unit_amount,10232);
  pass('Checkout creation connects to operational reserve/load/bind RPCs with server shipping');
+
+ await role('postgres');const count=await scalar('select count(*)::int from private.card_checkout_requests where owner_id=$1',[owner]);
+ for(let i=count;i<10;i++)await db.query("insert into private.card_checkout_requests(owner_id,retry_key,checkout_identity,quote,contact,total_cents,expires_at,hold_active) values($1,$2,'{}','{}','{}',1,0,false)",[owner,crypto.randomUUID()]);
+ await role();await assert.rejects(reserve(quote(1)),/card_rate_limit/);
+ assert.equal((await scalar('select public.card_checkout_load($1,$2)',[owner,retryKey])).id,checkout.requestId);
+ pass('per-account limit blocks additional reservations while preserving existing retries');
 
  await role('postgres');
  const unsafe=await rows("select p.proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname like 'card_checkout_%' and p.prosecdef");assert.deepEqual(unsafe,[]);
