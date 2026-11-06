@@ -5,7 +5,7 @@
 ## Implementación
 
 El nuevo flujo utiliza `public.orders`, `public.order_items` y `public.inventory_items`.
-La migración `20261106094135_card_checkout_operational.sql` añade registros privados
+La migración `20261106100121_card_checkout_operational.sql` añade registros privados
 de solicitudes, líneas, recibos y autorización transaccional de movimientos. No
 inserta pedidos ni existencias y crea la configuración con `enabled=false`.
 
@@ -69,17 +69,41 @@ pedidos, movimientos ni auditoría para revertir una activación.
 - **6 pruebas concurrentes en PostgreSQL 17**: pago duplicado simultáneo, compradores
   por la última pieza, reserva manual frente a web en ambos sentidos, vencimiento
   durante espera y movimiento manual que compite con un pago.
-- Ejecución de concurrencia aprobada sobre `1091f36`:
-  https://github.com/RHOSeguridadIndustrial/rhoseguridad/actions/runs/42198185369
+- Ejecución de concurrencia aprobada sobre `013145f`:
+  https://github.com/RHOSeguridadIndustrial/rhoseguridad/actions/runs/42199207167
 
 Las bases de validación son desechables y la API Stripe es sintética; las firmas
 se comprueban con el SDK real. Estos resultados acreditan la lógica integrada y
 concurrencia probadas, **no un cobro live**. No se usan credenciales ni datos reales
 de clientes en las pruebas.
 
+## Despliegue verificado
+
+- Migración remota: `20261106100121_card_checkout_operational`. El nombre local se
+  ajustó a la versión devuelta por Supabase para evitar una aplicación duplicada.
+- `create-card-checkout`: versión **7**, ACTIVE; ocho archivos recuperados y
+  comparados exactamente con el paquete probado.
+- `stripe-card-orders`: versión **1**, ACTIVE; cinco archivos recuperados y
+  comparados exactamente con el paquete probado.
+- Configuración operativa: `enabled=false`, catálogo y digest aún vacíos.
+- HTTP de `create-card-checkout`: OPTIONS 204, GET 405 y POST 503
+  `card_checkout_disabled`. El POST al nuevo webhook fue bloqueado por el proxy
+  de salida del entorno (403 de túnel), antes de llegar a Supabase; no acredita
+  una respuesta HTTP del webhook. Queda pendiente esa comprobación remota.
+- Después del despliegue: **0 pedidos reales, 50 piezas, 35 registros históricos**;
+  cero solicitudes, recibos y contextos nuevos. No se ejecutó un cobro live.
+- Verificación de permisos: anónimos y clientes no pueden confirmar pagos; el
+  servidor sí. Clientes no pueden leer recibos directamente y ni siquiera el rol
+  de servicio puede insertar directamente autorizaciones de inventario.
+- Asesor de seguridad: permanece la advertencia previa de contraseñas filtradas.
+  Los cinco avisos nuevos de RLS sin políticas corresponden a tablas privadas,
+  sin permisos directos y accesibles por funciones restringidas. No se añadieron
+  políticas públicas para silenciarlos:
+  https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy
+
 ## Pendientes de activación
 
-1. Confirmar despliegue de la migración y de ambas funciones con las barreras apagadas.
+1. Despliegue completado con las barreras apagadas; mantenerlas así durante la integración de la interfaz.
 2. Conectar el checkout público, recoger y verificar datos de contacto para entrega,
    mostrar el total antes de aceptar y conservar el reintento al regresar.
 3. Sustituir la consulta antigua de `pago-exitoso.html` por el estado de solo lectura

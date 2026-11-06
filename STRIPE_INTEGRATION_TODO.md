@@ -5,8 +5,8 @@
 Se implementaron reservas y recibos privados conectados con los pedidos y el
 inventario operativos, incluidos actor automático verificable, persistencia
 atómica, protección de reservas manuales y consulta exclusiva del propietario.
-El endpoint autenticado de Checkout y el webhook live tienen barreras apagadas
-por defecto. La integración del carrito y la página de retorno, la configuración
+La migración operativa ya está aplicada y se desplegaron `create-card-checkout`
+versión 7 y `stripe-card-orders` versión 1, con las barreras apagadas. La integración del carrito y la página de retorno, la configuración
 operativa y la validación remota siguen pendientes antes de activar cobros.
 
 Evidencia: 44 pruebas JavaScript, 14 grupos de base y 6 escenarios concurrentes
@@ -106,7 +106,7 @@ Se eliminó `locale`, ausente de Field Intents. Excepciones autorizadas:
 3. Mantener Stripe SDK 22.6.0, ya importado por el endpoint. No se añadieron dependencias ni archivos `.env`. Los secretos existentes se leen en el servidor como `STRIPE_TEST_RESTRICTED_KEY` y, para el webhook, `STRIPE_TEST_ORDERS_SIGNING_SECRET`; conservar exactamente esos nombres en la configuración de Supabase. No usar prefijos `VITE_` ni exponerlos en el navegador. Mantener también los secretos Supabase existentes.
 4. Compra autenticada de prueba completada en la orden #9; cancelación, rechazo y recuperación en la misma sesión comprobados en la orden #10. Para volver a consultar la confirmación visual de la orden #10, completar la verificación de administrador solicitada por la página de retorno. Antes de producción, completar el reenvío remoto de eventos y el caso remoto de pago tardío; ya están cubiertos localmente. Tarjetas de prueba: éxito `4242 4242 4242 4242`; rechazo `4000 0000 0000 0002`, con fecha futura y CVC de tres dígitos, únicamente en modo de prueba. No usar tarjetas reales para esta comprobación.
 5. Conservar la secuencia existente: usuario autenticado → cotización del servidor → reserva persistida → creación idempotente de sesión → validación y asociación → página alojada en Stripe → webhook verificado → confirmación del pedido. La página de éxito no prueba por sí sola que el pago se haya completado.
-6. La activación de la cuenta Stripe no convierte este endpoint de pruebas en uno de producción. Revisar el adaptador de producción y completar una validación independiente antes de habilitar cobros reales. `create-card-checkout` permanece deshabilitado (`CARD_PAYMENTS_ENABLED=false`). Esta integración no habilita cobros reales, no crea pedidos reales ni modifica el inventario real; las órdenes y movimientos de estas validaciones pertenecen exclusivamente a `qw10_test`.
+6. La activación de la cuenta Stripe no convierte este endpoint de pruebas en uno de producción. Revisar el adaptador de producción y completar una validación independiente antes de habilitar cobros reales. `create-card-checkout` permanece deshabilitado; la versión 7 exige la bandera de servidor y la configuración privada, que sigue en `enabled=false`. Esta integración no habilita cobros reales, no crea pedidos reales ni modifica el inventario real; las órdenes y movimientos de estas validaciones pertenecen exclusivamente a `qw10_test`.
 7. Para productos y seguimiento, mantener los precios y gastos de envío calculados por el servidor, la asociación pago/pedido y la confirmación idempotente mediante webhook. Verificar vencimiento de reservas, eventos repetidos y pagos tardíos antes del lanzamiento.
 
 ### Estructura del cambio

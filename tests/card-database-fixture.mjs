@@ -1,5 +1,5 @@
 import {readFileSync} from 'node:fs';
-export const migrationPath='supabase/migrations/20261106094135_card_checkout_operational.sql';
+export const migrationPath='supabase/migrations/20261106100121_card_checkout_operational.sql';
 export const owner='11111111-1111-4111-8111-111111111111';
 export const other='22222222-2222-4222-8222-222222222222';
 export const admin='33333333-3333-4333-8333-333333333333';
