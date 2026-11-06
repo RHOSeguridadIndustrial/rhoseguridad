@@ -10,3 +10,6 @@ verify_jwt = false
 [functions.stripe-card-orders]
 # Stripe signs the raw body; this endpoint does not accept a user JWT as proof.
 verify_jwt = false
+
+[functions.verify-card-payment]
+verify_jwt = false

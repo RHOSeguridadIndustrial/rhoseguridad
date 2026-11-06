@@ -1,19 +1,16 @@
 # Stripe Checkout — estado y pasos pendientes
 
-## Reanudación del 6 de noviembre: conexión operativa implementada
+## Avance del 6 de noviembre de 2026: servidor e interfaz
 
-Se implementaron reservas y recibos privados conectados con los pedidos y el
-inventario operativos, incluidos actor automático verificable, persistencia
-atómica, protección de reservas manuales y consulta exclusiva del propietario.
-La migración operativa ya está aplicada y se desplegaron `create-card-checkout`
-versión 7 y `stripe-card-orders` versión 1, con las barreras apagadas. La integración del carrito y la página de retorno, la configuración
-operativa y la validación remota siguen pendientes antes de activar cobros.
+- Checkout con datos de entrega, total del servidor, aceptación explícita y reintentos conservados.
+- Retorno con consulta de solo lectura por propietario; no confirma ni crea pedidos desde el navegador.
+- Backend desplegado: `create-card-checkout` v8 y `stripe-card-orders` v1. Catálogo operativo CDMX cargado, deshabilitado.
+- Validación: 52 pruebas JS, 15 grupos de BD, 6 escenarios concurrentes y flujos Chromium/WebKit aprobados.
+- Inventario 50 piezas, pedidos reales 0; no se efectuó un cargo.
+- Cuenta Stripe live habilitada para cobros y depósitos; destino webhook y secretos live aún pendientes.
+- El carrito mantiene tarjeta deshabilitada. Ver detalles y límites en `docs/qw10-live-checkout-contract.md`.
 
-Evidencia: 44 pruebas JavaScript, 14 grupos de base y 6 escenarios concurrentes
-PostgreSQL. No son cobros reales. Detalle, despliegue y pendientes en
-[conexión de cobros reales](docs/qw10-live-checkout-contract.md).
-
-## Estado: integrado en main, desplegado y validado de extremo a extremo en pruebas (versión 9)
+## Antecedente: Checkout de sandbox integrado y validado (versión 9)
 
 Aplica el escenario A. Se encontró una única creación de Checkout Session en el código local: [create-test-checkout.js](supabase/functions/_shared/create-test-checkout.js). Su contenido inicial coincide con el archivo consultado en GitHub/main. Solo se modificó su objeto de parámetros; no se cambiaron rutas, validadores, autenticación, inicialización del cliente ni webhooks. Este adaptador es exclusivamente de pruebas.
 

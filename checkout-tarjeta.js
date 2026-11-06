@@ -16,7 +16,7 @@ function saveStore(id,value){sessionStorage.setItem(storageKey(id),JSON.stringif
 async function hash(value){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))].map(b=>b.toString(16).padStart(2,'0')).join('');}
 function message(text){$('card-status').textContent=text;}
 function invalidate(text=''){
- revision++;prepared=null;$('card-summary').hidden=true;$('card-accept').checked=false;
+ revision++;prepared=null;$('card-items').hidden=false;$('card-summary').hidden=true;$('card-accept').checked=false;
  $('card-pay').disabled=true;$('card-open').hidden=true;$('card-open').removeAttribute('href');
  $('card-check').hidden=true;$('card-check').removeAttribute('href');message(text);
 }
@@ -135,7 +135,7 @@ async function start(){
   const saved=store.attempts[store.active];
   if(saved){
    const input=cardInput(saved.input);cardSummary(saved.quote,input.items);cardDelivery(saved.quote,input.address);
-   if(JSON.stringify(input.items)===JSON.stringify(cardInput({...input,items:selection()}).items)){
+   if(selection().length&&JSON.stringify(input.items)===JSON.stringify(cardInput({...input,items:selection()}).items)){
     const a=input.address,d=saved.quote.delivery.address;
     for(const [id,value] of Object.entries({'card-name':input.contact.name,'card-phone':input.contact.phone,'card-postal':a.postalCode,'card-street':a.street,'card-exterior':a.exterior,'card-interior':a.interior,'card-reference':a.reference}))$(id).value=value;
     postal=a.postalCode;options=[d];$('card-settlement').replaceChildren(new Option(d.municipality+' · '+d.settlement,a.municipalityCode+':'+a.settlementCode));$('card-settlement').disabled=false;

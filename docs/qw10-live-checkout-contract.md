@@ -1,6 +1,6 @@
 # QW10 — conexión operativa de cobros con tarjeta
 
-6 de noviembre de 2026. **Conexión implementada; activación pública pendiente.**
+6 de noviembre de 2026. **Servidor e interfaz implementados; activación pública pendiente.**
 
 ## Implementación
 
@@ -62,15 +62,15 @@ pedidos, movimientos ni auditoría para revertir una activación.
 
 ## Verificación
 
-- **44 pruebas de JavaScript**: 21 existentes, 16 del núcleo y 7 del endpoint.
-- **14 grupos de base de datos**: esquema operativo, RPC, firma SDK, aislamiento por
+- **52 pruebas de JavaScript**: 21 existentes, 16 del núcleo, 7 del endpoint y 6 del modelo de interfaz/retorno y 2 de retirada del verificador antiguo.
+- **15 grupos de base de datos**: esquema operativo, RPC, firma SDK, aislamiento por
   propietario, permisos, reservas manuales, pagos repetidos/tardíos, límites de uso
-  y reversión total ante fallos en partidas y después de varias salidas de stock.
+  y datos del destinatario y reversión total ante fallos en partidas y después de varias salidas de stock.
 - **6 pruebas concurrentes en PostgreSQL 17**: pago duplicado simultáneo, compradores
   por la última pieza, reserva manual frente a web en ambos sentidos, vencimiento
   durante espera y movimiento manual que compite con un pago.
-- Ejecución de concurrencia aprobada sobre `013145f`:
-  https://github.com/RHOSeguridadIndustrial/rhoseguridad/actions/runs/42199207167
+- Ejecución de concurrencia aprobada y navegadores aprobada sobre `e1e4283`:
+  https://github.com/RHOSeguridadIndustrial/rhoseguridad/actions/runs/42201409773
 
 Las bases de validación son desechables y la API Stripe es sintética; las firmas
 se comprueban con el SDK real. Estos resultados acreditan la lógica integrada y
@@ -81,11 +81,11 @@ de clientes en las pruebas.
 
 - Migración remota: `20261106100121_card_checkout_operational`. El nombre local se
   ajustó a la versión devuelta por Supabase para evitar una aplicación duplicada.
-- `create-card-checkout`: versión **7**, ACTIVE; ocho archivos recuperados y
+- `create-card-checkout`: versión **8**, ACTIVE; nueve archivos recuperados y
   comparados exactamente con el paquete probado.
 - `stripe-card-orders`: versión **1**, ACTIVE; cinco archivos recuperados y
   comparados exactamente con el paquete probado.
-- Configuración operativa: `enabled=false`, catálogo y digest aún vacíos.
+- Configuración operativa: `enabled=false`; copia independiente del catálogo CDMX aportado por el propietario, con 1531 asentamientos, 1110 CP y 16 alcaldías. Digest comprobado: `a6bdd1ceb50d7b85ee8c4f851d3427f5d4513b7facdebc22b198f5c3bd24390c`. Se conserva su revisión del 25 de octubre y vencimiento del 24 de noviembre; no se afirma una nueva descarga oficial. El runtime no consulta `qw10_test`.
 - HTTP de `create-card-checkout`: OPTIONS 204, GET 405 y POST 503
   `card_checkout_disabled`. El POST al nuevo webhook fue bloqueado por el proxy
   de salida del entorno (403 de túnel), antes de llegar a Supabase; no acredita
@@ -101,18 +101,46 @@ de clientes en las pruebas.
   políticas públicas para silenciarlos:
   https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy
 
+## Interfaz y destinatario
+
+- `checkout-tarjeta.html` consulta colonias por CP, recoge destinatario/teléfono,
+  muestra productos, envío y total del servidor y exige aceptación explícita antes
+  de crear Checkout. El acceso desde el carrito continúa deshabilitado.
+- La migración `20261106101832_card_checkout_contact` valida y congela destinatario
+  y teléfono con el carrito. No modifica el perfil de la cuenta. La identidad de
+  reintento incluye esos datos; cambiar el destinatario no reutiliza otro intento.
+- Los intentos se conservan en sessionStorage por propietario e identidad, incluyendo
+  domicilio, contacto y total congelado. Una recarga recupera el intento; un cambio
+  de cuenta borra los datos visibles. Un fallo de almacenamiento impide crear el pago.
+- `pago-exitoso.html` consulta únicamente `card_checkout_status`: pendiente,
+  confirmado, vencido o pago recibido en revisión. No invoca la función antigua
+  que escribía desde el retorno y no borra el carrito actual. Las respuestas tardías
+  después de cerrar sesión no restauran información de la compra.
+- Login y MFA conservan solo destinos de compra internos de una lista estricta.
+- Chromium de escritorio y WebKit con viewport móvil aprobaron los flujos de
+  cotización, aceptación, red interrumpida, recarga, cambio de destinatario/cuenta,
+  enlaces ajenos, textos HTML, cierres operativos y estados de pago. Estas pruebas
+  sintéticas no acreditan Safari nativo de un iPhone ni un pago real.
+
+El verificador antiguo `verify-card-payment` queda retirado con HTTP 410, sin llamadas
+a Stripe, lectura de secretos ni escrituras. Su ruta previa no exigía propietario y
+podía modificar pedidos desde una consulta pública. La página de confirmación usa
+exclusivamente el nuevo RPC autenticado. No existían pedidos operativos al retirarlo.
+
 ## Pendientes de activación
 
-1. Despliegue completado con las barreras apagadas; mantenerlas así durante la integración de la interfaz.
-2. Conectar el checkout público, recoger y verificar datos de contacto para entrega,
-   mostrar el total antes de aceptar y conservar el reintento al regresar.
-3. Sustituir la consulta antigua de `pago-exitoso.html` por el estado de solo lectura
-   del propietario, con tratamiento de pago pendiente/en revisión y retorno de login.
-4. Configurar y verificar catálogo/cobertura operativos, claves restringidas y
-   destino webhook live. El 6 de noviembre, antes de este despliegue, la cuenta
-   activa devolvió cero destinos webhook; la presencia de secretos no se presume.
-5. Completar validación remota y aceptación móvil antes de activar el botón público.
-   La coincidencia postal por sí sola no acredita servicio físico de entrega.
+1. Stripe live `acct_1UGwvI2OiK9OVeQQ` devuelve `charges_enabled=true`,
+   `payouts_enabled=true` y ninguna exigencia de verificación pendiente.
+   Continúa sin destinos webhook registrados (lista vacía comprobada).
+2. Crear el destino `stripe-card-orders` para los dos eventos de éxito y guardar
+   su secreto y una clave restringida live en Supabase; configurar los indicadores
+   de recepción y creación de cobros. Las herramientas conectadas no permiten
+   administrar secretos de Supabase; se requiere el panel autorizado o una sesión
+   de CLI ya autenticada. No se pide copiar secretos en chat o en el repositorio.
+3. Completar aceptación remota y móvil, verificar entrega operativa y solo después
+   activar el botón del carrito. El catálogo postal no confirma servicio físico.
+4. Comprobar el POST remoto al webhook desde un entorno autorizado: este entorno
+   encontró un bloqueo de proxy antes de llegar al servicio.
 
 La advertencia previa de contraseñas filtradas deshabilitadas en Supabase permanece:
 https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection

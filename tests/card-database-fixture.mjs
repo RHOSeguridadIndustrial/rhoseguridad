@@ -53,7 +53,7 @@ ${readFileSync('supabase/reservations.sql','utf8')}
 ${readFileSync('supabase/migrations/20261024203615_inventory_rename_audited.sql','utf8')}
 ${readFileSync('supabase/migrations/20261101065319_transfer_purchase_requests.sql','utf8')}
 ${readFileSync(migrationPath,'utf8')}
-${readFileSync('supabase/migrations/20261106110000_card_checkout_contact.sql','utf8')}
+${readFileSync('supabase/migrations/20261106101832_card_checkout_contact.sql','utf8')}
 `;}
 export function seedSql(){return `
 insert into auth.users values('${owner}',now(),false,null),('${other}',now(),false,null),('${admin}',now(),false,null);

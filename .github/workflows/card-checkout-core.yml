@@ -5,6 +5,7 @@ on:
       - 'supabase/functions/_shared/**'
       - 'supabase/functions/create-card-checkout/**'
       - 'supabase/functions/stripe-card-orders/**'
+      - 'supabase/functions/verify-card-payment/**'
       - 'tests/live-checkout-core.test.mjs'
       - 'tests/checkout-summary.test.mjs'
       - 'tests/checkout-coupon.test.mjs'
@@ -33,7 +34,7 @@ jobs:
           node-version: '22'
       - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
       - name: Validate production adapters and existing test checkout
-        run: node --test tests/live-checkout-core.test.mjs tests/card-checkout-handler.test.mjs tests/checkout-summary.test.mjs tests/checkout-coupon.test.mjs tests/card-checkout-model.test.mjs
+        run: node --test tests/live-checkout-core.test.mjs tests/card-checkout-handler.test.mjs tests/checkout-summary.test.mjs tests/checkout-coupon.test.mjs tests/card-checkout-model.test.mjs tests/card-legacy-verifier.test.mjs
   database:
     runs-on: ubuntu-latest
     timeout-minutes: 8
