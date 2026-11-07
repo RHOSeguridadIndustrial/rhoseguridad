@@ -127,20 +127,64 @@ a Stripe, lectura de secretos ni escrituras. Su ruta previa no exigía propietar
 podía modificar pedidos desde una consulta pública. La página de confirmación usa
 exclusivamente el nuevo RPC autenticado. No existían pedidos operativos al retirarlo.
 
-## Pendientes de activación
+## Estado de activación — 7 de noviembre de 2026
 
-1. Stripe live `acct_1UGwvI2OiK9OVeQQ` devuelve `charges_enabled=true`,
-   `payouts_enabled=true` y ninguna exigencia de verificación pendiente.
-   Continúa sin destinos webhook registrados (lista vacía comprobada).
-2. Crear el destino `stripe-card-orders` para los dos eventos de éxito y guardar
-   su secreto y una clave restringida live en Supabase; configurar los indicadores
-   de recepción y creación de cobros. Las herramientas conectadas no permiten
-   administrar secretos de Supabase; se requiere el panel autorizado o una sesión
-   de CLI ya autenticada. No se pide copiar secretos en chat o en el repositorio.
-3. Completar aceptación remota y móvil, verificar entrega operativa y solo después
-   activar el botón del carrito. El catálogo postal no confirma servicio físico.
-4. Comprobar el POST remoto al webhook desde un entorno autorizado: este entorno
-   encontró un bloqueo de proxy antes de llegar al servicio.
+1. Webhook live creado y consultado nuevamente en Stripe:
+   `we_1UZGw62OiK9OVeQQuZWv9IAk`, cuenta `acct_1UGwvI2OiK9OVeQQ`,
+   estado `enabled`, API `2026-08-26.dahlia`, URL
+   `https://mtpqpxcmngrsivntbgcc.supabase.co/functions/v1/stripe-card-orders`.
+   Suscrito a `checkout.session.completed` y
+   `checkout.session.async_payment_succeeded`.
+   Esto acredita el registro del destino, no una entrega exitosa ni un cobro real.
+2. Panel Supabase abierto y autenticado. La lista de secretos personalizados solo
+   contiene los tres secretos de pruebas. Siguen pendientes
+   `STRIPE_LIVE_RESTRICTED_KEY`, `STRIPE_LIVE_ORDERS_SIGNING_SECRET`,
+   `CARD_PAYMENTS_ENABLED` y `CARD_WEBHOOK_ENABLED`.
+   No se incluyen valores secretos en este documento.
+3. Consulta operativa de solo lectura: `enabled=false`, cero solicitudes,
+   cero recibos y cero pedidos operativos. El botón público y los cobros
+   permanecen pendientes de activación. No se ejecutó ningún pago real.
+4. Pendiente crear una clave live restringida al acceso necesario para crear y
+   consultar sesiones Checkout; guardarla y guardar el secreto del webhook en
+   Supabase. La creación de la credencial requiere aprobación específica de
+   su alcance; no se creó ni se sustituyó ninguna clave.
+5. Después de conectar credenciales: comprobar el endpoint remoto, la entrega de
+   notificaciones firmadas, el pago/pedido/inventario, la experiencia móvil y la
+   entrega operativa antes de activar el botón público. Los casos remotos de
+   reenvío y pago tardío del sandbox siguen pendientes según
+   `STRIPE_INTEGRATION_TODO.md`.
 
-La advertencia previa de contraseñas filtradas deshabilitadas en Supabase permanece:
-https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+## Respaldo y seguridad — verificación del 7 de noviembre de 2026
+
+- Último respaldo del sitio localizado:
+  https://github.com/RHOSeguridadIndustrial/rhoseguridad/actions/runs/42050791557
+  — ejecución del **5 de noviembre de 2026**, resultado satisfactorio.
+  Artefacto `13426078081`, `RHO-sitio-42050791557-1`, no vencido.
+- Se descargó el ZIP y su SHA256 coincidió con el digest publicado por GitHub:
+  `84f03b571376e5bd86414accf6e71031bf092f8e26b88c37f196497cf344d672`.
+- Se verificaron `SHA256SUMS` y la integridad de ambos ZIP; se restauró
+  `historial.bundle` en un directorio aislado. `git fsck --full` terminó
+  sin errores de integridad. La cabecera restaurada fue
+  `352631e332a3c9f4d26ab67427f652f301e44c73`.
+- Los **405 archivos versionados restaurados** coinciden byte por byte con
+  `sitio.zip`. No se restauró sobre producción ni se modificó la tienda.
+  El respaldo refleja el 5 de noviembre: no incluye cambios posteriores.
+- El workflow conserva archivos versionados e historial Git durante 90 días.
+  **Excluye datos Supabase, Auth, Storage, secretos y configuración externa.**
+  La restauración de este respaldo no acredita recuperación de la base de datos.
+- La organización Supabase está en plan Free. La documentación vigente reserva
+  los respaldos diarios administrados y la prevención de contraseñas filtradas
+  para Pro o superior. No se contrató un plan ni un complemento de pago.
+  Sigue pendiente implementar y comprobar el respaldo de la base de datos.
+- En el panel de Auth se verificaron confirmación de correo activada,
+  inicio de sesión anónimo desactivado y cambio de correo seguro activado.
+  Cambio de contraseña con reautenticación, contraseña actual obligatoria y
+  prevención de contraseñas filtradas aparecen desactivados. No se alteraron
+  esos controles ni contraseñas; cualquier endurecimiento debe conservar el
+  funcionamiento de registro y recuperación.
+- La advertencia de contraseñas filtradas deshabilitadas indica una función
+  inactiva, no evidencia de una filtración.
+
+Referencias de configuración:
+- https://supabase.com/docs/guides/platform/backups
+- https://supabase.com/docs/guides/auth/password-security
