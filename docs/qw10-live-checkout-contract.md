@@ -136,18 +136,23 @@ exclusivamente el nuevo RPC autenticado. No existían pedidos operativos al reti
    Suscrito a `checkout.session.completed` y
    `checkout.session.async_payment_succeeded`.
    Esto acredita el registro del destino, no una entrega exitosa ni un cobro real.
-2. Panel Supabase abierto y autenticado. La lista de secretos personalizados solo
-   contiene los tres secretos de pruebas. Siguen pendientes
-   `STRIPE_LIVE_RESTRICTED_KEY`, `STRIPE_LIVE_ORDERS_SIGNING_SECRET`,
-   `CARD_PAYMENTS_ENABLED` y `CARD_WEBHOOK_ENABLED`.
-   No se incluyen valores secretos en este documento.
+2. Se guardó `STRIPE_LIVE_ORDERS_SIGNING_SECRET` en los secretos de Edge
+   Functions de Supabase el 7 de noviembre de 2026 a las 22:48 UTC. El panel
+   confirmó la creación y mostró el registro en la lista. Corresponde al
+   webhook live indicado arriba; no se creó un destino duplicado.
+   Siguen pendientes `STRIPE_LIVE_RESTRICTED_KEY`, `CARD_PAYMENTS_ENABLED`
+   y `CARD_WEBHOOK_ENABLED`. No se incluyen valores secretos en este documento.
 3. Consulta operativa de solo lectura: `enabled=false`, cero solicitudes,
    cero recibos y cero pedidos operativos. El botón público y los cobros
    permanecen pendientes de activación. No se ejecutó ningún pago real.
-4. Pendiente crear una clave live restringida al acceso necesario para crear y
-   consultar sesiones Checkout; guardarla y guardar el secreto del webhook en
-   Supabase. La creación de la credencial requiere aprobación específica de
-   su alcance; no se creó ni se sustituyó ninguna clave.
+4. El propietario autorizó crear la clave live restringida y guardarla en
+   Supabase. En Stripe se revisó un único permiso: Checkout Sessions Write
+   (incluye lectura), con nombre `RHO Checkout Produccion QW10`.
+   La creación quedó bloqueada por la verificación de identidad por correo.
+   Stripe mostró un error de verificación incluso al abrir el enlace en el
+   navegador en la nube; el formulario permaneció en `Check your email`.
+   No se emitió ni se guardó la clave. No se amplió su alcance ni se habilitaron
+   cobros. No repetir reenvíos sin resolver primero esa verificación.
 5. Después de conectar credenciales: comprobar el endpoint remoto, la entrega de
    notificaciones firmadas, el pago/pedido/inventario, la experiencia móvil y la
    entrega operativa antes de activar el botón público. Los casos remotos de
