@@ -12,8 +12,17 @@ function update() {
   // This is explicitly a CDMX estimate, not a validated delivery address.
   const result = shippingCoupon({subtotalCents,registered,paymentMethod:method,coverage:'cdmx'});
   const output = panel.querySelector('[role="status"]');
-  const checkout = panel.querySelector('[data-transfer-checkout]');
-  checkout.hidden = !valid || method !== 'transfer';
+  const checkout = panel.querySelector('[data-payment-checkout]');
+  const card = method === 'card';
+  checkout.hidden = !valid;
+  checkout.href = card ? 'checkout-tarjeta.html' : 'checkout-transferencia.html';
+  checkout.textContent = card ? 'Continuar con tarjeta →' : 'Continuar con transferencia →';
+  panel.querySelector('[data-checkout-note]').textContent = card
+    ? 'Completa tus datos de entrega y revisa el total antes de continuar al pago seguro con tarjeta.'
+    : 'Continúa para completar tus datos y enviar la solicitud a RHO por WhatsApp. Confirmaremos existencias, envío y total antes de que realices la transferencia.';
+  panel.querySelector('[data-payment-note]').textContent = card
+    ? 'El pago se realiza en Stripe después de que confirmes tus datos y el importe total.'
+    : 'El pago quedará pendiente hasta que RHO confirme la recepción del dinero.';
   if (checking) output.textContent = 'Verificando tu registro RHO…';
   else if (result.status==='eligible') output.textContent = `Cupón disponible para tu cuenta RHO: envío ${result.mode==='express'?'express (24 hrs)':'estándar (2 a 3 días hábiles)'} gratis. Total estimado: ${money(result.totalCents)}.`;
   else if (result.status==='paid') output.textContent = `Envío estándar: ${money(result.shippingCents)}. Total estimado: ${money(result.totalCents)}. El cupón aplica desde $299 MXN.`;
@@ -24,7 +33,7 @@ function mount() {
   if (!summary || summary.querySelector('[data-coupon-preview]')) return;
   const panel = document.createElement('section');
   panel.dataset.couponPreview = '';
-  panel.innerHTML = '<h3>Envío y forma de pago</h3><label class="guest-field">Forma de pago<select aria-label="Forma de pago"><option value="transfer">Transferencia bancaria</option><option value="card" disabled>Tarjeta · próximamente</option></select></label><p role="status" aria-live="polite"></p><p class="transfer-note">Continúa para completar tus datos y enviar la solicitud a RHO por WhatsApp. Confirmaremos existencias, envío y total antes de que realices la transferencia.</p><a class="transfer-checkout" data-transfer-checkout href="checkout-transferencia.html">Continuar con transferencia →</a><p class="transfer-note">El pago quedará pendiente hasta que RHO confirme la recepción del dinero.</p><div class="transfer-links"><a href="registro.html">Registrarme en RHO</a> · <a href="cuenta.html">Mi cuenta</a> · <a href="envios-entregas.html">Condiciones del envío</a></div>';
+  panel.innerHTML = '<h3>Envío y forma de pago</h3><label class="guest-field">Forma de pago<select aria-label="Forma de pago"><option value="transfer">Transferencia bancaria</option><option value="card">Tarjeta de crédito o débito</option></select></label><p role="status" aria-live="polite"></p><p class="transfer-note" data-checkout-note></p><a class="transfer-checkout" data-payment-checkout href="checkout-transferencia.html">Continuar con transferencia →</a><p class="transfer-note" data-payment-note></p><div class="transfer-links"><a href="registro.html">Registrarme en RHO</a> · <a href="cuenta.html">Mi cuenta</a> · <a href="envios-entregas.html">Condiciones del envío</a></div>';
   const select = panel.querySelector('select');
   select.value=method;
   select.addEventListener('change',()=>{method=select.value;update();});
