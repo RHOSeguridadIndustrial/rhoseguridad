@@ -13,6 +13,9 @@ on:
       - 'tests/card-*'
       - 'card-checkout-model.js'
       - 'checkout-tarjeta.*'
+      - 'cart-coupon.js'
+      - 'carrito.html'
+      - 'tests/cart-coupon-browser.cjs'
       - 'pago-exitoso.*'
       - 'checkout-return.js'
       - 'admin-return.js'
@@ -71,4 +74,5 @@ jobs:
           node-version: '22'
       - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
       - run: cd tests && npx playwright install --with-deps chromium webkit
+      - run: node tests/cart-coupon-browser.cjs
       - run: node tests/card-checkout-browser.cjs
