@@ -13,6 +13,7 @@ on:
       - 'tests/card-*'
       - 'card-checkout-model.js'
       - 'card-postal.js'
+      - 'card-checkout-draft.js'
       - 'checkout-tarjeta.*'
       - 'cart-coupon.js'
       - 'carrito.html'
@@ -38,7 +39,7 @@ jobs:
           node-version: '22'
       - run: npm ci --prefix tests --ignore-scripts --no-audit --no-fund
       - name: Validate production adapters and existing test checkout
-        run: node --test tests/live-checkout-core.test.mjs tests/card-checkout-handler.test.mjs tests/checkout-summary.test.mjs tests/checkout-coupon.test.mjs tests/card-checkout-model.test.mjs tests/card-legacy-verifier.test.mjs tests/card-postal.test.mjs
+        run: node --test tests/live-checkout-core.test.mjs tests/card-checkout-handler.test.mjs tests/checkout-summary.test.mjs tests/checkout-coupon.test.mjs tests/card-checkout-model.test.mjs tests/card-legacy-verifier.test.mjs tests/card-postal.test.mjs tests/card-checkout-draft.test.mjs
   database:
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -77,3 +78,4 @@ jobs:
       - run: cd tests && npx playwright install --with-deps chromium webkit
       - run: node tests/cart-coupon-browser.cjs
       - run: node tests/card-checkout-browser.cjs
+      - run: node tests/auth-return-browser.cjs
