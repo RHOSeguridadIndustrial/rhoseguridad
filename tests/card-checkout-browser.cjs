@@ -11,6 +11,7 @@ window.calls.push({name,body});
 if(window.behavior==='slow')await new Promise(r=>window.finish=r);
 if(window.behavior==='network')return {error:{message:'RAW PRIVATE ERROR'}};
 if(window.behavior===503)return {error:{context:{status:503}}};
+if(window.behavior===401)return {error:{context:{status:401}}};
 if(body.action==='postal_lookup')return {data:{postalCode:body.postalCode,status:'postal_options',catalogSha256:'a'.repeat(64),options:[{postalCode:body.postalCode,municipalityCode:'002',settlementCode:'0001',municipality:'Azcapotzalco',settlement:'Colonia sintética'}]}};
 const data={environment:'live',paymentMethod:'card',currency:'mxn',lines:body.items.map(i=>({sku:i.sku,quantity:i.quantity,name:window.behavior==='xss'?'<img src=x onerror=window.xss=1>':'Casco del servidor',unitPriceCents:7800,lineTotalCents:7800*i.quantity})),subtotalCents:7800,shippingCents:9900,totalCents:window.behavior==='wrongtotal'?1:17700,mode:'standard',delivery:{status:'postal_match',assurance:'postal_catalog_only',catalogSha256:'a'.repeat(64),address:{...body.address,municipality:'Azcapotzalco',settlement:'Colonia sintética'}}};
 if(body.action==='create')Object.assign(data,{requestId:'33333333-3333-4333-8333-333333333333',sessionId:'cs_live_fixture',url:window.behavior==='unsafe'?'https://evil.invalid/pay':'https://checkout.stripe.com/c/pay/cs_live_fixture',expiresAt:Math.floor(Date.now()/1000)+3600});
@@ -28,6 +29,7 @@ const cart=`window.items=[{id:'fixture-helmet',qty:1,name:'Casco de prueba'}];ex
   res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html');
   if(file==='/supabase-client.js')return res.end(mock);
   if(file==='/cart.js')return res.end(cart);
+  if(file==='/assets/postal-cdmx.json')return res.end(JSON.stringify({schemaVersion:1,country:'MX',state:'CMX',municipalities:{'002':'Azcapotzalco'},postcodes:{'02000':[['002','0001','Colonia sintética']],'02140':[['002','0050','Santa Inés']]}}));
   if(file==='/footer.js')return res.end('');
   const local=path.resolve(process.cwd(),'.'+file);
   if(!local.startsWith(process.cwd()+path.sep)){res.writeHead(403);return res.end();}
@@ -42,7 +44,7 @@ const cart=`window.items=[{id:'fixture-helmet',qty:1,name:'Casco de prueba'}];ex
    await page.route('**/*',route=>route.request().url().startsWith(base)?route.continue():route.abort());
    await page.goto(base+'/checkout-tarjeta.html');await page.getByText('Completa tus datos para consultar el total.').waitFor();
    await page.locator('#card-name').fill('Cliente de prueba');await page.locator('#card-phone').fill('5555555555');await page.locator('#card-postal').fill('02000');
-   await page.locator('#card-lookup').click();await page.getByText('Selecciona tu colonia.',{exact:true}).waitFor();
+   await page.locator('#card-lookup').click();await page.getByText('Selecciona tu colonia.',{exact:false}).waitFor();
    await page.locator('#card-settlement').selectOption('002:0001');await page.locator('#card-street').fill('Calle de prueba');await page.locator('#card-exterior').fill('10');
    const review=page.locator('#card-review'),pay=page.locator('#card-pay'),accept=page.locator('#card-accept'),open=page.locator('#card-open');
    await review.click();await page.getByText('Revisa el desglose y confirma los datos para continuar.').waitFor();
@@ -70,6 +72,24 @@ const cart=`window.items=[{id:'fixture-helmet',qty:1,name:'Casco de prueba'}];ex
    await page.evaluate(()=>window.behavior='slow');await pay.click();await page.waitForFunction(()=>typeof window.finish==='function');
    await page.evaluate(()=>{window.authChange();window.finish();});await page.waitForFunction(()=>!document.getElementById('card-review').disabled);
    assert.equal(await open.isVisible(),false);assert.equal(await page.locator('#card-summary').isVisible(),false);
+   // A signed-out account can select a public colony, but cannot quote or pay.
+   await page.locator('#card-postal').fill('02140');await page.locator('#card-lookup').click();
+   await page.getByText('Selecciona tu colonia.',{exact:false}).waitFor();
+   await page.locator('#card-settlement').selectOption({label:'Azcapotzalco · Santa Inés'});
+   await page.locator('#card-name').fill('Cliente de prueba');await page.locator('#card-phone').fill('5555555555');
+   await page.locator('#card-street').fill('Calle de prueba');await page.locator('#card-exterior').fill('10');
+   const beforeAuth=await page.evaluate(()=>calls.length);
+   await review.click();await page.locator('#card-login').waitFor();
+   assert.equal(await page.evaluate(()=>calls.length),beforeAuth);
+   assert.equal(await open.isVisible(),false);
+   assert.equal(await page.evaluate(()=>calls.filter(c=>c.body?.action==='postal_lookup').length),0);
+   // Expired administrator verification also leaves colonies selectable,
+   // while the server's 401 still blocks quote creation.
+   await page.evaluate(()=>{window.owner='11111111-1111-4111-8111-111111111111';window.behavior=401;});
+   await page.locator('#card-lookup').click();await page.getByText('Selecciona tu colonia.',{exact:false}).waitFor();
+   await page.locator('#card-settlement').selectOption({label:'Azcapotzalco · Santa Inés'});
+   await review.click();await page.getByText('Inicia sesión con tu cuenta RHO.',{exact:false}).waitFor();
+   assert.equal(await page.locator('#card-summary').isVisible(),false);assert.equal(await open.isVisible(),false);
    // UI remains off if backend gates are closed.
    await page.goto(base+'/checkout-tarjeta.html');await page.getByText('Recuperamos tu intento anterior.',{exact:false}).waitFor();
    await page.evaluate(()=>window.behavior=503);await accept.check();await pay.click();await page.getByText('El pago con tarjeta aún no está disponible.',{exact:false}).waitFor();
