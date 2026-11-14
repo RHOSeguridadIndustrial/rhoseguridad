@@ -2,7 +2,12 @@ import {getCart} from './cart.js?v=10.4';
 import {supabase} from './supabase-client.js?v=20260913-loyalty';
 import {shippingCoupon} from './shipping-coupon.js?v=20261022';
 const money = cents => new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(cents/100);
-let registered = false, checking = true, method = 'transfer', generation = 0;
+// Keep the customer's choice when returning from Stripe or reloading the cart.
+function savedMethod() {
+  if(new URLSearchParams(location.search).get('payment')==='cancelled')return 'card';
+  try {return sessionStorage.getItem('rho-payment-method')==='card'?'card':'transfer';} catch {return 'transfer';}
+}
+let registered = false, checking = true, method = savedMethod(), generation = 0;
 function update() {
   const panel = document.querySelector('[data-coupon-preview]');
   if (!panel) return;
@@ -36,7 +41,7 @@ function mount() {
   panel.innerHTML = '<h3>Envío y forma de pago</h3><label class="guest-field">Forma de pago<select aria-label="Forma de pago"><option value="transfer">Transferencia bancaria</option><option value="card">Tarjeta de crédito o débito</option></select></label><p role="status" aria-live="polite"></p><p class="transfer-note" data-checkout-note></p><a class="transfer-checkout" data-payment-checkout href="checkout-transferencia.html">Continuar con transferencia →</a><p class="transfer-note" data-payment-note></p><div class="transfer-links"><a href="registro.html">Registrarme en RHO</a> · <a href="cuenta.html">Mi cuenta</a> · <a href="envios-entregas.html">Condiciones del envío</a></div>';
   const select = panel.querySelector('select');
   select.value=method;
-  select.addEventListener('change',()=>{method=select.value;update();});
+  select.addEventListener('change',()=>{method=select.value;try{sessionStorage.setItem('rho-payment-method',method);}catch{}update();});
   summary.append(panel); update();
 }
 async function verifyRegistration() {
