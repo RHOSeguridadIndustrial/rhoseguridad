@@ -31,6 +31,7 @@ const cart=`window.items=[{id:'fixture-helmet',qty:1,name:'Casco de prueba'}];ex
   if(file==='/cart.js')return res.end(cart);
   if(file==='/assets/postal-cdmx.json')return res.end(JSON.stringify({schemaVersion:1,country:'MX',state:'CMX',municipalities:{'002':'Azcapotzalco'},postcodes:{'02000':[['002','0001','Colonia sintética']],'02140':[['002','0050','Santa Inés']]}}));
   if(file==='/footer.js')return res.end('');
+  if(file==='/login.html')return res.end('<p>Verificación requerida</p>');
   const local=path.resolve(process.cwd(),'.'+file);
   if(!local.startsWith(process.cwd()+path.sep)){res.writeHead(403);return res.end();}
   try{res.end(fs.readFileSync(local));}catch{res.writeHead(404);res.end();}
@@ -78,20 +79,24 @@ const cart=`window.items=[{id:'fixture-helmet',qty:1,name:'Casco de prueba'}];ex
    await page.locator('#card-settlement').selectOption({label:'Azcapotzalco · Santa Inés'});
    await page.locator('#card-name').fill('Cliente de prueba');await page.locator('#card-phone').fill('5555555555');
    await page.locator('#card-street').fill('Calle de prueba');await page.locator('#card-exterior').fill('10');
-   const beforeAuth=await page.evaluate(()=>calls.length);
-   await review.click();await page.locator('#card-login').waitFor();
-   assert.equal(await page.evaluate(()=>calls.length),beforeAuth);
-   assert.equal(await open.isVisible(),false);
    assert.equal(await page.evaluate(()=>calls.filter(c=>c.body?.action==='postal_lookup').length),0);
+   await review.click();await page.waitForURL(base+'/login.html?next=checkout-tarjeta.html');
    // Expired administrator verification also leaves colonies selectable,
    // while the server's 401 still blocks quote creation.
-   await page.evaluate(()=>{window.owner='11111111-1111-4111-8111-111111111111';window.behavior=401;});
+   await page.goto(base+'/checkout-tarjeta.html');await page.getByText('Recuperamos tu intento anterior.',{exact:false}).waitFor();
+   await page.locator('#card-name').fill('Receptor conservado');await page.locator('#card-postal').fill('02140');
+   await page.evaluate(()=>window.behavior=401);
    await page.locator('#card-lookup').click();await page.getByText('Selecciona tu colonia.',{exact:false}).waitFor();
    await page.locator('#card-settlement').selectOption({label:'Azcapotzalco · Santa Inés'});
-   await review.click();await page.getByText('Inicia sesión con tu cuenta RHO.',{exact:false}).waitFor();
+   await review.click();await page.waitForURL(base+'/login.html?next=checkout-tarjeta.html');
+   // Simulate successful return; restore delivery only, never accepted totals/payment.
+   await page.goto(base+'/checkout-tarjeta.html');await page.getByText('Recuperamos tus datos de entrega.',{exact:false}).waitFor();
+   assert.equal(await page.locator('#card-name').inputValue(),'Receptor conservado');
+   assert.equal(await page.locator('#card-settlement').inputValue(),'002:0050');
    assert.equal(await page.locator('#card-summary').isVisible(),false);assert.equal(await open.isVisible(),false);
+   assert.equal(await page.evaluate(()=>calls.length),0);
+   await review.click();await page.getByText('Revisa el desglose y confirma los datos para continuar.').waitFor();
    // UI remains off if backend gates are closed.
-   await page.goto(base+'/checkout-tarjeta.html');await page.getByText('Recuperamos tu intento anterior.',{exact:false}).waitFor();
    await page.evaluate(()=>window.behavior=503);await accept.check();await pay.click();await page.getByText('El pago con tarjeta aún no está disponible.',{exact:false}).waitFor();
    assert.equal(await open.isVisible(),false);
    // Server-returned labels render as text; a changed quote never exposes payment.

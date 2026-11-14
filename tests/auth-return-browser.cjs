@@ -16,7 +16,7 @@ rpc:async()=>({data:true})};`;
   const p=new URL(req.url,'http://localhost').pathname;
   res.setHeader('Content-Type',p.endsWith('.js')?'text/javascript':p.endsWith('.css')?'text/css':'text/html');
   if(p==='/supabase-client.js')return res.end(mock);
-  if(['/admin.html','/checkout-prueba.html','/cuenta.html','/index.html'].includes(p))return res.end('<!doctype html><p>Destination fixture</p>');
+  if(['/admin.html','/checkout-prueba.html','/checkout-tarjeta.html','/cuenta.html','/index.html'].includes(p))return res.end('<!doctype html><p>Destination fixture</p>');
   if(p==='/footer.js')return res.end('');
   try{res.end(fs.readFileSync(path.join(process.cwd(),p)))}catch{res.writeHead(404);res.end()}
  });
@@ -42,6 +42,9 @@ rpc:async()=>({data:true})};`;
    await page.goto(origin+'/admin-seguridad.html?next=checkout-prueba.html');
    await page.getByRole('link',{name:'Volver a la compra de prueba'}).click();
    await page.waitForURL(origin+'/checkout-prueba.html');
+   await page.goto(origin+'/login.html?next=checkout-tarjeta.html');
+   await page.waitForURL(origin+'/admin-seguridad.html?next=checkout-tarjeta.html');
+   await page.locator('#continue').click();await page.waitForURL(origin+'/checkout-tarjeta.html');
    for(const target of ['https://evil.invalid','//evil.invalid','../checkout-prueba.html','checkout-prueba.html?next=https://evil.invalid']){
     await page.goto(origin+'/login.html?next='+encodeURIComponent(target));
     await page.waitForURL(origin+'/admin-seguridad.html?next=admin.html');
