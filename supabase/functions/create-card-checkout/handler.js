@@ -23,7 +23,7 @@ export function cardCheckoutHandler({configured=false,authorize,loadDelivery,str
     if(body.environment!==undefined&&body.environment!=='live')return reply({error:'invalid_environment'},400);
     if(!['postal_lookup','quote','create'].includes(body.action))return reply({error:'invalid_action'},400);
     let delivery;
-    try{delivery=await loadDelivery();}catch{}
+    try{delivery=await loadDelivery(owner);}catch{}
     if(!delivery)return reply({error:'card_checkout_unavailable'},503);
     if(body.action==='postal_lookup'){
       const value=delivery.lookup(body.postalCode);

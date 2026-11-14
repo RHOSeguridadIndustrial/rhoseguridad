@@ -54,6 +54,7 @@ ${readFileSync('supabase/migrations/20261024203615_inventory_rename_audited.sql'
 ${readFileSync('supabase/migrations/20261101065319_transfer_purchase_requests.sql','utf8')}
 ${readFileSync(migrationPath,'utf8')}
 ${readFileSync('supabase/migrations/20261106101832_card_checkout_contact.sql','utf8')}
+${readFileSync('supabase/migrations/20261114230800_card_checkout_shipping_trials.sql','utf8')}
 `;}
 export function seedSql(){return `
 insert into auth.users values('${owner}',now(),false,null),('${other}',now(),false,null),('${admin}',now(),false,null);
@@ -71,7 +72,7 @@ select public.inventory_adjust('fixture-second','receive',10,1,'pieza',true,'Fix
 reset role;select set_config('test.uid','',false);
 `;}
 export function sqlService(db){
- const signatures={card_checkout_config:[],card_checkout_variant:['p_sku'],card_checkout_load:['p_owner','p_retry'],
+ const signatures={card_checkout_shipping_trial:['p_owner'],card_checkout_config:[],card_checkout_variant:['p_sku'],card_checkout_load:['p_owner','p_retry'],
  card_checkout_reserve:['p_owner','p_retry','p_quote','p_identity'],card_checkout_bind:['p_request','p_owner','p_session'],
  card_checkout_load_payment:['p_session'],card_checkout_commit:['p_request','p_session','p_payment','p_amount','p_currency','p_event']};
  return {rpc:async(name,args={})=>{

@@ -8,6 +8,7 @@ export function cardCheckoutRpc(service) {
   const requireLive = value=>{if(value.livemode!==true)throw Error('Live payment required');};
   return {
     configuration:()=>rpc('card_checkout_config'),
+    shippingTrial:ownerId=>rpc('card_checkout_shipping_trial',{p_owner:ownerId}),
     loadVariant:sku=>rpc('card_checkout_variant',{p_sku:sku}),
     loadReservation:({ownerId,retryKey})=>rpc('card_checkout_load',{p_owner:ownerId,p_retry:retryKey}),
     reserve:value=>{
