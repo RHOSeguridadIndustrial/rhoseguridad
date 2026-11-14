@@ -183,3 +183,17 @@ test('both successful event types call the atomic adapter; database failure rema
   }
   const f=webhookFixture();f.failCommit();assert.equal((await f.send()).status,500);
 });
+
+test('server shipping trial charges product amount and retries preserve its frozen waiver',async()=>{
+ const f=fixture(),trial='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+ f.quote(()=>({...quote(),shippingTrialId:trial,shippingCents:0,totalCents:664}));
+ const result=await createCardCheckout(input({expectedTotalCents:664}),f.deps);
+ assert.equal(result.totalCents,664);assert.equal(result.shippingCents,0);
+ assert.equal(f.calls.creates[0].params.line_items[0].price_data.unit_amount,664);
+ f.quote(()=>{throw Error('No allowances remain');});
+ assert.deepEqual(await createCardCheckout(input({expectedTotalCents:664}),f.deps),result);
+ assert.equal(f.calls.reserves,1);
+ const normal=fixture();
+ await assert.rejects(createCardCheckout(input({shippingTrialId:trial,shippingCents:0,expectedTotalCents:664}),normal.deps),/Card total changed/);
+ assert.equal(normal.calls.creates.length,0);
+});

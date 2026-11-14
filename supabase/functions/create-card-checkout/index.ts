@@ -22,12 +22,12 @@ Deno.serve(cardCheckoutHandler({configured,persistence,
   const {data,error}=await caller.rpc('card_checkout_identity');
   return !error&&typeof data==='string'&&/^[a-f0-9-]{36}$/.test(data)?data:null;
  },
- loadDelivery:async()=>{
+ loadDelivery:async(owner:string)=>{
   const config=await persistence!.configuration();
   if(config?.enabled!==true)return null;
   const validate=await createDeliveryValidator(config);
   if(!validate.lookup)return null;
   return {lookup:validate.lookup,quote:await createDeliveryQuote({...config,registered:true,
-   loadVariant:persistence!.loadVariant})};
+   loadVariant:persistence!.loadVariant,shippingTrial:await persistence!.shippingTrial(owner)})};
  }
 }));

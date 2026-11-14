@@ -50,7 +50,7 @@ def main():
 
     def seed():
         query("truncate public.orders,public.order_items,private.card_checkout_requests,private.card_checkout_lines,"
-              "private.card_payment_receipts,private.card_inventory_write_context,public.inventory_history,"
+              "private.card_shipping_trial_uses,private.card_payment_receipts,private.card_inventory_write_context,public.inventory_history,"
               "private.inventory_reservations,private.inventory_reservation_lines;")
         query("update private.card_checkout_configuration set enabled=true,pinned_sha256='" + 'a' * 64 + "';")
         query(as_admin("select set_config('rho.inventory_reason','Reset isolated fixture',false);"
@@ -127,7 +127,18 @@ def main():
     assert blocked == 'rejected:40001' and state() == '0,1,1,1'
     print('PASS 6: competing manual stock adjustment observes the committed revision and cannot consume twice')
     assert query('select count(*) from private.card_inventory_write_context') == '0'
-    print('RESULT: 6 PostgreSQL concurrency checks passed on operational inventory/order migration')
+    seed()
+    query(as_admin("select set_config('rho.inventory_reason','Trial quota fixture',false);update public.inventory_items set quantity=10 where sku='fixture-sku';"))
+    trial = query(f"insert into private.card_shipping_trials(owner_id,max_uses,reason) values('{owner}',3,'Concurrent fixture') returning id;").splitlines()[0]
+    quote.update(shippingTrialId=trial,shippingCents=0,totalCents=332)
+    qtext = json.dumps(quote, ensure_ascii=False)
+    query(reserve('trial-first-use-key'))
+    query(reserve('trial-second-use-key'))
+    _, blocked = race('begin;' + reserve('trial-third-use-key') + 'select pg_sleep(2);commit;', reserve('trial-fourth-use-key'), 'P0001')
+    assert blocked == 'rejected:P0001'
+    assert query('select count(*) from private.card_shipping_trial_uses') == '3'
+    print('PASS 7: concurrent attempts for final shipping trial cannot exceed the three-use allowance')
+    print('RESULT: 7 PostgreSQL concurrency checks passed')
 
 
 if __name__ == '__main__':

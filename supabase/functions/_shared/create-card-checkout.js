@@ -46,6 +46,13 @@ function validateQuote(quote, cart) {
     subtotal += line.lineTotalCents;
   }
   const shipping = shippingCoupon({subtotalCents:subtotal,registered:true,paymentMethod:'card',coverage:'cdmx'});
+  // quote comes exclusively from the trusted builder or frozen database snapshot.
+  // The database independently enforces owner, quota and one-use-per-request.
+  if (quote.shippingTrialId!==undefined) {
+    if (!/^[a-f0-9-]{36}$/.test(quote.shippingTrialId) || shipping.shippingCents<=0)
+      throw Error('Invalid shipping trial');
+    shipping.shippingCents=0;shipping.totalCents=subtotal;
+  }
   if (!Number.isSafeInteger(subtotal) || subtotal !== quote.subtotalCents || shipping.status === 'pending' ||
       quote.shippingCents !== shipping.shippingCents || quote.totalCents !== shipping.totalCents ||
       !Number.isSafeInteger(quote.totalCents) || quote.mode !== shipping.mode)
