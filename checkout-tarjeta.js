@@ -2,6 +2,7 @@ import {supabase} from './supabase-client.js?v=20260913-loyalty';
 import {getCart} from './cart.js?v=20260914-account-isolation';
 import {cardInput,cardFingerprint,cardSummary,cardDelivery,cardLink} from './card-checkout-model.js?v=20261106';
 import {cardPostalOptions} from './card-postal.js?v=20261114';
+import {saveDeliveryDraft,takeDeliveryDraft} from './card-checkout-draft.js?v=20261114';
 const $=id=>document.getElementById(id),form=$('card-form');
 const money=cents=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(cents/100);
 let revision=0,owner=null,busy=false,options=[],postal='',prepared=null;
@@ -50,6 +51,14 @@ function problem(error){
   error.status===409?'No pudimos preparar el pago. Las existencias o la vigencia pudieron cambiar. Conserva la referencia de esta compra; si ya pagaste, consulta su estado antes de intentarlo de nuevo.':
   error.message==='storage'?'Permite el almacenamiento de este sitio para conservar la referencia de la compra antes de continuar.':
   'No pudimos confirmar la operación. Revisa tu conexión y reintenta con los mismos datos; conservaremos la referencia de esta compra.');
+ $('card-status').scrollIntoView({block:'center',behavior:'smooth'});
+}
+function recoverAccess(error,sessionOwner){
+ if(error.message!=='session'&&error.status!==401)return false;
+ try{if(sessionOwner)saveDeliveryDraft(sessionStorage,sessionOwner,readInput());}
+ catch{message('No pudimos conservar tus datos. Permite el almacenamiento de este sitio antes de verificar tu acceso.');$('card-login').hidden=false;return true;}
+ message('Necesitamos verificar tu acceso. Volverás a esta compra después de iniciar sesión.');
+ location.assign('login.html?next=checkout-tarjeta.html');return true;
 }
 function show(value){
  const q=cardSummary(value.quote,value.input.items),delivery=cardDelivery(q,value.input.address);
@@ -85,8 +94,10 @@ $('card-lookup').addEventListener('click',async()=>{
 });
 form.addEventListener('submit',async event=>{
  event.preventDefault();if(busy)return;invalidate();const attempt=revision;controls(true);
+ let sessionOwner=null;
  try{
   const s=await session();if(attempt!==revision)return;
+  sessionOwner=s.user.id;
   if(!selection().length){message('Tu carrito está vacío. Agrega productos antes de continuar.');return;}
   let input;try{input=readInput();}catch{message('Completa el nombre, teléfono, código postal y domicilio de entrega.');return;}
   const fingerprint=cardFingerprint(input),key=await hash(fingerprint);let store;
@@ -97,7 +108,7 @@ form.addEventListener('submit',async event=>{
   if(!await sameOwner(s.user.id,attempt)||cardFingerprint(readInput())!==fingerprint)return;
   show({input,quote,owner:s.user.id,fingerprint,hash:key,retry:saved?.key,data:saved?.data});
   message(saved?'Recuperamos tu compra anterior. Revisa sus datos antes de continuar.':'Revisa el desglose y confirma los datos para continuar.');
- }catch(error){if(attempt===revision)problem(error);}finally{controls(false);}
+ }catch(error){if(attempt===revision&&!recoverAccess(error,sessionOwner))problem(error);}finally{controls(false);}
 });
 $('card-accept').addEventListener('change',()=>{$('card-pay').disabled=busy||!prepared||!$('card-accept').checked;});
 $('card-pay').addEventListener('click',async()=>{
@@ -121,12 +132,24 @@ $('card-pay').addEventListener('click',async()=>{
   $('card-check').href='pago-exitoso.html?session_id='+data.sessionId;$('card-check').hidden=false;
   $('card-validity').textContent='Pago disponible hasta '+new Intl.DateTimeFormat('es-MX',{timeZone:'America/Mexico_City',dateStyle:'short',timeStyle:'short'}).format(new Date(data.expiresAt*1000))+' (hora de CDMX).';
   message('Tu compra está lista. Abre Stripe para completar el pago. Aún no se ha confirmado un cobro.');
- }catch(error){if(attempt===revision)problem(error);}finally{controls(false);}
+ }catch(error){if(attempt===revision&&!recoverAccess(error,value.owner))problem(error);}finally{controls(false);}
 });
 async function start(){
  renderItems();const attempt=revision;
  try{
   const s=await session();if(attempt!==revision)return;owner=s.user.id;$('card-login').hidden=true;
+  const draft=takeDeliveryDraft(sessionStorage,owner,selection());
+  if(draft){
+   const a=draft.address,found=await cardPostalOptions(a.postalCode);
+   if(!await sameOwner(owner,attempt))return;
+   const match=found.find(r=>r.municipalityCode===a.municipalityCode&&r.settlementCode===a.settlementCode);
+   if(match){
+    for(const [id,value] of Object.entries({'card-name':draft.contact.name,'card-phone':draft.contact.phone,'card-postal':a.postalCode,'card-street':a.street,'card-exterior':a.exterior,'card-interior':a.interior,'card-reference':a.reference}))$(id).value=value;
+    postal=a.postalCode;options=found;$('card-settlement').replaceChildren(new Option('Selecciona alcaldía y colonia',''),...found.map(r=>new Option(r.municipality+' · '+r.settlement,r.municipalityCode+':'+r.settlementCode)));
+    $('card-settlement').value=a.municipalityCode+':'+a.settlementCode;$('card-settlement').disabled=false;
+    message('Recuperamos tus datos de entrega. Pulsa Revisar mi compra para validar el total.');return;
+   }
+  }
   let store;try{store=readStore(owner);}catch{throw Error('storage');}
   const saved=store.attempts[store.active];
   if(saved){
