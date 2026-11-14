@@ -1,6 +1,7 @@
 import {supabase} from './supabase-client.js?v=20260913-loyalty';
 import {getCart} from './cart.js?v=20260914-account-isolation';
 import {cardInput,cardFingerprint,cardSummary,cardDelivery,cardLink} from './card-checkout-model.js?v=20261106';
+import {cardPostalOptions} from './card-postal.js?v=20261114';
 const $=id=>document.getElementById(id),form=$('card-form');
 const money=cents=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(cents/100);
 let revision=0,owner=null,busy=false,options=[],postal='',prepared=null;
@@ -74,17 +75,12 @@ $('card-lookup').addEventListener('click',async()=>{
  if(!/^\d{5}$/.test(cp)){$('card-postal-status').textContent='Escribe un código postal de cinco dígitos.';return;}
  controls(true);$('card-postal-status').textContent='Consultando colonias…';
  try{
-  const s=await session(),data=await invoke({action:'postal_lookup',postalCode:cp},s);
-  if(!await sameOwner(s.user.id,attempt))return;
-  if(data?.postalCode!==cp||!Array.isArray(data.options)||data.options.length>500)throw Error();
-  if(data.status==='outside_coverage'&&!data.options.length){$('card-postal-status').textContent='Este código postal no está habilitado para entrega con tarjeta.';return;}
-  if(data.status!=='postal_options'||!data.options.length||!/^[a-f0-9]{64}$/.test(data.catalogSha256||''))throw Error();
-  const seen=new Set();for(const r of data.options){const key=r.municipalityCode+':'+r.settlementCode;
-   if(r.postalCode!==cp||!/^\d{3}$/.test(r.municipalityCode)||!/^\d{4}$/.test(r.settlementCode)||typeof r.municipality!=='string'||!r.municipality.trim()||typeof r.settlement!=='string'||!r.settlement.trim()||seen.has(key))throw Error();seen.add(key);
-  }
-  options=data.options;postal=cp;$('card-settlement').replaceChildren(new Option('Selecciona alcaldía y colonia',''),...options.map(r=>new Option(r.municipality+' · '+r.settlement,r.municipalityCode+':'+r.settlementCode)));
-  $('card-settlement').disabled=false;$('card-postal-status').textContent='Selecciona tu colonia.';
- }catch(error){if(attempt===revision){$('card-postal-status').textContent='No se pudo completar la consulta.';problem(error);}}
+  const found=await cardPostalOptions(cp);
+  if(attempt!==revision||$('card-postal').value!==cp)return;
+  if(!found.length){$('card-postal-status').textContent='No encontramos este CP en el catálogo de CDMX. Revisa los cinco dígitos.';return;}
+  options=found;postal=cp;$('card-settlement').replaceChildren(new Option('Selecciona alcaldía y colonia',''),...options.map(r=>new Option(r.municipality+' · '+r.settlement,r.municipalityCode+':'+r.settlementCode)));
+  $('card-settlement').disabled=false;$('card-postal-status').textContent='Selecciona tu colonia. Validaremos la cobertura al revisar tu compra.';
+ }catch(error){if(attempt===revision){$('card-postal-status').textContent='No pudimos cargar el catálogo de colonias. Revisa tu conexión y pulsa Consultar CP nuevamente.';}}
  finally{controls(false);}
 });
 form.addEventListener('submit',async event=>{
